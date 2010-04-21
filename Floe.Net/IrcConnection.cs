@@ -16,14 +16,9 @@ namespace Floe.Net
 		private int _port;
 
 		private TcpClient _tcpClient;
-		private StreamWriter _wstream;
-		private Thread _readThread;
-		private Thread _writeThread;
+		private Thread _socketThread;
 		private Queue<IrcMessage> _writeQueue;
 		private AutoResetEvent _writeWaitHandle;
-		private int _writePace = 250;
-
-		public int WritePace { get { return _writePace; } set { _writePace = value; } }
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
@@ -50,13 +45,16 @@ namespace Floe.Net
 				throw new InvalidOperationException("The connection is already open.");
 			}
 
-			_readThread = new Thread(new ThreadStart(this.ReadLoop));
-			_readThread.Start();
+			_socketThread = new Thread(new ThreadStart(this.SocketLoop));
+			_socketThread.Start();
 		}
 
 		public void Close()
 		{
-			this.Reset();
+			if (_tcpClient != null && _tcpClient.Connected)
+			{
+				_tcpClient.Close();
+			}
 			this.OnDisconnected();
 		}
 
@@ -76,28 +74,13 @@ namespace Floe.Net
 
 		public void Dispose()
 		{
-			this.Reset();
-		}
-
-		private void SendMessage(IrcMessage message)
-		{
-			string msg = _sendFilter.Replace(message.ToString(), "\uffff");
-			_wstream.WriteLine(msg);
-			_wstream.Flush();
-			this.OnMessageSent(message);
-		}
-
-		private void RecvMessage(string message)
-		{
-			IrcMessage msg = null;
-			if (!string.IsNullOrEmpty(message))
+			if (_tcpClient != null && _tcpClient.Connected)
 			{
-				msg = IrcMessage.Parse(message);
-				this.OnMessageReceived(msg);
+				_tcpClient.Close();
 			}
 		}
 
-		private void ReadLoop()
+		private void SocketLoop()
 		{
 			_tcpClient = new TcpClient();
 			try
@@ -107,80 +90,68 @@ namespace Floe.Net
 			catch (Exception ex)
 			{
 				this.OnError(ex);
-				_tcpClient = null;
 				return;
 			}
 
-			var rstream = _tcpClient.GetStream();
-			rstream.ReadTimeout = 100;
-			_wstream = new StreamWriter(rstream, Encoding.ASCII);
-
+			var wstream = new StreamWriter(_tcpClient.GetStream(), Encoding.ASCII);
 			_writeWaitHandle = new AutoResetEvent(false);
-			_writeThread = new Thread(new ThreadStart(WriteLoop));
-			_writeThread.Start();
+			_writeQueue = new Queue<IrcMessage>();
 
 			this.OnConnected();
 
 			byte[] buffer = new byte[512];
-			var message = new StringBuilder();
-
+			var input = new StringBuilder();
+			IrcMessage message;
 			char last = '\u0000';
+
 			while (_tcpClient.Connected)
 			{
-				if (_tcpClient.Client.Poll(-1, SelectMode.SelectRead))
+				var ar = _tcpClient.Client.BeginReceive(buffer, 0, 512, SocketFlags.None, null, null);
+				switch (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle }))
 				{
-					int count = rstream.Read(buffer, 0, 512);
-					if (count == 0)
-					{
+					case 0:
+						int count = _tcpClient.Client.EndReceive(ar);
+						if (count == 0)
+						{
+							_tcpClient.Close();
+						}
+						else
+						{
+							foreach (char c in Encoding.ASCII.GetChars(buffer, 0, count))
+							{
+								if (c == 0xa && last == 0xd)
+								{
+									if (input.Length > 0)
+									{
+										message = IrcMessage.Parse(input.ToString());
+										this.OnMessageReceived(message);
+										input.Clear();
+									}
+								}
+								else if (c != 0xd && c != 0xa)
+								{
+									input.Append(c);
+								}
+								last = c;
+							}
+						}
 						break;
-					}
-					foreach (char c in Encoding.ASCII.GetChars(buffer, 0, count))
-					{
-						if (c == 0xa && last == 0xd)
+					case 1:
+						lock (_writeQueue)
 						{
-							RecvMessage(message.ToString());
-							message.Clear();
+							while (_writeQueue.Count > 0)
+							{
+								message = _writeQueue.Dequeue();
+								string output = _sendFilter.Replace(message.ToString(), "\uffff");
+								wstream.WriteLine(output);
+								wstream.Flush();
+								this.OnMessageSent(message);
+							}
 						}
-						else if (c != 0xd && c != 0xa)
-						{
-							message.Append(c);
-						}
-						last = c;
-					}
+						break;
 				}
 			}
 			this.OnDisconnected();
-		}
-
-		private void WriteLoop()
-		{
-			while (_tcpClient.Connected && _tcpClient.Client.Poll(1, SelectMode.SelectWrite))
-			{
-				_writeWaitHandle.WaitOne(100);
-				lock (_writeQueue)
-				{
-					if (_writeQueue.Count > 0)
-					{
-						var message = _writeQueue.Dequeue();
-						this.SendMessage(message);
-					}
-				}
-				Thread.Sleep(_writePace);
-				if (_writeQueue.Count > 0)
-				{
-					_writeWaitHandle.Set();
-				}
-			}
-		}
-
-		private void Reset()
-		{
-			if (_tcpClient != null && _tcpClient.Connected)
-			{
-				_tcpClient.Close();
-			}
-			_readThread = _writeThread = null;
-			_writeQueue.Clear();
 		}
 
 		private void OnConnected()
@@ -194,7 +165,6 @@ namespace Floe.Net
 
 		private void OnDisconnected()
 		{
-			Reset();
 			var handler = this.Disconnected;
 			if (handler != null)
 			{

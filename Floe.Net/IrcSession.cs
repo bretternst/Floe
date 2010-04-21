@@ -150,7 +150,6 @@ namespace Floe.Net
 		{
 			_conn.QueueMessage(new IrcMessage("USER", this.UserName, this.HostName, "*", this.FullName));
 			_conn.QueueMessage(new IrcMessage("NICK", this.NickName));
-			_conn.QueueMessage(new IrcMessage("QUIT"));
 		}
 
 		private void _conn_Disconnected(object sender, EventArgs e)
