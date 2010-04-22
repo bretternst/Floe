@@ -8,10 +8,10 @@ namespace Floe.Net
 	public enum IrcTargetType
 	{
 		Channel,
-		NickName
+		Nickname
 	}
 
-	public class IrcTarget
+	public sealed class IrcTarget
 	{
 		public IrcTargetType Type { get; private set; }
 
@@ -19,13 +19,13 @@ namespace Floe.Net
 
 		public IrcTarget(string name)
 		{
-			if (name.Length > 1 && name[0] == '#' || name[0] == '+' || name[0] == '&' || name[0] == '!')
+			if (IsChannel(name))
 			{
 				Type = IrcTargetType.Channel;
 			}
 			else
 			{
-				Type = IrcTargetType.NickName;
+				Type = IrcTargetType.Nickname;
 			}
 
 			this.Name = name;
@@ -40,6 +40,11 @@ namespace Floe.Net
 		public override string ToString()
 		{
 			return this.Name;
+		}
+
+		public static bool IsChannel(string name)
+		{
+			return name.Length > 1 && name[0] == '#' || name[0] == '+' || name[0] == '&' || name[0] == '!';
 		}
 	}
 }

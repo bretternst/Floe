@@ -38,9 +38,9 @@ namespace Floe.Net
 		}
 	}
 
-	public class IrcPeer : IrcPrefix
+	public sealed class IrcPeer : IrcPrefix
 	{
-		public string NickName { get; private set; }
+		public string Nickname { get; private set; }
 		public string UserName { get; private set; }
 		public string HostName { get; private set; }
 
@@ -63,13 +63,13 @@ namespace Floe.Net
 				}
 				if (parts.Length > 0)
 				{
-					this.NickName = parts[0];
+					this.Nickname = parts[0];
 				}
 			}
 		}
 	}
 
-	public class IrcServer : IrcPrefix
+	public sealed class IrcServer : IrcPrefix
 	{
 		public string ServerName { get { return this.Prefix; } }
 

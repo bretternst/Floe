@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -47,6 +48,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Floe.Configuration\Floe.Configuration.csproj">
+      <Project>{EAFB18D3-6177-4777-8EAC-4DEA6FEAADC1}</Project>
+      <Name>Floe.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Floe.Net\Floe.Net.csproj">
       <Project>{1D4AD463-4355-4DA6-B8E6-0E8BB75B50D9}</Project>
       <Name>Floe.Net</Name>

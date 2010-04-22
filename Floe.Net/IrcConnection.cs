@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Floe.Net
 {
-	internal class IrcConnection : IDisposable
+	internal sealed class IrcConnection : IDisposable
 	{
 		private static Regex _sendFilter = new Regex("[\u000a\u000d]", RegexOptions.Compiled);
 

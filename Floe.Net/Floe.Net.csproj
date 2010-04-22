@@ -47,6 +47,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CtcpCommand.cs" />
+    <Compile Include="IrcCode.cs" />
+    <Compile Include="IrcModes.cs" />
     <Compile Include="IrcConnection.cs" />
     <Compile Include="IrcEventArgs.cs" />
     <Compile Include="IrcMessage.cs" />

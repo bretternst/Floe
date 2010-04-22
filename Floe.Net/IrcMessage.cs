@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Floe.Net
 {
-	public class IrcMessage
+	public sealed class IrcMessage
 	{
 		public IrcPrefix From { get; private set; }
 

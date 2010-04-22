@@ -18,7 +18,7 @@ namespace Floe.Net
 		private IrcConnection _conn;
 		private IrcSessionState _state;
 
-		public string NickName { get; private set; }
+		public string Nickname { get; private set; }
 		public string UserName { get; private set; }
 		public string HostName { get; private set; }
 		public string FullName { get; private set; }
@@ -37,10 +37,21 @@ namespace Floe.Net
 		}
 
 		public event EventHandler<EventArgs> StateChanged;
-		public event EventHandler<IrcEventArgs> SelfNickChanged;
-		public event EventHandler<IrcEventArgs> OtherNickChanged;
-		public event EventHandler<IrcEventArgs> MessageReceived;
-		public event EventHandler<IrcEventArgs> MessageSent;
+		public event EventHandler<IrcEventArgs> RawMessageReceived;
+		public event EventHandler<IrcEventArgs> RawMessageSent;
+		public event EventHandler<IrcNickEventArgs> NickChanged;
+		public event EventHandler<IrcDialogEventArgs> PrivateMessaged;
+		public event EventHandler<IrcDialogEventArgs> Noticed;
+		public event EventHandler<IrcQuitEventArgs> UserQuit;
+		public event EventHandler<IrcChannelEventArgs> Joined;
+		public event EventHandler<IrcChannelEventArgs> Parted;
+		public event EventHandler<IrcChannelEventArgs> TopicChanged;
+		public event EventHandler<IrcInviteEventArgs> Invited;
+		public event EventHandler<IrcKickEventArgs> Kicked;
+		public event EventHandler<IrcChannelModeEventArgs> ChannelModeChanged;
+		public event EventHandler<IrcUserModeEventArgs> UserModeChanged;
+		public event EventHandler<IrcInfoEventArgs> InfoReceived;
+		public event EventHandler<CtcpEventArgs> CtcpCommandReceived;
 
 		public IrcSession(string userName = "none", string hostName = "127.0.0.1", string fullname = "none")
 		{
@@ -50,18 +61,18 @@ namespace Floe.Net
 			this.FullName = fullname;
 		}
 
-		public void Open(string server, int port, string nickName)
+		public void Open(string server, int port, string Nickname)
 		{
 			if (this.State != IrcSessionState.Disconnected)
 			{
 				throw new InvalidOperationException("The IRC session is already active.");
 			}
 
-			if (string.IsNullOrEmpty(nickName))
+			if (string.IsNullOrEmpty(Nickname))
 			{
-				throw new ArgumentNullException("nickName");
+				throw new ArgumentNullException("Nickname");
 			}
-			this.NickName = nickName;
+			this.Nickname = Nickname;
 
 			this.State = IrcSessionState.Connecting;
 			_conn = new IrcConnection(server, port);
@@ -88,6 +99,111 @@ namespace Floe.Net
 			this.Close();
 		}
 
+		public void Send(IrcMessage message)
+		{
+			_conn.QueueMessage(message);
+		}
+
+		public void Send(string command, params string[] parameters)
+		{
+			_conn.QueueMessage(new IrcMessage(command, parameters));
+		}
+
+		public void Send(string command, IrcTarget target, params string[] parameters)
+		{
+			this.Send(command, (new[] { target.ToString() }).Union(parameters).ToArray());
+		}
+
+		public void SendCtcp(IrcTarget target, CtcpCommand command, bool isResponse)
+		{
+			this.Send(isResponse ? "NOTICE" : "PRIVMSG", target, command.ToString());
+		}
+
+		public void ChangeNickname(string newNickname)
+		{
+			this.Send("NICK", newNickname);
+		}
+
+		public void PrivateMessage(IrcTarget target, string text)
+		{
+			this.Send("PRIVMSG", target, text);
+		}
+
+		public void Notice(IrcTarget target, string text)
+		{
+			this.Send("NOTICE", target, text);
+		}
+
+		public void Quit(string text)
+		{
+			this.Send("QUIT", text);
+		}
+
+		public void Join(string channel)
+		{
+			this.Send("JOIN", channel);
+		}
+
+		public void Part(string channel)
+		{
+			this.Send("PART", channel);
+		}
+
+		public void Topic(string channel, string topic)
+		{
+			this.Send("TOPIC", channel, topic);
+		}
+
+		public void Invite(string channel, string nickname)
+		{
+			this.Send("INVITE", nickname, channel);
+		}
+
+		public void Kick(string channel, string nickname)
+		{
+			this.Send("KICK", channel, nickname);
+		}
+
+		public void Motd()
+		{
+			this.Send("MOTD");
+		}
+
+		public void Who(string mask)
+		{
+			this.Send("WHO", mask);
+		}
+
+		public void WhoIs(string mask)
+		{
+			this.Send("WHOIS", mask);
+		}
+
+		public void WhoIs(string target, string mask)
+		{
+			this.Send("WHOIS", target, mask);
+		}
+
+		public void WhoWas(string nickname)
+		{
+			this.Send("WHOWAS", nickname);
+		}
+
+		public void Away(string text)
+		{
+			this.Send("AWAY", text);
+		}
+
+		public void UnAway()
+		{
+			this.Send("AWAY");
+		}
+
+		public void UserHost(params string[] nicknames)
+		{
+			this.Send("USERHOST", string.Join(" ", nicknames));
+		}
+
 		private void OnStateChanged()
 		{
 			var handler = this.StateChanged;
@@ -99,7 +215,7 @@ namespace Floe.Net
 
 		private void OnMessageReceived(IrcEventArgs e)
 		{
-			var handler = this.MessageReceived;
+			var handler = this.RawMessageReceived;
 			if (handler != null)
 			{
 				handler(this, e);
@@ -108,10 +224,155 @@ namespace Floe.Net
 
 		private void OnMessageSent(IrcEventArgs e)
 		{
-			var handler = this.MessageSent;
+			var handler = this.RawMessageSent;
 			if (handler != null)
 			{
 				handler(this, e);
+			}
+		}
+
+		private void OnNickChanged(IrcMessage message)
+		{
+			var handler = this.NickChanged;
+			if (handler != null)
+			{
+				var args = new IrcNickEventArgs(message, this.Nickname);
+				if (args.IsSelf)
+				{
+					this.Nickname = args.NewNickname;
+				}
+				handler(this, args);
+			}
+		}
+
+		private void OnPrivateMessage(IrcMessage message)
+		{
+			if (message.Parameters.Count > 1 && CtcpCommand.IsCtcpCommand(message.Parameters[1]))
+			{
+				this.OnCtcpCommand(message);
+			}
+			else
+			{
+				var handler = this.PrivateMessaged;
+				if (handler != null)
+				{
+					handler(this, new IrcDialogEventArgs(message));
+				}
+			}
+		}
+
+		private void OnNotice(IrcMessage message)
+		{
+			if (message.Parameters.Count > 1 && CtcpCommand.IsCtcpCommand(message.Parameters[1]))
+			{
+				this.OnCtcpCommand(message);
+			}
+			else
+			{
+				var handler = this.Noticed;
+				if (handler != null)
+				{
+					handler(this, new IrcDialogEventArgs(message));
+				}
+			}
+		}
+
+		private void OnQuit(IrcMessage message)
+		{
+			var handler = this.UserQuit;
+			if (handler != null)
+			{
+				handler(this, new IrcQuitEventArgs(message));
+			}
+		}
+
+		private void OnJoin(IrcMessage message)
+		{
+			var handler = this.Joined;
+			if (handler != null)
+			{
+				handler(this, new IrcChannelEventArgs(message, this.Nickname));
+			}
+		}
+
+		private void OnPart(IrcMessage message)
+		{
+			var handler = this.Parted;
+			if (handler != null)
+			{
+				handler(this, new IrcChannelEventArgs(message, this.Nickname));
+			}
+		}
+
+		private void OnTopic(IrcMessage message)
+		{
+			var handler = this.TopicChanged;
+			if (handler != null)
+			{
+				handler(this, new IrcChannelEventArgs(message, this.Nickname));
+			}
+		}
+
+		private void OnInvite(IrcMessage message)
+		{
+			var handler = this.Invited;
+			if (handler != null)
+			{
+				handler(this, new IrcInviteEventArgs(message));
+			}
+		}
+
+		private void OnKick(IrcMessage message)
+		{
+			var handler = this.Kicked;
+			if (handler != null)
+			{
+				handler(this, new IrcKickEventArgs(message, this.Nickname));
+			}
+		}
+
+		private void OnMode(IrcMessage message)
+		{
+			if (message.Parameters.Count > 0)
+			{
+				if (IrcTarget.IsChannel(message.Parameters[0]))
+				{
+					var handler = this.ChannelModeChanged;
+					if (handler != null)
+					{
+						handler(this, new IrcChannelModeEventArgs(message));
+					}
+				}
+				else
+				{
+					var handler = this.UserModeChanged;
+					if (handler != null)
+					{
+						handler(this, new IrcUserModeEventArgs(message, this.Nickname));
+					}
+				}
+			}
+		}
+
+		private void OnOther(IrcMessage message)
+		{
+			int code;
+			if (int.TryParse(message.Command, out code))
+			{
+				var handler = this.InfoReceived;
+				if (handler != null)
+				{
+					handler(this, new IrcInfoEventArgs(message));
+				}
+			}
+		}
+
+		private void OnCtcpCommand(IrcMessage message)
+		{
+			var handler = this.CtcpCommandReceived;
+			if (handler != null)
+			{
+				handler(this, new CtcpEventArgs(message));
 			}
 		}
 
@@ -127,19 +388,51 @@ namespace Floe.Net
 				switch (e.Message.Command)
 				{
 					case "NICK":
-						this.NickName = e.Message.Parameters[0];
+						this.Nickname = e.Message.Parameters[0];
 						this.State = IrcSessionState.Connected;
 						break;
 				}
 			}
 			else if (this.State == IrcSessionState.Connected)
 			{
-				if (e.Message.Command == "NICK")
+				switch (e.Message.Command)
 				{
-					if (e.Message.From is IrcPeer && ((IrcPeer)e.Message.From).NickName == this.NickName)
-					{
-						this.NickName = e.Message.Parameters[0];
-					}
+					case "PING":
+						_conn.QueueMessage("PONG");
+						break;
+					case "NICK":
+						this.OnNickChanged(e.Message);
+						break;
+					case "PRIVMSG":
+						this.OnPrivateMessage(e.Message);
+						break;
+					case "NOTICE":
+						this.OnNotice(e.Message);
+						break;
+					case "QUIT":
+						this.OnQuit(e.Message);
+						break;
+					case "JOIN":
+						this.OnJoin(e.Message);
+						break;
+					case "PART":
+						this.OnPart(e.Message);
+						break;
+					case "TOPIC":
+						this.OnTopic(e.Message);
+						break;
+					case "INVITE":
+						this.OnInvite(e.Message);
+						break;
+					case "KICK":
+						this.OnKick(e.Message);
+						break;
+					case "MODE":
+						this.OnMode(e.Message);
+						break;
+					default:
+						this.OnOther(e.Message);
+						break;
 				}
 			}
 
@@ -148,13 +441,20 @@ namespace Floe.Net
 
 		private void _conn_Connected(object sender, EventArgs e)
 		{
+			this.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(IrcSession_CtcpCommand);
 			_conn.QueueMessage(new IrcMessage("USER", this.UserName, this.HostName, "*", this.FullName));
-			_conn.QueueMessage(new IrcMessage("NICK", this.NickName));
+			_conn.QueueMessage(new IrcMessage("NICK", this.Nickname));
 		}
 
 		private void _conn_Disconnected(object sender, EventArgs e)
 		{
 			this.State = IrcSessionState.Disconnected;
+			this.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(IrcSession_CtcpCommand);
+		}
+
+		private void IrcSession_CtcpCommand(object sender, CtcpEventArgs e)
+		{
+
 		}
 	}
 }
