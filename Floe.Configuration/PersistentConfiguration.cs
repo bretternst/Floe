@@ -17,6 +17,16 @@ namespace Floe.Configuration
 
 		public PersistentConfiguration()
 		{
+			this.Load();
+		}
+
+		public void Save()
+		{
+			_exeConfig.Save();
+		}
+
+		public void Load()
+		{
 			_exeConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoaming);
 			_prefConfigSection = _exeConfig.GetSection(PreferencesConfigSectionName) as PreferencesSection;
 			if (_prefConfigSection == null)
@@ -25,11 +35,6 @@ namespace Floe.Configuration
 				_prefConfigSection.SectionInformation.AllowExeDefinition = ConfigurationAllowExeDefinition.MachineToLocalUser;
 				_exeConfig.Sections.Add(PreferencesConfigSectionName, _prefConfigSection);
 			}
-		}
-
-		public void Save()
-		{
-			_exeConfig.Save();
 		}
 	}
 }

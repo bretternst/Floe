@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="Floe.UI.Settings.UserSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:local="clr-namespace:Floe.UI"
+             mc:Ignorable="d"
+             d:DesignHeight="235" d:DesignWidth="384">
+	<Canvas>
+		<Label Canvas.Left="64" Canvas.Top="12" Content="Nickname:" Height="28" Name="label1" />
+		<Label Canvas.Left="12" Canvas.Top="46" Content="Alternate Nickname:" Height="28" Name="label2" />
+		<Label Canvas.Left="64" Canvas.Top="161" Content="Username:" Height="28" Name="label3" />
+		<Label Canvas.Left="63" Canvas.Top="195" Content="Hostname:" Height="28" Name="label4" />
+		<Label Canvas.Left="63" Canvas.Top="127" Content="Full Name:" Height="28" Name="label5" />
+		<TextBox Canvas.Left="136" Canvas.Top="14" Height="23" Name="txtNickname" Width="109">
+			<TextBox.Text>
+				<Binding Source="{x:Static local:App.Preferences}" Path="User.Nickname" Mode="TwoWay">
+					<Binding.ValidationRules>
+						<local:RequiredValidationRule/>
+					</Binding.ValidationRules>
+				</Binding>
+			</TextBox.Text>
+		</TextBox>
+		<TextBox Canvas.Left="136" Canvas.Top="48" Height="23" Name="txtAltNickname" Width="109" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.AlternateNickname, Mode=TwoWay}"/>
+		<TextBox Canvas.Left="136" Canvas.Top="127" Height="23" Name="txtFullName" Width="159" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.FullName, Mode=TwoWay}"/>
+		<TextBox Canvas.Left="136" Canvas.Top="161" Height="23" Name="txtUserName" Width="109" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.UserName, Mode=TwoWay}"/>
+		<TextBox Canvas.Left="136" Canvas.Top="195" Height="23" Name="txtHostname" Width="159" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.HostName, Mode=TwoWay}"/>
+	</Canvas>
+</UserControl>

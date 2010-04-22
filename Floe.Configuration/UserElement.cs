@@ -11,7 +11,14 @@ namespace Floe.Configuration
 		[ConfigurationProperty("nickname", DefaultValue = "", IsRequired = true)]
 		public string Nickname
 		{
-			get { return (string)this["nickname"]; }
+			get
+			{
+				if (((string)this["nickname"]).Trim().Length < 1)
+				{
+					this["nickname"] = Environment.UserName;
+				}
+				return (string)this["nickname"];
+			}
 			set { this["nickname"] = value; }
 		}
 
@@ -22,10 +29,16 @@ namespace Floe.Configuration
 			set { this["alternateNickname"] = value; }
 		}
 
-		[ConfigurationProperty("userName", DefaultValue = "user", IsRequired = true)]
+		[ConfigurationProperty("userName", DefaultValue = "", IsRequired = true)]
 		public string UserName
 		{
-			get { return (string)this["userName"]; }
+			get
+			{
+				if (((string)this["userName"]).Trim().Length < 1)
+				{
+					this["userName"] = Environment.UserName;
+				}
+				return (string)this["userName"]; }
 			set { this["userName"] = value; }
 		}
 
@@ -36,10 +49,17 @@ namespace Floe.Configuration
 			set { this["fullName"] = value; }
 		}
 
-		[ConfigurationProperty("hsotName", DefaultValue = "", IsRequired = true)]
+		[ConfigurationProperty("hostName", DefaultValue = "", IsRequired = true)]
 		public string HostName
 		{
-			get { return (string)this["hostName"]; }
+			get
+			{
+				if (((string)this["hostName"]).Trim().Length < 1)
+				{
+					this["hostName"] = System.Net.Dns.GetHostName();
+				}
+				return (string)this["hostName"];
+			}
 			set { this["hostName"] = value; }
 		}
 	}
