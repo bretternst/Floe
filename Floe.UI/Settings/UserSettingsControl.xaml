@@ -16,7 +16,7 @@
 			<TextBox.Text>
 				<Binding Source="{x:Static local:App.Preferences}" Path="User.Nickname" Mode="TwoWay">
 					<Binding.ValidationRules>
-						<local:RequiredValidationRule/>
+						<ExceptionValidationRule/>
 					</Binding.ValidationRules>
 				</Binding>
 			</TextBox.Text>

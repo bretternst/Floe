@@ -1,0 +1,61 @@
+﻿<UserControl x:Class="Floe.UI.Settings.ServerSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:local="clr-namespace:Floe.UI"
+             mc:Ignorable="d" 
+             d:DesignHeight="243" d:DesignWidth="384">
+	<UserControl.Resources>
+		<Style TargetType="{x:Type Label}">
+			<Setter Property="Padding" Value="0"/>
+		</Style>
+	</UserControl.Resources>
+	<Canvas>
+		<ListBox Canvas.Left="12" Canvas.Top="47" Height="188" Name="lstServers" Width="138" ItemsSource="{Binding Source={x:Static local:App.Preferences}, Path=Servers}" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+		<Button Canvas.Left="12" Canvas.Top="18" Content="New" Height="23" Name="btnNew" Width="58" Click="btnNew_Click" />
+		<Button Canvas.Left="88" Canvas.Top="18" Content="Delete" Height="23" Name="btnDelete" Width="62" Click="btnDelete_Click">
+			<Button.Style>
+				<Style TargetType="Button">
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding ElementName=lstServers, Path=Items.Count}" Value="1">
+							<Setter Property="Button.IsEnabled" Value="False"/>
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Button.Style>
+		</Button>
+		<Label Canvas.Left="179" Canvas.Top="31" Content="Description" Height="18" Name="label1" />
+		<TextBox Canvas.Left="178" Canvas.Top="47" Height="23" Name="txtName" Width="139" SourceUpdated="txtName_SourceUpdated">
+			<TextBox.Text>
+				<Binding ElementName="lstServers" Path="SelectedItem.Name" Mode="TwoWay" NotifyOnSourceUpdated="True">
+					<Binding.ValidationRules>
+						<ExceptionValidationRule/>
+					</Binding.ValidationRules>
+				</Binding>
+			</TextBox.Text>
+		</TextBox>
+		<Label Canvas.Left="179" Canvas.Top="76" Content="Hostname" Height="18" Name="label2" />
+		<TextBox Canvas.Left="178" Canvas.Top="92" Height="23" Name="txtHostName" Width="139">
+			<TextBox.Text>
+				<Binding ElementName="lstServers" Path="SelectedItem.HostName" Mode="TwoWay" NotifyOnSourceUpdated="True">
+					<Binding.ValidationRules>
+						<ExceptionValidationRule/>
+					</Binding.ValidationRules>
+				</Binding>
+			</TextBox.Text>
+		</TextBox>
+		<Label Canvas.Left="217" Canvas.Top="126" Content="Port" Height="18" Name="label3" Width="27"/>
+		<TextBox Canvas.Left="250" Canvas.Top="121" Height="23" Name="txtPort" Width="67">
+			<TextBox.Text>
+				<Binding ElementName="lstServers" Path="SelectedItem.Port" Mode="TwoWay" NotifyOnSourceUpdated="True">
+					<Binding.ValidationRules>
+						<ExceptionValidationRule/>
+					</Binding.ValidationRules>
+				</Binding>
+			</TextBox.Text>
+		</TextBox>
+		<CheckBox Canvas.Left="179" Canvas.Top="170" Content="Connect On Startup" Height="16" Name="chkConnectOnStartup" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.ConnectOnStartup, Mode=TwoWay}"/>
+		<CheckBox Canvas.Left="179" Canvas.Top="192" Content="Automatically Reconnect" Height="16" Name="chkAutoReconnect" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.AutoReconnect, Mode=TwoWay}"/>
+	</Canvas>
+</UserControl>

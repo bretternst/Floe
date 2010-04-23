@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Configuration;
 
 namespace Floe.Configuration
@@ -15,8 +12,8 @@ namespace Floe.Configuration
 			set { this["user"] = value; }
 		}
 
-		[ConfigurationProperty("servers", IsDefaultCollection = false)]
-		[ConfigurationCollection(typeof(ServerElement), AddItemName = "add")]
+		[ConfigurationProperty("servers")]
+		[ConfigurationCollection(typeof(ServerElement))]
 		public ServerElementCollection Servers
 		{
 			get

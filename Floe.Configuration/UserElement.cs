@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Configuration;
 
 namespace Floe.Configuration
@@ -39,7 +36,11 @@ namespace Floe.Configuration
 					this["userName"] = Environment.UserName;
 				}
 				return (string)this["userName"]; }
-			set { this["userName"] = value; }
+			set
+			{
+				if (value.Trim().Length == 0) throw new ArgumentException("Nickname cannot be empty.");
+				this["userName"] = value;
+			}
 		}
 
 		[ConfigurationProperty("fullName", DefaultValue = "", IsRequired = true)]

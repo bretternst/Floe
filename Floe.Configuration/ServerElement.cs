@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Configuration;
 
 namespace Floe.Configuration
@@ -13,6 +10,14 @@ namespace Floe.Configuration
 			get
 			{
 				return ConfigurationElementCollectionType.BasicMap;
+			}
+		}
+
+		protected override string ElementName
+		{
+			get
+			{
+				return "server";
 			}
 		}
 
@@ -74,13 +79,24 @@ namespace Floe.Configuration
 		public string Name
 		{
 			get { return (string)this["name"]; }
-			set { this["name"] = value; }
+			set
+			{
+				if (value.Trim().Length == 0) throw new ArgumentException("Name cannot be empty.");
+				this["name"] = value;
+			}
 		}
 
 		[ConfigurationProperty("hostName", IsRequired=true)]
 		public string HostName
 		{
-			get { return (string)this["hostName"]; }
+			get
+			{
+				if (((string)this["hostName"]).Trim().Length < 1)
+				{
+					this["nickname"] = "irc.";
+				}
+				return (string)this["hostName"];
+			}
 			set { this["hostName"] = value; }
 		}
 

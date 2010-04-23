@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
 using System.Windows;
-using Floe.UI.Settings;
 using Floe.Configuration;
 
 namespace Floe.UI
