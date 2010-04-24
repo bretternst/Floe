@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Text;
 using System.Collections.Generic;
 
 namespace Floe.Net
@@ -48,6 +50,30 @@ namespace Floe.Net
 		public static ICollection<IrcUserMode> ParseModes(string modes)
 		{
 			return ParseModes(modes.Split(' '));
+		}
+
+		public static string RenderModes(IEnumerable<IrcUserMode> modes)
+		{
+			var output = new StringBuilder();
+			foreach (var mode in modes.Where((m) => m.Set))
+			{
+				if (output.Length == 0)
+				{
+					output.Append('+');
+				}
+				output.Append(mode.Mode);
+			}
+			bool hasMinus = false;
+			foreach (var mode in modes.Where((m) => !m.Set))
+			{
+				if (!hasMinus)
+				{
+					output.Append('-');
+					hasMinus = true;
+				}
+				output.Append(mode.Mode);
+			}
+			return output.ToString();
 		}
 	}
 
@@ -132,6 +158,43 @@ namespace Floe.Net
 		public static ICollection<IrcChannelMode> ParseModes(string modes)
 		{
 			return ParseModes(modes.Split(' '));
+		}
+
+		public static string RenderModes(IEnumerable<IrcChannelMode> modes)
+		{
+			var output = new StringBuilder();
+			var args = new List<string>();
+			foreach (var mode in modes.Where((m) => m.Set))
+			{
+				if (output.Length == 0)
+				{
+					output.Append('+');
+				}
+				output.Append(mode.Mode);
+				if (!string.IsNullOrEmpty(mode.Parameter))
+				{
+					args.Add(mode.Parameter);
+				}
+			}
+			bool hasMinus = false;
+			foreach (var mode in modes.Where((m) => !m.Set))
+			{
+				if (!hasMinus)
+				{
+					output.Append('-');
+					hasMinus = true;
+				}
+				output.Append(mode.Mode);
+				if (!string.IsNullOrEmpty(mode.Parameter))
+				{
+					args.Add(mode.Parameter);
+				}
+			}
+			foreach (var arg in args)
+			{
+				output.Append(' ').Append(arg);
+			}
+			return output.ToString();
 		}
 	}
 }

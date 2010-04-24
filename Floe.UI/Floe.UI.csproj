@@ -62,7 +62,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Settings\RequiredValidationRule.cs" />
+    <Compile Include="AppLogic.cs" />
+    <Compile Include="ChatControl.xaml.cs">
+      <DependentUpon>ChatControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ChatController.cs" />
+    <Compile Include="Events\InputEventArgs.cs" />
+    <Compile Include="Events\OutputEventArgs.cs" />
+    <Compile Include="ChatWindow.xaml.cs">
+      <DependentUpon>ChatWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Exceptions\InputException.cs" />
     <Compile Include="Settings\ServerSettingsControl.xaml.cs">
       <DependentUpon>ServerSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -76,6 +86,15 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Utility\Tokenizer.cs" />
+    <Page Include="ChatControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ChatWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Settings\ServerSettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -117,6 +136,10 @@
     <ProjectReference Include="..\Floe.Configuration\Floe.Configuration.csproj">
       <Project>{EAFB18D3-6177-4777-8EAC-4DEA6FEAADC1}</Project>
       <Name>Floe.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Floe.Net\Floe.Net.csproj">
+      <Project>{1D4AD463-4355-4DA6-B8E6-0E8BB75B50D9}</Project>
+      <Name>Floe.Net</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

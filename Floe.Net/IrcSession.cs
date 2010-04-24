@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Floe.Net
 {
@@ -97,6 +98,12 @@ namespace Floe.Net
 			this.Close();
 		}
 
+		public bool IsSelf(IrcTarget target)
+		{
+			return target != null && target.Type == IrcTargetType.Nickname &&
+				string.Compare(target.Name, this.Nickname, StringComparison.OrdinalIgnoreCase) == 0;
+		}
+
 		public void Send(IrcMessage message)
 		{
 			_conn.QueueMessage(message);
@@ -117,7 +124,7 @@ namespace Floe.Net
 			this.Send(isResponse ? "NOTICE" : "PRIVMSG", target, command.ToString());
 		}
 
-		public void ChangeNickname(string newNickname)
+		public void Nick(string newNickname)
 		{
 			this.Send("NICK", newNickname);
 		}
@@ -167,6 +174,11 @@ namespace Floe.Net
 			this.Send("MOTD");
 		}
 
+		public void Motd(string server)
+		{
+			this.Send("MOTD", server);
+		}
+
 		public void Who(string mask)
 		{
 			this.Send("WHO", mask);
@@ -200,6 +212,42 @@ namespace Floe.Net
 		public void UserHost(params string[] nicknames)
 		{
 			this.Send("USERHOST", string.Join(" ", nicknames));
+		}
+
+		public void Mode(string channel, IEnumerable<IrcChannelMode> modes)
+		{
+			var enumerator = modes.GetEnumerator();
+			var modeChunk = new List<IrcChannelMode>();
+			int i = 0;
+			while (enumerator.MoveNext())
+			{
+				modeChunk.Add(enumerator.Current);
+				if (++i == 3)
+				{
+					this.Send("MODE", new IrcTarget(channel), IrcChannelMode.RenderModes(modeChunk));
+					modeChunk.Clear();
+					i = 0;
+				}
+			}
+			if (modeChunk.Count > 0)
+			{
+				this.Send("MODE", new IrcTarget(channel), IrcChannelMode.RenderModes(modeChunk));
+			}
+		}
+
+		public void Mode(string channel, string modes)
+		{
+			this.Mode(channel, IrcChannelMode.ParseModes(modes));
+		}
+
+		public void Mode(IEnumerable<IrcUserMode> modes)
+		{
+			this.Send("MODE", new IrcTarget(this.Nickname), IrcUserMode.RenderModes(modes));
+		}
+
+		public void Mode(string modes)
+		{
+			this.Mode(IrcUserMode.ParseModes(modes));
 		}
 
 		private void OnStateChanged()

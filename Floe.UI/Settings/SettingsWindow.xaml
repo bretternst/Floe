@@ -11,7 +11,7 @@
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="ListBoxItem">
-									<Border Name="Border" Padding="7,4,7,4" SnapsToDevicePixels="True" BorderThickness="1,1,1,1">
+									<Border Name="Border" Background="Transparent" Padding="7,4,7,4" SnapsToDevicePixels="True" BorderThickness="1,1,1,1">
 										<ContentPresenter />
 									</Border>
 									<ControlTemplate.Triggers>

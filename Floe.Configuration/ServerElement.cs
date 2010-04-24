@@ -93,7 +93,7 @@ namespace Floe.Configuration
 			{
 				if (((string)this["hostName"]).Trim().Length < 1)
 				{
-					this["nickname"] = "irc.";
+					this["hostName"] = "irc.";
 				}
 				return (string)this["hostName"];
 			}

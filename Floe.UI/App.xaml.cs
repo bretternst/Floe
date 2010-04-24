@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using Floe.Configuration;
+using Floe.Net;
 
 namespace Floe.UI
 {
@@ -24,17 +25,31 @@ namespace Floe.UI
 				return Configuration.Preferences;
 			}
 		}
-		
+
 		public App()
 		{
 			this.Startup += new StartupEventHandler(App_Startup);
+			this.Exit += new ExitEventHandler(App_Exit);
 		}
 
 		private void App_Startup(object sender, StartupEventArgs e)
 		{
-			var wndSettings = new Settings.SettingsWindow();
-			wndSettings.ShowDialog();
+			this.OpenWindow();
+
+			if (App.Preferences.Servers.Count < 1)
+			{
+				ShowSettings();
+			}
+		}
+
+		private void mainWindow_Closed(object sender, EventArgs e)
+		{
 			this.Shutdown();
 		}
-    }
+
+		private void App_Exit(object sender, ExitEventArgs e)
+		{
+			App.Configuration.Save();
+		}
+	}
 }

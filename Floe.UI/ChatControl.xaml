@@ -1,0 +1,12 @@
+﻿<UserControl x:Class="Floe.UI.ChatControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="699">
+	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
+		<TextBox Height="23" Name="txtInput" DockPanel.Dock="Bottom" SnapsToDevicePixels="True" FontFamily="Consolas" KeyDown="txtInput_KeyDown" />
+		<TextBox Name="txtOutput" Foreground="White" Background="Black" IsReadOnly="True" FontFamily="Consolas" SnapsToDevicePixels="True" />
+	</DockPanel>
+</UserControl>

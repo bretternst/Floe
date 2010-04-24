@@ -1,0 +1,15 @@
+﻿<Window x:Class="Floe.UI.ChatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ChatWindow" Height="399" Width="722" WindowStyle="SingleBorderWindow" ResizeMode="CanResize">
+	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
+		<TabControl Name="tabsChat" ItemsSource="{Binding Pages}" TabStripPlacement="Bottom">
+			<TabControl.ItemContainerStyle>
+				<Style TargetType="TabItem">
+					<Setter Property="Header" Value="{Binding Header}"/>
+					<Setter Property="Content" Value="{Binding Content}"/>
+				</Style>
+			</TabControl.ItemContainerStyle>
+		</TabControl>
+	</DockPanel>
+</Window>
