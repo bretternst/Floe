@@ -43,14 +43,55 @@ namespace Floe.UI
 
 		private void Context_OutputReceived(object sender, OutputEventArgs e)
 		{
-			if (e.Message != null)
+			string output = "";
+
+			var peer = e.From as IrcPeer;
+
+			switch (e.Type)
 			{
-				txtOutput.AppendText(e.Message.ToString() + Environment.NewLine);
+				case OutputType.Info:
+					output = string.Format("*** {0}", e.Text);
+					break;
+				case OutputType.Client:
+					output = e.Text;
+					break;
+				case OutputType.Action:
+					output = string.Format("* {0} {1}", peer.Nickname, e.Text);
+					break;
+				case OutputType.Join:
+					output = string.Format("* {0} ({1}@{2}) has joined channel {3}", peer.Nickname, peer.UserName, peer.HostName,
+						this.Context.Target.ToString());
+					break;
+				case OutputType.Nick:
+					output = string.Format("* {0} is now known as {1}", peer.Nickname, e.Text);
+					break;
+				case OutputType.Notice:
+					if (peer != null)
+					{
+						output = string.Format("-{0}- {1}", peer.Nickname, e.Text);
+					}
+					else
+					{
+						output = e.Text;
+					}
+					break;
+				case OutputType.Part:
+					output = string.Format("* {0} ({1}@{2}) has left channel {3}", peer.Nickname, peer.UserName, peer.HostName,
+						this.Context.Target.ToString());
+					break;
+				case OutputType.PrivateMessage:
+					output = string.Format("<{0}> {1}", peer.Nickname, e.Text);
+					break;
+				case OutputType.Topic:
+					output = string.Format("* {0} changes topic to '{1}'", peer.Nickname, e.Text);
+					break;
+				case OutputType.Disconnected:
+					output = "*** Disconnected";
+					break;
 			}
-			else
-			{
-				txtOutput.AppendText(e.Text + Environment.NewLine);
-			}
+			txtOutput.AppendText(output);
+			txtOutput.AppendText(Environment.NewLine);
+			txtOutput.ScrollToEnd();
 		}
 	}
 }

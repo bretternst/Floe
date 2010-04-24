@@ -18,7 +18,7 @@ namespace Floe.Net
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
 		private Queue<IrcMessage> _writeQueue;
-		private AutoResetEvent _writeWaitHandle;
+		private ManualResetEvent _writeWaitHandle;
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
@@ -90,27 +90,40 @@ namespace Floe.Net
 			catch (Exception ex)
 			{
 				this.OnError(ex);
+				this.OnDisconnected();
 				return;
 			}
 
-			var wstream = new StreamWriter(_tcpClient.GetStream(), Encoding.ASCII);
-			_writeWaitHandle = new AutoResetEvent(false);
+			NetworkStream stream = _tcpClient.GetStream();
+			_writeWaitHandle = new ManualResetEvent(false);
 			_writeQueue = new Queue<IrcMessage>();
 
 			this.OnConnected();
 
 			byte[] buffer = new byte[512];
+			int count = 0, handleIdx = 0;
 			var input = new StringBuilder();
 			IrcMessage message;
 			char last = '\u0000';
+			IAsyncResult ar = null;
 
 			while (_tcpClient.Connected)
 			{
-				var ar = _tcpClient.Client.BeginReceive(buffer, 0, 512, SocketFlags.None, null, null);
-				switch (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle }))
+				if (handleIdx == 0)
+				{
+					ar = stream.BeginRead(buffer, 0, 512, null, null);
+				}
+				handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle });
+				if (!_tcpClient.Connected)
+				{
+					break;
+				}
+				switch (handleIdx)
 				{
 					case 0:
-						int count = _tcpClient.Client.EndReceive(ar);
+						count = stream.EndRead(ar);
+						string s = new String(Encoding.ASCII.GetChars(buffer, 0, count));
+						System.Diagnostics.Debug.WriteLine("READ: "+s);
 						if (count == 0)
 						{
 							_tcpClient.Close();
@@ -143,11 +156,19 @@ namespace Floe.Net
 							{
 								message = _writeQueue.Dequeue();
 								string output = _sendFilter.Replace(message.ToString(), "\uffff");
-								wstream.WriteLine(output);
-								wstream.Flush();
+								if (output.Length > 510)
+								{
+									output = output.Substring(0, 510);
+								}
+								output += Environment.NewLine;
+								count = Encoding.ASCII.GetBytes(output, 0, output.Length, buffer, 0);
+								stream.Write(buffer, 0, count);
+								stream.Flush();
+
 								this.OnMessageSent(message);
 							}
 						}
+						_writeWaitHandle.Reset();
 						break;
 				}
 			}

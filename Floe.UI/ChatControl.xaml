@@ -7,6 +7,6 @@
              d:DesignHeight="400" d:DesignWidth="699">
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<TextBox Height="23" Name="txtInput" DockPanel.Dock="Bottom" SnapsToDevicePixels="True" FontFamily="Consolas" KeyDown="txtInput_KeyDown" />
-		<TextBox Name="txtOutput" Foreground="White" Background="Black" IsReadOnly="True" FontFamily="Consolas" SnapsToDevicePixels="True" />
+		<TextBox Name="txtOutput" Foreground="White" Background="Black" IsReadOnly="True" FontFamily="Consolas" SnapsToDevicePixels="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" />
 	</DockPanel>
 </UserControl>

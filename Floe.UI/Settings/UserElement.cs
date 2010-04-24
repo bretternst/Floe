@@ -46,7 +46,14 @@ namespace Floe.Configuration
 		[ConfigurationProperty("fullName", DefaultValue = "", IsRequired = true)]
 		public string FullName
 		{
-			get { return (string)this["fullName"]; }
+			get
+			{
+				if (((string)this["fullName"]).Trim().Length < 1)
+				{
+					this["fullName"] = this.Nickname;
+				}
+				return (string)this["fullName"];
+			}
 			set { this["fullName"] = value; }
 		}
 

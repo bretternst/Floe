@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 
 using Floe.Net;
-using Floe.Configuration;
 
 namespace Scratchpad
 {
@@ -12,12 +11,6 @@ namespace Scratchpad
 	{
 		static void Main(string[] args)
 		{
-			PersistentConfiguration config = new PersistentConfiguration();
-			Console.WriteLine(config.Preferences.User.Nickname);
-			config.Save();
-
-			return;
-
 			var session = new IrcSession();
 
 			session.RawMessageSent += new EventHandler<IrcEventArgs>(session_MessageSent);

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
 
+using Floe.UI.Interop;
+
 namespace Floe.Configuration
 {
 	public sealed class PreferencesSection : ConfigurationSection
@@ -20,6 +22,13 @@ namespace Floe.Configuration
 			{
 				return this["servers"] as ServerElementCollection;
 			}
+		}
+
+		[ConfigurationProperty("windowPlacement")]
+		public string WindowPlacement
+		{
+			get { return (string)this["windowPlacement"]; }
+			set { this["windowPlacement"] = value; }
 		}
 	}
 }

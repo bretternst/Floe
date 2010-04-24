@@ -84,7 +84,8 @@ namespace Floe.Net
 
 		public void Close()
 		{
-			if (this.State != IrcSessionState.Connected)
+			if (this.State != IrcSessionState.Connected &&
+				this.State != IrcSessionState.Connecting)
 			{
 				throw new InvalidOperationException("The IRC session is not connected.");
 			}
@@ -266,6 +267,13 @@ namespace Floe.Net
 			{
 				handler(this, e);
 			}
+
+#if DEBUG
+			if (System.Diagnostics.Debugger.IsAttached)
+			{
+				System.Diagnostics.Debug.WriteLine(e.Message.ToString());
+			}
+#endif
 		}
 
 		private void OnMessageSent(IrcEventArgs e)
@@ -275,6 +283,13 @@ namespace Floe.Net
 			{
 				handler(this, e);
 			}
+
+#if DEBUG
+			if (System.Diagnostics.Debugger.IsAttached)
+			{
+				System.Diagnostics.Debug.WriteLine(e.Message.ToString());
+			}
+#endif
 		}
 
 		private void OnNickChanged(IrcMessage message)
@@ -429,57 +444,48 @@ namespace Floe.Net
 
 		private void _conn_MessageReceived(object sender, IrcEventArgs e)
 		{
-			if (this.State == IrcSessionState.Connecting)
+			switch (e.Message.Command)
 			{
-				switch (e.Message.Command)
-				{
-					case "NICK":
-						this.Nickname = e.Message.Parameters[0];
+				case "PING":
+					_conn.QueueMessage("PONG");
+					break;
+				case "NICK":
+					if (this.State == IrcSessionState.Connecting)
+					{
 						this.State = IrcSessionState.Connected;
-						break;
-				}
-			}
-			else if (this.State == IrcSessionState.Connected)
-			{
-				switch (e.Message.Command)
-				{
-					case "PING":
-						_conn.QueueMessage("PONG");
-						break;
-					case "NICK":
-						this.OnNickChanged(e.Message);
-						break;
-					case "PRIVMSG":
-						this.OnPrivateMessage(e.Message);
-						break;
-					case "NOTICE":
-						this.OnNotice(e.Message);
-						break;
-					case "QUIT":
-						this.OnQuit(e.Message);
-						break;
-					case "JOIN":
-						this.OnJoin(e.Message);
-						break;
-					case "PART":
-						this.OnPart(e.Message);
-						break;
-					case "TOPIC":
-						this.OnTopic(e.Message);
-						break;
-					case "INVITE":
-						this.OnInvite(e.Message);
-						break;
-					case "KICK":
-						this.OnKick(e.Message);
-						break;
-					case "MODE":
-						this.OnMode(e.Message);
-						break;
-					default:
-						this.OnOther(e.Message);
-						break;
-				}
+					}
+					this.OnNickChanged(e.Message);
+					break;
+				case "PRIVMSG":
+					this.OnPrivateMessage(e.Message);
+					break;
+				case "NOTICE":
+					this.OnNotice(e.Message);
+					break;
+				case "QUIT":
+					this.OnQuit(e.Message);
+					break;
+				case "JOIN":
+					this.OnJoin(e.Message);
+					break;
+				case "PART":
+					this.OnPart(e.Message);
+					break;
+				case "TOPIC":
+					this.OnTopic(e.Message);
+					break;
+				case "INVITE":
+					this.OnInvite(e.Message);
+					break;
+				case "KICK":
+					this.OnKick(e.Message);
+					break;
+				case "MODE":
+					this.OnMode(e.Message);
+					break;
+				default:
+					this.OnOther(e.Message);
+					break;
 			}
 
 			this.OnMessageReceived(e);

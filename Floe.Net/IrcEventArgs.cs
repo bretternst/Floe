@@ -164,7 +164,7 @@ namespace Floe.Net
 			}
 
 			this.To = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
-			this.Text = message.Parameters.Count > 1 ? message.Parameters[1] : null;
+			this.Text = message.Parameters.Count > 1 ? string.Join(" ", message.Parameters.Skip(1).ToArray()) : null;
 			this.IsError = (int)this.Code >= 400;
 		}
 	}

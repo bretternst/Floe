@@ -31,6 +31,25 @@ namespace Floe.UI
 		{
 			this.Pages.Add(new ChatPageInfo(context));
 		}
+
+		protected override void OnSourceInitialized(EventArgs e)
+		{
+			base.OnSourceInitialized(e);
+
+			Interop.WindowPlacementHelper.Load(this);
+		}
+
+		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+		{
+			base.OnClosing(e);
+
+			foreach (var page in this.Pages)
+			{
+				page.Context.Close();
+			}
+
+			Interop.WindowPlacementHelper.Save(this);
+		}
 	}
 
 	public class ChatPageInfo

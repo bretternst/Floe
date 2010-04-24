@@ -73,12 +73,17 @@
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Exceptions\InputException.cs" />
+    <Compile Include="Interop\WindowPlacementHelper.cs" />
+    <Compile Include="Settings\PersistentConfiguration.cs" />
+    <Compile Include="Settings\PreferencesSection.cs" />
+    <Compile Include="Settings\ServerElement.cs" />
     <Compile Include="Settings\ServerSettingsControl.xaml.cs">
       <DependentUpon>ServerSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Settings\UserElement.cs" />
     <Compile Include="Settings\UserSettingsControl.xaml.cs">
       <DependentUpon>UserSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -86,7 +91,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utility\Tokenizer.cs" />
+    <Compile Include="Utility\StringUtility.cs" />
     <Page Include="ChatControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -133,10 +138,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Floe.Configuration\Floe.Configuration.csproj">
-      <Project>{EAFB18D3-6177-4777-8EAC-4DEA6FEAADC1}</Project>
-      <Name>Floe.Configuration</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Floe.Net\Floe.Net.csproj">
       <Project>{1D4AD463-4355-4DA6-B8E6-0E8BB75B50D9}</Project>
       <Name>Floe.Net</Name>

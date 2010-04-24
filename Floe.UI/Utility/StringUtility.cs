@@ -11,7 +11,8 @@ namespace Floe.UI
 		{
 			if (maxParts == 1)
 			{
-				return new[] { str.Trim() };
+				str = str.Trim();
+				return str.Length > 0 ? new[] { str } : new string[0];
 			}
 
 			var parts = new List<string>();

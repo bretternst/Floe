@@ -52,13 +52,13 @@ namespace Floe.UI
 			{
 				string args = string.Empty;
 				command = command.Substring(1).TrimStart();
-				int spaceIdx = text.IndexOf(' ');
+				int spaceIdx = command.IndexOf(' ');
 				if (spaceIdx > 0)
 				{
 					args = command.Substring(spaceIdx + 1);
-					command = command.Substring(0, spaceIdx).ToUpperInvariant();
+					command = command.Substring(0, spaceIdx);
 				}
-				this.Execute(context, command, args);
+				this.Execute(context, command.ToUpperInvariant(), args);
 			}
 			else
 			{
@@ -153,7 +153,7 @@ namespace Floe.UI
 						context.Session.UnAway();
 					}
 					break;
-				case "USERMODE":
+				case "USERHOST":
 					args = this.Split(command, arguments, 1, int.MaxValue);
 					context.Session.UserHost(args);
 					break;
