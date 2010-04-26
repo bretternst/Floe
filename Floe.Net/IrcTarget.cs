@@ -43,5 +43,17 @@ namespace Floe.Net
 		{
 			return name.Length > 1 && name[0] == '#' || name[0] == '+' || name[0] == '&' || name[0] == '!';
 		}
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as IrcTarget;
+			return other != null && other.Type == this.Type &&
+				string.Compare(other.Name, this.Name, StringComparison.OrdinalIgnoreCase) == 0;
+		}
+
+		public override int GetHashCode()
+		{
+			return (this.Type.ToString() + " " + this.Name).GetHashCode();
+		}
 	}
 }

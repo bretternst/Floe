@@ -13,7 +13,11 @@ namespace Floe.UI
 
 		public IrcTarget Target { get; private set; }
 
+		public bool IsConnected { get { return this.Session.State == IrcSessionState.Connecting ||
+			this.Session.State == IrcSessionState.Connected; } }
+
 		public event EventHandler<OutputEventArgs> OutputReceived;
+		public event EventHandler ChangingServer;
 
 		public ChatController(IrcSession ircSession, IrcTarget target)
 		{
@@ -23,15 +27,7 @@ namespace Floe.UI
 			this.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			this.Session.Noticed += new EventHandler<IrcDialogEventArgs>(Session_Noticed);
 			this.Session.InfoReceived += new EventHandler<IrcInfoEventArgs>(Session_InfoReceived);
-		}
-
-		public void Close()
-		{
-			if (this.Session.State == IrcSessionState.Connecting ||
-				this.Session.State == IrcSessionState.Connected)
-			{
-				this.Session.Close();
-			}
+			this.Session.PrivateMessaged += new EventHandler<IrcDialogEventArgs>(Session_PrivateMessaged);
 		}
 
 		public void OnOutput(OutputType type, IrcPeer from, string text)
@@ -41,6 +37,18 @@ namespace Floe.UI
 				if (handler != null)
 				{
 					handler(this, new OutputEventArgs(type, from, text));
+				}
+			}));
+		}
+
+		public void OnChangeServer()
+		{
+			Dispatcher.BeginInvoke((Action)(() =>
+			{
+				var handler = this.ChangingServer;
+				if (handler != null)
+				{
+					handler(this, EventArgs.Empty);
 				}
 			}));
 		}
@@ -74,6 +82,14 @@ namespace Floe.UI
 		private void Session_Noticed(object sender, IrcDialogEventArgs e)
 		{
 			this.OnOutput(OutputType.Notice, e.From as IrcPeer, e.Text);
+		}
+
+		private void Session_PrivateMessaged(object sender, IrcDialogEventArgs e)
+		{
+			if (this.Target != null && this.Target.Equals(e.To))
+			{
+				this.OnOutput(OutputType.PrivateMessage, e.From, e.Text);
+			}
 		}
 	}
 }

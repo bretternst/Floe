@@ -51,11 +51,8 @@ namespace Floe.Net
 
 		public void Close()
 		{
-			if (_tcpClient != null && _tcpClient.Connected)
-			{
-				_tcpClient.Close();
-			}
-			this.OnDisconnected();
+			this.QueueMessage(new IrcMessage(null));
+			_socketThread.Join();
 		}
 
 		public void QueueMessage(string message)
@@ -69,7 +66,10 @@ namespace Floe.Net
 			{
 				_writeQueue.Enqueue(message);
 			}
-			_writeWaitHandle.Set();
+			if (_writeWaitHandle != null)
+			{
+				_writeWaitHandle.Set();
+			}
 		}
 
 		public void Dispose()
@@ -122,8 +122,6 @@ namespace Floe.Net
 				{
 					case 0:
 						count = stream.EndRead(ar);
-						string s = new String(Encoding.ASCII.GetChars(buffer, 0, count));
-						System.Diagnostics.Debug.WriteLine("READ: "+s);
 						if (count == 0)
 						{
 							_tcpClient.Close();
@@ -155,6 +153,11 @@ namespace Floe.Net
 							while (_writeQueue.Count > 0)
 							{
 								message = _writeQueue.Dequeue();
+								if (message.Command == null)
+								{
+									_tcpClient.Close();
+									break;
+								}
 								string output = _sendFilter.Replace(message.ToString(), "\uffff");
 								if (output.Length > 510)
 								{

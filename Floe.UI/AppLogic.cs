@@ -28,6 +28,10 @@ namespace Floe.UI
 			{
 				e.Context.OnOutput(ex.Message);
 			}
+			catch (IrcException ex)
+			{
+				e.Context.OnOutput(ex.Message);
+			}
 		}
 
 		private static IrcSession CreateSession()
@@ -37,11 +41,11 @@ namespace Floe.UI
 
 		private void OpenWindow()
 		{
-			var mainWindow = new ChatWindow();
-			mainWindow.Closed += new EventHandler(mainWindow_Closed);
-			mainWindow.AddHandler(ChatControl.InputReceivedEvent, new InputEventHandler(this.OnInput));
-			mainWindow.AddPage(new ChatController(CreateSession(), null));
-			mainWindow.Show();
+			var window = new ChatWindow(CreateSession());
+			window.Closed += new EventHandler(mainWindow_Closed);
+			window.AddHandler(ChatControl.InputReceivedEvent, new InputEventHandler(this.OnInput));
+			window.Show();
+			this.MainWindow = window;
 		}
 
 		private void Execute(ChatController context, string text)
@@ -58,10 +62,19 @@ namespace Floe.UI
 					args = command.Substring(spaceIdx + 1);
 					command = command.Substring(0, spaceIdx);
 				}
+				if (command.Length == 0)
+				{
+					return;
+				}
 				this.Execute(context, command.ToUpperInvariant(), args);
 			}
 			else
 			{
+				if (text.Trim().Length < 1)
+				{
+					return;
+				}
+
 				if (context.Target == null)
 				{
 					throw new InputException("Can't talk in this window.");
@@ -184,12 +197,12 @@ namespace Floe.UI
 					{
 						port = 6667;
 					}
-					if (context.Session.State == IrcSessionState.Connected ||
-						context.Session.State == IrcSessionState.Connecting)
+					if (context.IsConnected)
 					{
-						context.Session.Close();
+						context.Session.Quit("Changing servers");
 					}
-					context.Session.Open(args[0], port, App.Preferences.User.Nickname);
+					context.Session.Open(args[0], port,
+						!string.IsNullOrEmpty(context.Session.Nickname) ? context.Session.Nickname : App.Preferences.User.Nickname);
 					break;
 				default:
 					throw new InputException("Unrecognized command.");

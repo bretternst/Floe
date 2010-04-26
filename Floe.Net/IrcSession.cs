@@ -8,7 +8,6 @@ namespace Floe.Net
 	{
 		Connecting,
 		Connected,
-		Disconnecting,
 		Disconnected
 	}
 
@@ -62,16 +61,20 @@ namespace Floe.Net
 
 		public void Open(string server, int port, string Nickname)
 		{
-			if (this.State != IrcSessionState.Disconnected)
-			{
-				throw new InvalidOperationException("The IRC session is already active.");
-			}
-
 			if (string.IsNullOrEmpty(Nickname))
 			{
 				throw new ArgumentNullException("Nickname");
 			}
 			this.Nickname = Nickname;
+
+			if (_conn != null)
+			{
+				_conn.Connected -= new EventHandler(_conn_Connected);
+				_conn.Disconnected -= new EventHandler(_conn_Disconnected);
+				_conn.MessageReceived -= new EventHandler<IrcEventArgs>(_conn_MessageReceived);
+				_conn.MessageSent -= new EventHandler<IrcEventArgs>(_conn_MessageSent);
+				_conn.Close();
+			}
 
 			this.State = IrcSessionState.Connecting;
 			_conn = new IrcConnection(server, port);
@@ -84,14 +87,12 @@ namespace Floe.Net
 
 		public void Close()
 		{
-			if (this.State != IrcSessionState.Connected &&
-				this.State != IrcSessionState.Connecting)
+			if (this.State == IrcSessionState.Connected ||
+				this.State == IrcSessionState.Connecting)
 			{
-				throw new InvalidOperationException("The IRC session is not connected.");
+				_conn.Close();
+				this.State = IrcSessionState.Disconnected;
 			}
-
-			_conn.Close();
-			this.State = IrcSessionState.Disconnecting;
 		}
 
 		public void Dispose()
@@ -112,6 +113,11 @@ namespace Floe.Net
 
 		public void Send(string command, params string[] parameters)
 		{
+			if (this.State != IrcSessionState.Connecting &&
+				this.State != IrcSessionState.Connected)
+			{
+				throw new IrcException("Not connected to a server.");
+			}
 			_conn.QueueMessage(new IrcMessage(command, parameters));
 		}
 
@@ -127,7 +133,15 @@ namespace Floe.Net
 
 		public void Nick(string newNickname)
 		{
-			this.Send("NICK", newNickname);
+			if (this.State == IrcSessionState.Connecting ||
+				this.State == IrcSessionState.Connected)
+			{
+				this.Send("NICK", newNickname);
+			}
+			else
+			{
+				this.Nickname = newNickname;
+			}
 		}
 
 		public void PrivateMessage(IrcTarget target, string text)
@@ -212,7 +226,7 @@ namespace Floe.Net
 
 		public void UserHost(params string[] nicknames)
 		{
-			this.Send("USERHOST", string.Join(" ", nicknames));
+			this.Send("USERHOST", nicknames);
 		}
 
 		public void Mode(string channel, IEnumerable<IrcChannelMode> modes)
@@ -294,14 +308,14 @@ namespace Floe.Net
 
 		private void OnNickChanged(IrcMessage message)
 		{
+			var args = new IrcNickEventArgs(message, this.Nickname);
 			var handler = this.NickChanged;
+			if (args.IsSelf)
+			{
+				this.Nickname = args.NewNickname;
+			}
 			if (handler != null)
 			{
-				var args = new IrcNickEventArgs(message, this.Nickname);
-				if (args.IsSelf)
-				{
-					this.Nickname = args.NewNickname;
-				}
 				handler(this, args);
 			}
 		}
@@ -444,16 +458,17 @@ namespace Floe.Net
 
 		private void _conn_MessageReceived(object sender, IrcEventArgs e)
 		{
+			if (this.State == IrcSessionState.Connecting)
+			{
+				this.State = IrcSessionState.Connected;
+			}
+
 			switch (e.Message.Command)
 			{
 				case "PING":
 					_conn.QueueMessage("PONG");
 					break;
 				case "NICK":
-					if (this.State == IrcSessionState.Connecting)
-					{
-						this.State = IrcSessionState.Connected;
-					}
 					this.OnNickChanged(e.Message);
 					break;
 				case "PRIVMSG":

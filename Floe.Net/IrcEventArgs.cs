@@ -71,15 +71,17 @@ namespace Floe.Net
 	public class IrcChannelEventArgs : IrcEventArgs
 	{
 		public IrcPeer Who { get; private set; }
-		public string Channel { get; private set; }
+		public IrcTarget Channel { get; private set; }
 		public string Text { get; private set; }
+		public bool IsSelf { get; private set; }
 
 		public IrcChannelEventArgs(IrcMessage message, string ownNick)
 			: base(message)
 		{
 			this.Who = message.From as IrcPeer;
-			this.Channel = message.Parameters.Count > 0 ? message.Parameters[0] : null;
+			this.Channel = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
 			this.Text = message.Parameters.Count > 1 ? message.Parameters[1] : null;
+			this.IsSelf = this.Who != null ? string.Compare(this.Who.Nickname, ownNick, StringComparison.OrdinalIgnoreCase) == 0 : false;
 		}
 	}
 
@@ -99,8 +101,9 @@ namespace Floe.Net
 	public class IrcKickEventArgs : IrcEventArgs
 	{
 		public IrcPeer Kicker { get; private set; }
-		public string Channel { get; private set; }
+		public IrcTarget Channel { get; private set; }
 		public string KickeeNickname { get; private set; }
+		public string Text { get; private set; }
 		public bool IsSelfKicker { get; private set; }
 		public bool IsSelfKicked { get; private set; }
 
@@ -108,8 +111,9 @@ namespace Floe.Net
 			: base(message)
 		{
 			this.Kicker = message.From as IrcPeer;
-			this.Channel = message.Parameters.Count > 0 ? message.Parameters[0] : null;
+			this.Channel = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
 			this.KickeeNickname = message.Parameters.Count > 1 ? message.Parameters[1] : null;
+			this.Text = message.Parameters.Count > 2 ? message.Parameters[2] : null;
 			this.IsSelfKicker = this.Kicker != null && 
 				string.Compare(this.Kicker.Nickname, ownNickname, StringComparison.OrdinalIgnoreCase) == 0;
 			this.IsSelfKicked = string.Compare(this.KickeeNickname, ownNickname, StringComparison.OrdinalIgnoreCase) == 0;

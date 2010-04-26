@@ -20,7 +20,7 @@ namespace Floe.Net
 		public IrcMessage(IrcPrefix prefix, string command, params string[] parameters)
 		{
 			this.From = prefix;
-			this.Command = command.ToUpperInvariant();
+			this.Command = command != null ? command.ToUpperInvariant() : null;
 			this.Parameters = parameters;
 		}
 

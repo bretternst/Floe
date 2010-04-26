@@ -18,7 +18,8 @@ namespace Floe.UI
 		Action,
 		Join,
 		Part,
-		Disconnected
+		Disconnected,
+		SelfKicked
 	}
 
 	public sealed class OutputEventArgs : EventArgs

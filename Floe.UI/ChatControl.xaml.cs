@@ -29,16 +29,7 @@ namespace Floe.UI
 			InitializeComponent();
 
 			this.Context.OutputReceived += new EventHandler<OutputEventArgs>(Context_OutputReceived);
-		}
-
-		private void txtInput_KeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Enter)
-			{
-				string text = txtInput.Text;
-				txtInput.Clear();
-				this.RaiseEvent(new InputEventArgs(this, text));
-			}
+			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
 		}
 
 		private void Context_OutputReceived(object sender, OutputEventArgs e)
@@ -92,6 +83,68 @@ namespace Floe.UI
 			txtOutput.AppendText(output);
 			txtOutput.AppendText(Environment.NewLine);
 			txtOutput.ScrollToEnd();
+		}
+
+		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		{
+			e.Handled = true;
+
+			switch (e.Key)
+			{
+				case Key.PageUp:
+					txtOutput.PageUp();
+					break;
+				case Key.PageDown:
+					txtOutput.PageDown();
+					break;
+				case Key.LeftCtrl:
+				case Key.RightCtrl:
+				case Key.LeftAlt:
+				case Key.RightAlt:
+					e.Handled = false;
+					return;
+				default:
+					if (!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl) &&
+						!Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt))
+					{
+						Keyboard.Focus(txtInput);
+					}
+					e.Handled = false;
+					break;
+			}
+
+			base.OnPreviewKeyDown(e);
+		}
+
+		private void txtInput_KeyDown(object sender, KeyEventArgs e)
+		{
+			switch (e.Key)
+			{
+				case Key.Enter:
+					string text = txtInput.Text;
+					txtInput.Clear();
+					this.RaiseEvent(new InputEventArgs(this, text));
+					break;
+				case Key.PageUp:
+					txtOutput.PageUp();
+					break;
+				case Key.PageDown:
+					txtOutput.PageDown();
+					break;
+			}
+		}
+
+		private void ChatControl_Loaded(object sender, RoutedEventArgs e)
+		{
+			var window = Window.GetWindow(this);
+			window.Activated += (obj, ee) =>
+				{
+					if (this.IsVisible)
+					{
+						Keyboard.Focus(txtInput);
+					}
+				};
+			Keyboard.Focus(txtInput);
 		}
 	}
 }
