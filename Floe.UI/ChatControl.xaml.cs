@@ -15,55 +15,98 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl
+	public enum OutputType
 	{
-		public static readonly RoutedEvent InputReceivedEvent = EventManager.RegisterRoutedEvent(
-			"InputReceived", RoutingStrategy.Bubble, typeof(InputEventHandler), typeof(ChatControl));
+		Client,
+		Server,
+		SelfMessage,
+		PrivateMessage,
+		Notice,
+		Topic,
+		Nick,
+		Action,
+		Join,
+		Part,
+		Kicked,
+		SelfKicked
+	}
 
-		public ChatController Context { get; private set; }
+	public partial class ChatControl : UserControl, IDisposable
+	{
+		public ChatContext Context { get; private set; }
 
-		public ChatControl(ChatController context)
+		public ChatControl(ChatContext context)
 		{
 			this.Context = context;
 
 			InitializeComponent();
 
-			this.Context.OutputReceived += new EventHandler<OutputEventArgs>(Context_OutputReceived);
-			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
+			this.Loaded += (sender, e) => Keyboard.Focus(txtInput);
+			this.Context.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
+			this.Context.Session.Noticed += new EventHandler<IrcDialogEventArgs>(Session_Noticed);
+			this.Context.Session.PrivateMessaged += new EventHandler<IrcDialogEventArgs>(Session_PrivateMessaged);
+			this.Context.Session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			this.Context.Session.InfoReceived += new EventHandler<IrcInfoEventArgs>(Session_InfoReceived);
 		}
 
-		private void Context_OutputReceived(object sender, OutputEventArgs e)
+		private void ParseInput(string text)
 		{
-			string output = "";
-
-			var peer = e.From as IrcPeer;
-
-			switch (e.Type)
+			try
 			{
-				case OutputType.Info:
-					output = string.Format("*** {0}", e.Text);
+				if (CommandParser.Execute(this.Context, text))
+				{
+					this.Write(OutputType.SelfMessage, text);
+				}
+			}
+			catch (IrcException ex)
+			{
+				this.Write(OutputType.Client, null, ex.Message);
+			}
+			catch (InputException ex)
+			{
+				this.Write(OutputType.Client, null, ex.Message);
+			}
+		}
+
+		private void Write(OutputType type, string text)
+		{
+			this.Write(type, null, text);
+		}
+
+		private void Write(OutputType type, IrcPrefix from, string text)
+		{
+			string output = string.Empty;
+			var peer = from as IrcPeer;
+
+			switch (type)
+			{
+				case OutputType.Server:
+					output = string.Format("*** {0}", text);
 					break;
 				case OutputType.Client:
-					output = e.Text;
+					output = text;
+					break;
+				case OutputType.SelfMessage:
+					output = string.Format("<{0}> {1}", this.Context.Session.Nickname, text);
 					break;
 				case OutputType.Action:
-					output = string.Format("* {0} {1}", peer.Nickname, e.Text);
+					output = string.Format("* {0} {1}", peer.Nickname, text);
 					break;
 				case OutputType.Join:
 					output = string.Format("* {0} ({1}@{2}) has joined channel {3}", peer.Nickname, peer.UserName, peer.HostName,
 						this.Context.Target.ToString());
 					break;
 				case OutputType.Nick:
-					output = string.Format("* {0} is now known as {1}", peer.Nickname, e.Text);
+					output = string.Format("* {0} is now known as {1}", peer.Nickname, text);
 					break;
 				case OutputType.Notice:
 					if (peer != null)
 					{
-						output = string.Format("-{0}- {1}", peer.Nickname, e.Text);
+						output = string.Format("-{0}- {1}", peer.Nickname, text);
 					}
 					else
 					{
-						output = e.Text;
+						output = text;
 					}
 					break;
 				case OutputType.Part:
@@ -71,18 +114,22 @@ namespace Floe.UI
 						this.Context.Target.ToString());
 					break;
 				case OutputType.PrivateMessage:
-					output = string.Format("<{0}> {1}", peer.Nickname, e.Text);
+					output = string.Format("<{0}> {1}", peer.Nickname, text);
 					break;
 				case OutputType.Topic:
-					output = string.Format("* {0} changes topic to '{1}'", peer.Nickname, e.Text);
-					break;
-				case OutputType.Disconnected:
-					output = "*** Disconnected";
+					output = string.Format("* {0} changes topic to '{1}'", peer.Nickname, text);
 					break;
 			}
-			txtOutput.AppendText(output);
-			txtOutput.AppendText(Environment.NewLine);
-			txtOutput.ScrollToEnd();
+
+			Dispatcher.BeginInvoke((Action)(() =>
+				{
+					if (txtOutput.Text.Length > 0)
+					{
+						txtOutput.AppendText(Environment.NewLine);
+					}
+					txtOutput.AppendText(output);
+					txtOutput.ScrollToEnd();
+				}));
 		}
 
 		protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -123,7 +170,7 @@ namespace Floe.UI
 				case Key.Enter:
 					string text = txtInput.Text;
 					txtInput.Clear();
-					this.RaiseEvent(new InputEventArgs(this, text));
+					this.ParseInput(text);
 					break;
 				case Key.PageUp:
 					txtOutput.PageUp();
@@ -134,17 +181,62 @@ namespace Floe.UI
 			}
 		}
 
-		private void ChatControl_Loaded(object sender, RoutedEventArgs e)
+		private void Session_StateChanged(object sender, EventArgs e)
 		{
-			var window = Window.GetWindow(this);
-			window.Activated += (obj, ee) =>
-				{
-					if (this.IsVisible)
-					{
-						Keyboard.Focus(txtInput);
-					}
-				};
-			Keyboard.Focus(txtInput);
+			if (this.Context.Session.State == IrcSessionState.Disconnected)
+			{
+				this.Write(OutputType.Server, "Disconnected");
+			}
+		}
+
+		private void Session_Noticed(object sender, IrcDialogEventArgs e)
+		{
+			this.Write(OutputType.Notice, e.From, e.Text);
+		}
+
+		private void Session_PrivateMessaged(object sender, IrcDialogEventArgs e)
+		{
+			if (this.Context.Target.Equals(e.To))
+			{
+				this.Write(OutputType.PrivateMessage, e.From, e.Text);
+			}
+		}
+
+		private void Session_Kicked(object sender, IrcKickEventArgs e)
+		{
+			if (e.IsSelfKicked && this.Context.Target == null)
+			{
+				this.Write(OutputType.SelfKicked,
+					string.Format("You have been kicked from {0} by {1} ({2}",
+					e.Channel, e.Kicker, e.Text));
+			}
+			else if (this.Context.Target.Equals(e.Channel))
+			{
+				this.Write(OutputType.Kicked,
+					string.Format("{0} has been kicked by {1} ({2})",
+					e.KickeeNickname, e.Kicker, e.Text));
+			}
+		}
+
+		private void Session_InfoReceived(object sender, IrcInfoEventArgs e)
+		{
+			if ((int)e.Code < 200 && this.Context.Target == null)
+			{
+				this.Write(OutputType.Server, e.Text);
+			}
+			else if (this.IsVisible)
+			{
+				this.Write(OutputType.Server, e.Text);
+			}
+		}
+
+		public void Dispose()
+		{
+			this.Context.Session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
+			this.Context.Session.Noticed -= new EventHandler<IrcDialogEventArgs>(Session_Noticed);
+			this.Context.Session.PrivateMessaged -= new EventHandler<IrcDialogEventArgs>(Session_PrivateMessaged);
+			this.Context.Session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			this.Context.Session.InfoReceived -= new EventHandler<IrcInfoEventArgs>(Session_InfoReceived);
 		}
 	}
 }

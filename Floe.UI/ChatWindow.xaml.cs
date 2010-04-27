@@ -25,15 +25,7 @@ namespace Floe.UI
 			this.Pages = new ObservableCollection<ChatPageInfo>();
 			this.DataContext = this;
 			InitializeComponent();
-			this.AddPage(new ChatController(session, null));
-		}
-
-		public ChatPageInfo CurrentPage
-		{
-			get
-			{
-				return tabsChat.SelectedItem as ChatPageInfo;
-			}
+			this.AddPage(new ChatContext(session, null));
 		}
 
 		public ChatControl CurrentControl
@@ -44,7 +36,7 @@ namespace Floe.UI
 			}
 		}
 
-		public void AddPage(ChatController context)
+		public void AddPage(ChatContext context)
 		{
 			var page = new ChatPageInfo(context);
 
@@ -54,6 +46,7 @@ namespace Floe.UI
 				context.Session.Joined += new EventHandler<IrcChannelEventArgs>(Session_Joined);
 				context.Session.Parted += new EventHandler<IrcChannelEventArgs>(Session_Parted);
 				context.Session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
+				context.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			}
 			else
 			{
@@ -70,9 +63,10 @@ namespace Floe.UI
 			Keyboard.Focus(this.CurrentControl);
 		}
 
-		private ChatPageInfo FindPage(IrcSession session)
+		public void RemovePage(ChatPageInfo page)
 		{
-			return this.Pages.Where((p) => p.Context.Target == null && p.Context.Session == session).FirstOrDefault();
+			page.Content.Dispose();
+			this.Pages.Remove(page);
 		}
 
 		private ChatPageInfo FindPage(IrcSession session, IrcTarget target)
@@ -97,7 +91,6 @@ namespace Floe.UI
 				if (page.Context.IsConnected)
 				{
 					page.Context.Session.Quit("Leaving");
-					page.Context.Session.Close();
 				}
 			}
 
@@ -110,7 +103,7 @@ namespace Floe.UI
 			{
 				this.Dispatcher.BeginInvoke((Action)(() =>
 				{
-					this.AddPage(new ChatController((IrcSession)sender, e.Channel));
+					this.AddPage(new ChatContext((IrcSession)sender, e.Channel));
 				}));
 			}
 		}
@@ -124,7 +117,7 @@ namespace Floe.UI
 					var page = this.FindPage((IrcSession)sender, e.Channel);
 					if (page != null)
 					{
-						this.Pages.Remove(page);
+						this.RemovePage(page);
 					}
 				}));
 			}
@@ -139,27 +132,33 @@ namespace Floe.UI
 						var page = this.FindPage((IrcSession)sender, e.Channel);
 						if (page != null)
 						{
-							this.Pages.Remove(page);
-							var serverPage = this.FindPage((IrcSession)sender);
-							serverPage.Context.OnOutput(OutputType.SelfKicked, e.Kicker, e.Text);
+							this.RemovePage(page);
 						}
 					}));
 			}
 		}
 
-		private void tabsChat_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		private void Session_StateChanged(object sender, EventArgs e)
 		{
-			Keyboard.Focus(this.CurrentControl);
+			if (((IrcSession)sender).State == IrcSessionState.Connecting)
+			{
+				foreach (var p in (from p in this.Pages
+								  where p.Context.Session == sender && p.Context.Target != null
+								  select p).ToArray())
+				{
+					this.RemovePage(p);
+				}
+			}
 		}
 	}
 
 	public class ChatPageInfo
 	{
-		public ChatController Context { get; private set; }
+		public ChatContext Context { get; private set; }
 		public string Header { get; private set; }
 		public ChatControl Content { get; private set; }
 
-		public ChatPageInfo(ChatController context)
+		public ChatPageInfo(ChatContext context)
 		{
 			this.Context = context;
 			this.Header = context.ToString();

@@ -49,10 +49,21 @@ namespace Floe.Net
 			_socketThread.Start();
 		}
 
-		public void Close()
+		public void WaitForClose()
 		{
-			this.QueueMessage(new IrcMessage(null));
-			_socketThread.Join();
+			if (_socketThread == null || _socketThread.ThreadState != ThreadState.Running)
+			{
+				return;
+			}
+
+			if (!_socketThread.Join(1000))
+			{
+				this.QueueMessage(new IrcMessage(null));
+				if (!_socketThread.Join(1000))
+				{
+					_socketThread.Abort();
+				}
+			}
 		}
 
 		public void QueueMessage(string message)

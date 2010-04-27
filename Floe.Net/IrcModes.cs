@@ -112,11 +112,11 @@ namespace Floe.Net
 					{
 						if (c == '-')
 						{
-							set = true;
+							set = false;
 						}
 						else if (c == '+')
 						{
-							set = false;
+							set = true;
 						}
 						else
 						{
@@ -160,9 +160,10 @@ namespace Floe.Net
 			return ParseModes(modes.Split(' '));
 		}
 
-		public static string RenderModes(IEnumerable<IrcChannelMode> modes)
+		public static string[] RenderModes(IEnumerable<IrcChannelMode> modes)
 		{
 			var output = new StringBuilder();
+			var paramsOutput = new StringBuilder();
 			var args = new List<string>();
 			foreach (var mode in modes.Where((m) => m.Set))
 			{
@@ -190,11 +191,10 @@ namespace Floe.Net
 					args.Add(mode.Parameter);
 				}
 			}
-			foreach (var arg in args)
-			{
-				output.Append(' ').Append(arg);
-			}
-			return output.ToString();
+			var result = new string[args.Count + 1];
+			result[0] = output.ToString();
+			args.CopyTo(result, 1);
+			return result;
 		}
 	}
 }

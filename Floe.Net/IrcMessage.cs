@@ -32,8 +32,10 @@ namespace Floe.Net
 			sb.Append(this.Command);
 			for (int i = 0; i < this.Parameters.Count; i++)
 			{
-				if (this.Parameters[i] == null)
+				if (string.IsNullOrEmpty(this.Parameters[i]))
+				{
 					continue;
+				}
 
 				sb.Append(' ');
 				if (i == this.Parameters.Count - 1)
