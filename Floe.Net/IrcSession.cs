@@ -20,6 +20,7 @@ namespace Floe.Net
 		public string UserName { get; private set; }
 		public string HostName { get; private set; }
 		public string FullName { get; private set; }
+		public string Server { get; private set; }
 
 		public IrcSessionState State
 		{
@@ -66,6 +67,7 @@ namespace Floe.Net
 				throw new ArgumentNullException("Nickname");
 			}
 			this.Nickname = nickname;
+			this.Server = server;
 
 			if (_conn != null)
 			{

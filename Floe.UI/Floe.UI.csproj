@@ -62,7 +62,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AppLogic.cs" />
     <Compile Include="ChatControl.xaml.cs">
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
@@ -91,6 +90,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utility\StringUtility.cs" />
+    <Compile Include="Utility\VisualExtensions.cs" />
     <Page Include="ChatControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

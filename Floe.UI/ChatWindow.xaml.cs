@@ -18,11 +18,21 @@ namespace Floe.UI
 {
 	public partial class ChatWindow : Window
 	{
-		public ObservableCollection<ChatPageInfo> Pages { get; private set; }
+		public class ChatTabItem
+		{
+			public ChatControl Content { get; private set; }
+
+			public ChatTabItem(ChatControl content)
+			{
+				this.Content = content;
+			}
+		}
+
+		public ObservableCollection<ChatTabItem> Items { get; private set; }
 
 		public ChatWindow(IrcSession session)
 		{
-			this.Pages = new ObservableCollection<ChatPageInfo>();
+			this.Items = new ObservableCollection<ChatTabItem>();
 			this.DataContext = this;
 			InitializeComponent();
 			this.AddPage(new ChatContext(session, null));
@@ -38,41 +48,47 @@ namespace Floe.UI
 
 		public void AddPage(ChatContext context)
 		{
-			var page = new ChatPageInfo(context);
+			var page = new ChatControl(context);
+			var item = new ChatTabItem(page);
 
 			if (context.Target == null)
 			{
-				this.Pages.Add(page);
+				this.Items.Add(item);
 				context.Session.Joined += new EventHandler<IrcChannelEventArgs>(Session_Joined);
 				context.Session.Parted += new EventHandler<IrcChannelEventArgs>(Session_Parted);
 				context.Session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
 				context.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
+				context.Session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			}
 			else
 			{
-				for (int i = this.Pages.Count - 1; i >= 0; --i)
+				for (int i = this.Items.Count - 1; i >= 0; --i)
 				{
-					if (this.Pages[i].Context.Session == context.Session)
+					if (this.Items[i].Content.Context.Session == context.Session)
 					{
-						this.Pages.Insert(i + 1, page);
+						this.Items.Insert(i + 1, item);
 						break;
 					}
 				}
 			}
-			tabsChat.SelectedItem = page;
+			tabsChat.SelectedItem = item;
 			Keyboard.Focus(this.CurrentControl);
 		}
 
-		public void RemovePage(ChatPageInfo page)
+		public void RemovePage(ChatControl page)
 		{
-			page.Content.Dispose();
-			this.Pages.Remove(page);
+			var item = (from p in this.Items where p.Content == page select p).FirstOrDefault();
+			if (item != null)
+			{
+				item.Content.Dispose();
+				this.Items.Remove(item);
+			}
 		}
 
-		private ChatPageInfo FindPage(IrcSession session, IrcTarget target)
+		private ChatControl FindPage(IrcSession session, IrcTarget target)
 		{
-			return this.Pages.Where((p) => p.Context.Session == session && p.Context.Target != null &&
-				p.Context.Target.Equals(target)).FirstOrDefault();
+			return this.Items.Where((i) => i.Content.Context.Session == session && i.Content.Context.Target != null &&
+				i.Content.Context.Target.Equals(target)).Select((p) => p.Content).FirstOrDefault();
 		}
 
 		protected override void OnSourceInitialized(EventArgs e)
@@ -86,7 +102,7 @@ namespace Floe.UI
 		{
 			base.OnClosing(e);
 
-			foreach (var page in this.Pages.Where((p) => p.Context.Target == null))
+			foreach (var page in this.Items.Where((i) => i.Content.Context.Target == null).Select((i) => i.Content))
 			{
 				if (page.Context.IsConnected)
 				{
@@ -142,27 +158,38 @@ namespace Floe.UI
 		{
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)
 			{
-				foreach (var p in (from p in this.Pages
-								  where p.Context.Session == sender && p.Context.Target != null
-								  select p).ToArray())
+				foreach (var p in (from i in this.Items
+								  where i.Content.Context.Session == sender && i.Content.Context.Target != null
+								  select i.Content).ToArray())
 				{
 					this.RemovePage(p);
 				}
 			}
 		}
-	}
 
-	public class ChatPageInfo
-	{
-		public ChatContext Context { get; private set; }
-		public string Header { get; private set; }
-		public ChatControl Content { get; private set; }
-
-		public ChatPageInfo(ChatContext context)
+		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
-			this.Context = context;
-			this.Header = context.ToString();
-			this.Content = new ChatControl(context);
+			var session = sender as IrcSession;
+
+			switch (e.Command.Command)
+			{
+				case "VERSION":
+					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
+						"VERSION",
+						App.Product,
+						App.Version), true);
+					break;
+				case "PING":
+					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
+						"PONG",
+						e.Command.Arguments.Length > 0 ? e.Command.Arguments[0] : null), true);
+					break;
+				case "CLIENTINFO":
+					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
+						"CLIENTINFO",
+						"VERSION", "PING", "CLIENTINFO", "ACTION"), true);
+					break;
+			}
 		}
 	}
 }

@@ -34,6 +34,12 @@ namespace Floe.Net
 			this.Name = name;
 		}
 
+		public IrcTarget(IrcPeer peer)
+		{
+			this.Type = IrcTargetType.Nickname;
+			this.Name = peer.Nickname;
+		}
+
 		public override string ToString()
 		{
 			return this.Name;

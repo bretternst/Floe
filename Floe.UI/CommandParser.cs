@@ -7,11 +7,40 @@ using Floe.Net;
 
 namespace Floe.UI
 {
+	public enum OutputType
+	{
+		Client,
+		Server,
+		SelfMessage,
+		PrivateMessage,
+		Notice,
+		Topic,
+		Nick,
+		SelfAction,
+		Action,
+		Join,
+		Part,
+		Kicked,
+		SelfKicked
+	}
+
+	public class CommandOutput
+	{
+		public OutputType Type { get; private set; }
+		public string Text { get; private set; }
+
+		public CommandOutput(OutputType type, string text)
+		{
+			this.Type = type;
+			this.Text = text;
+		}
+	}
+
 	public static class CommandParser
 	{
 		private const char CommandChar = '/';
 
-		public static bool Execute(ChatContext context, string text)
+		public static CommandOutput Execute(ChatContext context, string text)
 		{
 			string command = text.Trim();
 
@@ -27,15 +56,18 @@ namespace Floe.UI
 				}
 				if (command.Length > 0)
 				{
-					Execute(context, command.ToUpperInvariant(), args);
+					return Execute(context, command.ToUpperInvariant(), args);
 				}
-				return false;
+				else
+				{
+					return null;
+				}
 			}
 			else
 			{
 				if (text.Trim().Length < 1)
 				{
-					return false;
+					return null;
 				}
 
 				if (context.Target == null)
@@ -44,11 +76,11 @@ namespace Floe.UI
 				}
 
 				context.Session.PrivateMessage(context.Target, text);
-				return true;
+				return new CommandOutput(OutputType.SelfMessage, text);
 			}
 		}
 
-		private static void Execute(ChatContext context, string command, string arguments)
+		private static CommandOutput Execute(ChatContext context, string command, string arguments)
 		{
 			string[] args;
 
@@ -67,10 +99,12 @@ namespace Floe.UI
 					context.Session.Notice(new IrcTarget(args[0]), args[1]);
 					break;
 				case "JOIN":
+				case "J":
 					args = Split(command, arguments, 1, 1);
 					context.Session.Join(args[0]);
 					break;
 				case "PART":
+				case "LEAVE":
 					args = Split(command, arguments, 1, 1);
 					context.Session.Part(args[0]);
 					break;
@@ -182,9 +216,20 @@ namespace Floe.UI
 					context.Session.Open(args[0], port,
 						!string.IsNullOrEmpty(context.Session.Nickname) ? context.Session.Nickname : App.Preferences.User.Nickname);
 					break;
+				case "ME":
+				case "ACTION":
+					if (context.Target == null)
+					{
+						throw new InputException("Can't talk in this window.");
+					}
+					args = Split(command, arguments, 1, int.MaxValue);
+					context.Session.SendCtcp(context.Target,
+						new CtcpCommand("ACTION", args), false);
+					return new CommandOutput(OutputType.SelfAction, string.Join(" ", args));
 				default:
 					throw new InputException("Unrecognized command.");
 			}
+			return null;
 		}
 
 		public static string[] Split(string command, string args, int minArgs, int maxArgs)

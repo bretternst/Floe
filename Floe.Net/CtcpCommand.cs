@@ -5,47 +5,15 @@ using System.Text;
 
 namespace Floe.Net
 {
-	public enum CtcpCommandType
-	{
-		Version,
-		Ping,
-		ClientInfo,
-		Action,
-		Other
-	}
-
 	public sealed class CtcpCommand
 	{
-		public CtcpCommandType Command { get; private set; }
+		public string Command { get; private set; }
 
-		public string RawCommand { get; private set; }
-
-		public ICollection<string> Arguments { get; private set; }
-
-		public CtcpCommand(CtcpCommandType command, params string[] arguments)
-		{
-			if (command == CtcpCommandType.Other)
-			{
-				throw new ArgumentException("A command type of Other is not allowed by this constructor.");
-			}
-
-			this.Command = command;
-			this.RawCommand = command.ToString().ToUpperInvariant();
-			this.Arguments = arguments.ToArray();
-		}
+		public string[] Arguments { get; private set; }
 
 		public CtcpCommand(string command, params string[] arguments)
 		{
-			CtcpCommandType commandType;
-			if (Enum.TryParse<CtcpCommandType>(command, true, out commandType))
-			{
-				this.Command = commandType;
-			}
-			else
-			{
-				this.Command = CtcpCommandType.Other;
-			}
-			this.RawCommand = command.ToUpperInvariant();
+			this.Command = command.ToUpperInvariant();
 			this.Arguments = arguments.ToArray();
 		}
 
@@ -53,7 +21,7 @@ namespace Floe.Net
 		{
 			var output = new StringBuilder();
 			output.Append('\u0001');
-			output.Append(this.RawCommand);
+			output.Append(this.Command);
 			foreach (string arg in this.Arguments)
 			{
 				output.Append(' ').Append(Quote(arg));

@@ -15,25 +15,10 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public enum OutputType
-	{
-		Client,
-		Server,
-		SelfMessage,
-		PrivateMessage,
-		Notice,
-		Topic,
-		Nick,
-		Action,
-		Join,
-		Part,
-		Kicked,
-		SelfKicked
-	}
-
 	public partial class ChatControl : UserControl, IDisposable
 	{
-		public ChatContext Context { get; private set; }
+		private ScrollViewer _scrollViewer;
+		private double _scrollPos = 0.0;
 
 		public ChatControl(ChatContext context)
 		{
@@ -41,21 +26,50 @@ namespace Floe.UI
 
 			InitializeComponent();
 
-			this.Loaded += (sender, e) => Keyboard.Focus(txtInput);
+			this.Header = context.Target == null ? "Server" : context.Target.ToString();
+
+			this.Loaded += (sender, e) =>
+			{
+				Keyboard.Focus(txtInput);
+				if (_scrollViewer == null)
+				{
+					_scrollViewer = vwOutput.FindScrollViewer();
+				}
+			};
 			this.Context.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			this.Context.Session.Noticed += new EventHandler<IrcDialogEventArgs>(Session_Noticed);
 			this.Context.Session.PrivateMessaged += new EventHandler<IrcDialogEventArgs>(Session_PrivateMessaged);
 			this.Context.Session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
 			this.Context.Session.InfoReceived += new EventHandler<IrcInfoEventArgs>(Session_InfoReceived);
+			this.Context.Session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
+		}
+
+		public ChatContext Context { get; private set; }
+
+		public static readonly DependencyProperty HeaderProperty =
+			DependencyProperty.Register("Header", typeof(string), typeof(ChatControl));
+		public string Header
+		{
+			get { return (string)this.GetValue(HeaderProperty); }
+			set { this.SetValue(HeaderProperty, value); }
+		}
+
+		public static readonly DependencyProperty TitleProperty =
+			DependencyProperty.Register("Title", typeof(string), typeof(ChatControl));
+		public string Title
+		{
+			get { return (string)this.GetValue(TitleProperty); }
+			set { this.SetValue(TitleProperty, value); }
 		}
 
 		private void ParseInput(string text)
 		{
 			try
 			{
-				if (CommandParser.Execute(this.Context, text))
+				CommandOutput output;
+				if ((output = CommandParser.Execute(this.Context, text)) != null)
 				{
-					this.Write(OutputType.SelfMessage, text);
+					this.Write(output.Type, output.Text);
 				}
 			}
 			catch (IrcException ex)
@@ -75,6 +89,11 @@ namespace Floe.UI
 
 		private void Write(OutputType type, IrcPrefix from, string text)
 		{
+			this.Write(type, from, null, text);
+		}
+
+		private void Write(OutputType type, IrcPrefix from, string arg, string text)
+		{
 			string output = string.Empty;
 			var peer = from as IrcPeer;
 
@@ -88,6 +107,9 @@ namespace Floe.UI
 					break;
 				case OutputType.SelfMessage:
 					output = string.Format("<{0}> {1}", this.Context.Session.Nickname, text);
+					break;
+				case OutputType.SelfAction:
+					output = string.Format("* {0} {1}", this.Context.Session.Nickname, text);
 					break;
 				case OutputType.Action:
 					output = string.Format("* {0} {1}", peer.Nickname, text);
@@ -119,16 +141,24 @@ namespace Floe.UI
 				case OutputType.Topic:
 					output = string.Format("* {0} changes topic to '{1}'", peer.Nickname, text);
 					break;
+				case OutputType.SelfKicked:
+					output = string.Format("* You have been kicked from {0} by {1} ({2})", arg, peer.Nickname, text);
+					break;
+				case OutputType.Kicked:
+					output = string.Format("* {0} has been kicked by {1} ({2})", arg, peer.Nickname, text);
+					break;
+				default:
+					return;
 			}
 
 			Dispatcher.BeginInvoke((Action)(() =>
 				{
-					if (txtOutput.Text.Length > 0)
+					vwOutput.Document.Blocks.Add(new Paragraph(new Run(output)));
+					if (_scrollViewer.VerticalOffset - _scrollPos >= -1.0)
 					{
-						txtOutput.AppendText(Environment.NewLine);
+						_scrollViewer.ScrollToBottom();
+						_scrollPos = _scrollViewer.VerticalOffset;
 					}
-					txtOutput.AppendText(output);
-					txtOutput.ScrollToEnd();
 				}));
 		}
 
@@ -139,10 +169,10 @@ namespace Floe.UI
 			switch (e.Key)
 			{
 				case Key.PageUp:
-					txtOutput.PageUp();
+					_scrollViewer.PageUp();
 					break;
 				case Key.PageDown:
-					txtOutput.PageDown();
+					_scrollViewer.PageDown();
 					break;
 				case Key.LeftCtrl:
 				case Key.RightCtrl:
@@ -172,12 +202,6 @@ namespace Floe.UI
 					txtInput.Clear();
 					this.ParseInput(text);
 					break;
-				case Key.PageUp:
-					txtOutput.PageUp();
-					break;
-				case Key.PageDown:
-					txtOutput.PageDown();
-					break;
 			}
 		}
 
@@ -186,6 +210,15 @@ namespace Floe.UI
 			if (this.Context.Session.State == IrcSessionState.Disconnected)
 			{
 				this.Write(OutputType.Server, "Disconnected");
+				if(this.Context.Target == null)
+				{
+					this.Dispatcher.BeginInvoke((Action)(() => this.Header = "Server"));
+				}
+			}
+			else if (this.Context.Session.State == IrcSessionState.Connecting &&
+				this.Context.Target == null)
+			{
+				this.Dispatcher.BeginInvoke((Action)(() => this.Header = this.Context.Session.Server ));
 			}
 		}
 
@@ -196,7 +229,7 @@ namespace Floe.UI
 
 		private void Session_PrivateMessaged(object sender, IrcDialogEventArgs e)
 		{
-			if (this.Context.Target.Equals(e.To))
+			if (this.Context.Target != null && this.Context.Target.Equals(e.To))
 			{
 				this.Write(OutputType.PrivateMessage, e.From, e.Text);
 			}
@@ -206,15 +239,11 @@ namespace Floe.UI
 		{
 			if (e.IsSelfKicked && this.Context.Target == null)
 			{
-				this.Write(OutputType.SelfKicked,
-					string.Format("You have been kicked from {0} by {1} ({2}",
-					e.Channel, e.Kicker, e.Text));
+				this.Write(OutputType.SelfKicked, e.Kicker, e.Channel.ToString(), e.Text);
 			}
-			else if (this.Context.Target.Equals(e.Channel))
+			else if (this.Context.Target != null && this.Context.Target.Equals(e.Channel))
 			{
-				this.Write(OutputType.Kicked,
-					string.Format("{0} has been kicked by {1} ({2})",
-					e.KickeeNickname, e.Kicker, e.Text));
+				this.Write(OutputType.Kicked, e.Kicker, e.KickeeNickname, e.Text);
 			}
 		}
 
@@ -228,6 +257,26 @@ namespace Floe.UI
 			{
 				this.Write(OutputType.Server, e.Text);
 			}
+
+			if (e.Code == IrcCode.Welcome && this.Context.Target == null)
+			{
+				if (e.Text.StartsWith("Welcome to the "))
+				{
+					var parts = e.Text.Split(' ');
+					if (parts.Length > 3)
+					{
+						this.Dispatcher.BeginInvoke((Action)(() => this.Header = parts[3]));
+					}
+				}
+			}
+		}
+
+		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
+		{
+			if (this.Context.Target != null && this.Context.Target.Equals(e.To))
+			{
+				this.Write(OutputType.Action, e.From, string.Join(" ", e.Command.Arguments));
+			}
 		}
 
 		public void Dispose()
@@ -237,6 +286,7 @@ namespace Floe.UI
 			this.Context.Session.PrivateMessaged -= new EventHandler<IrcDialogEventArgs>(Session_PrivateMessaged);
 			this.Context.Session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
 			this.Context.Session.InfoReceived -= new EventHandler<IrcInfoEventArgs>(Session_InfoReceived);
+			this.Context.Session.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 		}
 	}
 }
