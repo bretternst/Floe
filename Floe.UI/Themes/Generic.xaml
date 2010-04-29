@@ -13,6 +13,7 @@
 						<local:ChatPresenter x:Name="PART_ChatPresenter"
 											 BufferLines="{TemplateBinding BufferLines}"
 											 MinimumCopyLength="{TemplateBinding MinimumCopyLength}"
+											 Palette="{TemplateBinding Palette}"
 											 Background="Transparent" SnapsToDevicePixels="True"/>
 					</ScrollViewer>
                 </ControlTemplate>

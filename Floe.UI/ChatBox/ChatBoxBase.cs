@@ -24,5 +24,13 @@ namespace Floe.UI
 			get { return (int)this.GetValue(MinimumCopyLengthProperty); }
 			set { this.SetValue(MinimumCopyLengthProperty, value); }
 		}
+
+		public static DependencyProperty PaletteProperty = DependencyProperty.Register("Palette",
+			typeof(ChatPalette), typeof(ChatBoxBase));
+		public ChatPalette Palette
+		{
+			get { return (ChatPalette)this.GetValue(PaletteProperty); }
+			set { this.SetValue(PaletteProperty, value); }
+		}
 	}
 }

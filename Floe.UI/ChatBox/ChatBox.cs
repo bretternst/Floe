@@ -32,9 +32,9 @@ namespace Floe.UI
 			}
 		}
 
-		public void AppendLine(string text)
+		public void AppendLine(ChatLine line)
 		{
-			_presenter.AppendLine(text);
+			_presenter.AppendLine(line);
 		}
 
 		public void PageUp()

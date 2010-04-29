@@ -78,58 +78,58 @@ namespace Floe.UI
 
 		private void Write(OutputType type, IrcPrefix from, string arg, string text)
 		{
-			string output = string.Empty;
+			ChatLine output = null;
 			var peer = from as IrcPeer;
 
 			switch (type)
 			{
 				case OutputType.Server:
-					output = string.Format("*** {0}", text);
+					output = new ChatLine("ServerInfo", string.Format("*** {0}", text));
 					break;
 				case OutputType.Client:
-					output = text;
+					output = new ChatLine("ClientInfo", text);
 					break;
 				case OutputType.SelfMessage:
-					output = string.Format("<{0}> {1}", this.Context.Session.Nickname, text);
+					output = new ChatLine("Own", string.Format("<{0}> {1}", this.Context.Session.Nickname, text));
 					break;
 				case OutputType.SelfAction:
-					output = string.Format("* {0} {1}", this.Context.Session.Nickname, text);
+					output = new ChatLine("Own", string.Format("* {0} {1}", this.Context.Session.Nickname, text));
 					break;
 				case OutputType.Action:
-					output = string.Format("* {0} {1}", peer.Nickname, text);
+					output = new ChatLine("Action", string.Format("* {0} {1}", peer.Nickname, text));
 					break;
 				case OutputType.Join:
-					output = string.Format("* {0} ({1}@{2}) has joined channel {3}", peer.Nickname, peer.UserName, peer.HostName,
-						this.Context.Target.ToString());
+					output = new ChatLine("Join", string.Format("* {0} ({1}@{2}) has joined channel {3}",
+						peer.Nickname, peer.UserName, peer.HostName, this.Context.Target.ToString()));
 					break;
 				case OutputType.Nick:
-					output = string.Format("* {0} is now known as {1}", peer.Nickname, text);
+					output = new ChatLine("Nick", string.Format("* {0} is now known as {1}", peer.Nickname, text));
 					break;
 				case OutputType.Notice:
 					if (peer != null)
 					{
-						output = string.Format("-{0}- {1}", peer.Nickname, text);
+						output = new ChatLine("Notice", string.Format("-{0}- {1}", peer.Nickname, text));
 					}
 					else
 					{
-						output = text;
+						output = new ChatLine("Notice", text);
 					}
 					break;
 				case OutputType.Part:
-					output = string.Format("* {0} ({1}@{2}) has left channel {3}", peer.Nickname, peer.UserName, peer.HostName,
-						this.Context.Target.ToString());
+					output = new ChatLine("Part", string.Format("* {0} ({1}@{2}) has left channel {3}",
+						peer.Nickname, peer.UserName, peer.HostName, this.Context.Target.ToString()));
 					break;
 				case OutputType.PrivateMessage:
-					output = string.Format("<{0}> {1}", peer.Nickname, text);
+					output = new ChatLine("Default", string.Format("<{0}> {1}", peer.Nickname, text));
 					break;
 				case OutputType.Topic:
-					output = string.Format("* {0} changes topic to '{1}'", peer.Nickname, text);
+					output = new ChatLine("Topic", string.Format("* {0} changes topic to '{1}'", peer.Nickname, text));
 					break;
 				case OutputType.SelfKicked:
-					output = string.Format("* You have been kicked from {0} by {1} ({2})", arg, peer.Nickname, text);
+					output = new ChatLine("Kick", string.Format("* You have been kicked from {0} by {1} ({2})", arg, peer.Nickname, text));
 					break;
 				case OutputType.Kicked:
-					output = string.Format("* {0} has been kicked by {1} ({2})", arg, peer.Nickname, text);
+					output = new ChatLine("Kick", string.Format("* {0} has been kicked by {1} ({2})", arg, peer.Nickname, text));
 					break;
 				default:
 					return;

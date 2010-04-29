@@ -55,7 +55,7 @@ namespace Floe.UI
 						end = Math.Min(s.Length, this.SelectionEnd - baseIdx + 1);
 						if(end > start)
 						{
-							output.Append(s.Substring(start, end - start));
+							output.Append(s.Text.Substring(start, end - start));
 							if (this.SelectionEnd > baseIdx + end)
 							{
 								output.AppendLine();

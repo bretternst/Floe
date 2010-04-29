@@ -69,16 +69,18 @@ namespace Floe.UI
 
 		private class LineSource : TextSource
 		{
-			private TextRunProperties _defaultProperties;
+			private CustomTextRunProperties _defaultProperties;
 			private CustomParagraphProperties _paraProperties;
 			private int _lineIdx, _charIdx;
-			private string[] _lines;
+			private ChatLine[] _lines;
+			private ChatPalette _palette;
 
-			public LineSource(TextRunProperties defaultProperties, CustomParagraphProperties paraProperties,
-				IEnumerable<string> lines)
+			public LineSource(CustomTextRunProperties defaultProperties, CustomParagraphProperties paraProperties,
+				ChatPalette palette, IEnumerable<ChatLine> lines)
 			{
 				_defaultProperties = defaultProperties;
 				_paraProperties = paraProperties;
+				_palette = palette;
 				_lines = lines.ToArray();
 			}
 
@@ -112,11 +114,17 @@ namespace Floe.UI
 				}
 			}
 
+			private CustomTextRunProperties GetProperties(ChatLine line)
+			{
+				return new CustomTextRunProperties(_defaultProperties.Typeface, _defaultProperties.FontRenderingEmSize,
+					_palette[line.ColorKey], _defaultProperties.BackgroundBrush);
+			}
+
 			public override TextRun GetTextRun(int charIdx)
 			{
 				this.MoveToCharIndex(charIdx);
 				int idx = charIdx - _charIdx;
-				string text = _lines[_lineIdx];
+				var line = _lines[_lineIdx];
 
 				TextRun result;
 
@@ -125,7 +133,7 @@ namespace Floe.UI
 					_paraProperties.SetIndent(20.0);
 				}
 
-				if (idx >= text.Length)
+				if (idx >= line.Length)
 				{
 					this.Next();
 					result = new TextEndOfLine(1);
@@ -133,7 +141,8 @@ namespace Floe.UI
 				}
 				else
 				{
-					result = new TextCharacters(text, idx, text.Length - idx, _defaultProperties);
+					result = new TextCharacters(line.ToString(), idx, line.Length - idx,
+						this.GetProperties(line));
 				}
 
 				return result;
@@ -219,7 +228,7 @@ namespace Floe.UI
 			var textRunProperties = new CustomTextRunProperties(
 				this.Typeface, this.FontSize, this.Foreground, Brushes.Transparent);
 			paraProperties = new CustomParagraphProperties(textRunProperties);
-			source = new LineSource(textRunProperties, paraProperties, _lines);
+			source = new LineSource(textRunProperties, paraProperties, this.Palette, _lines);
 		}
 
 		private void CreateFormatter(out TextFormatter formatter, out LineSource source, out CustomParagraphProperties paraProperties)

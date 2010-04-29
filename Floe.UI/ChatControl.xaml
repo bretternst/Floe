@@ -7,9 +7,13 @@
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="699" Focusable="True">
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
-		<TextBox Height="23" Name="txtInput" DockPanel.Dock="Bottom" SnapsToDevicePixels="True" FontFamily="Consolas" KeyDown="txtInput_KeyDown" />
+		<TextBox Height="23" Name="txtInput" DockPanel.Dock="Bottom" SnapsToDevicePixels="True" FontFamily="Consolas" KeyDown="txtInput_KeyDown"
+				 Background="{Binding Source={x:Static local:App.Preferences}, Path=Colors.EditBackground, Mode=OneWay}"
+				 Foreground="{Binding Source={x:Static local:App.Preferences}, Path=Colors.Edit, Mode=OneWay}"
+				 Padding="2,1,2,1"/>
 		<local:ChatBox x:Name="boxOutput" Background="Black" FontFamily="Consolas" FontSize="14" Foreground="White"
 					   BufferLines="{Binding Source={x:Static local:App.Preferences}, Path=Text.BufferLines, Mode=OneWay}"
-					   MinimumCopyLength="{Binding Source={x:Static local:App.Preferences}, Path=Text.MinimumCopyLength, Mode=OneWay}"/>
+					   MinimumCopyLength="{Binding Source={x:Static local:App.Preferences}, Path=Text.MinimumCopyLength, Mode=OneWay}"
+					   Palette="{Binding Source={x:Static local:App.Preferences}, Path=Colors.Palette, Mode=OneWay}"/>
 	</DockPanel>
 </UserControl>

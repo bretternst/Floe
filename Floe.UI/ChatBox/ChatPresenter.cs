@@ -9,13 +9,13 @@ namespace Floe.UI
 {
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
-		private Queue<string> _lines = new Queue<string>();
+		private Queue<ChatLine> _lines = new Queue<ChatLine>();
 		private ScrollViewer _viewer;
 		private bool _isAutoScrolling;
 
-		public void AppendLine(string text)
+		public void AppendLine(ChatLine line)
 		{
-			_lines.Enqueue(text);
+			_lines.Enqueue(line);
 
 			while (_lines.Count > this.BufferLines)
 			{

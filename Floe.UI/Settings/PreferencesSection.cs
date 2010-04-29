@@ -31,6 +31,13 @@ namespace Floe.Configuration
 			set { this["text"] = value; }
 		}
 
+		[ConfigurationProperty("colors")]
+		public ColorsElement Colors
+		{
+			get { return (ColorsElement)this["colors"]; }
+			set { this["colors"] = value; }
+		}
+
 		[ConfigurationProperty("windowPlacement")]
 		public string WindowPlacement
 		{
