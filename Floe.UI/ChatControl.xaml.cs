@@ -1,25 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Floe.Net;
 
 namespace Floe.UI
 {
 	public partial class ChatControl : UserControl, IDisposable
 	{
-		private ScrollViewer _scrollViewer;
-		private double _scrollPos = 0.0;
-
 		public ChatControl(ChatContext context)
 		{
 			this.Context = context;
@@ -31,10 +19,6 @@ namespace Floe.UI
 			this.Loaded += (sender, e) =>
 			{
 				Keyboard.Focus(txtInput);
-				if (_scrollViewer == null)
-				{
-					_scrollViewer = vwOutput.FindScrollViewer();
-				}
 			};
 			this.Context.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			this.Context.Session.Noticed += new EventHandler<IrcDialogEventArgs>(Session_Noticed);
@@ -153,12 +137,7 @@ namespace Floe.UI
 
 			Dispatcher.BeginInvoke((Action)(() =>
 				{
-					vwOutput.Document.Blocks.Add(new Paragraph(new Run(output)));
-					if (_scrollViewer.VerticalOffset - _scrollPos >= -1.0)
-					{
-						_scrollViewer.ScrollToBottom();
-						_scrollPos = _scrollViewer.VerticalOffset;
-					}
+					boxOutput.AppendLine(output);
 				}));
 		}
 
@@ -169,10 +148,10 @@ namespace Floe.UI
 			switch (e.Key)
 			{
 				case Key.PageUp:
-					_scrollViewer.PageUp();
+					boxOutput.PageUp();
 					break;
 				case Key.PageDown:
-					_scrollViewer.PageDown();
+					boxOutput.PageDown();
 					break;
 				case Key.LeftCtrl:
 				case Key.RightCtrl:
@@ -191,6 +170,21 @@ namespace Floe.UI
 			}
 
 			base.OnPreviewKeyDown(e);
+		}
+
+		protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
+		{
+			if (e.Delta > 0)
+			{
+				boxOutput.MouseWheelUp();
+			}
+			else
+			{
+				boxOutput.MouseWheelDown();
+			}
+			e.Handled = true;
+
+			base.OnPreviewMouseWheel(e);
 		}
 
 		private void txtInput_KeyDown(object sender, KeyEventArgs e)

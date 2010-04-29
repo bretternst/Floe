@@ -3,12 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="699" Focusable="True">
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<TextBox Height="23" Name="txtInput" DockPanel.Dock="Bottom" SnapsToDevicePixels="True" FontFamily="Consolas" KeyDown="txtInput_KeyDown" />
-		<FlowDocumentScrollViewer Name="vwOutput">
-			<FlowDocument Background="Black" Foreground="White"></FlowDocument>
-		</FlowDocumentScrollViewer>
+		<local:ChatBox x:Name="boxOutput" Background="Black" FontFamily="Consolas" FontSize="14" Foreground="White" BufferLines="{Binding Source={x:Static local:App.Preferences}, Path=Output.BufferLines, Mode=OneWay}"/>
 	</DockPanel>
 </UserControl>
