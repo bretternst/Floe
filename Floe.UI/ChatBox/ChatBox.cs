@@ -12,17 +12,9 @@ using System.Windows.Media.TextFormatting;
 namespace Floe.UI
 {
 	[TemplatePart(Name="PART_ChatPresenter", Type=typeof(ChatPresenter))]
-	public class ChatBox : Control
+	public class ChatBox : ChatBoxBase
 	{
 		private ChatPresenter _presenter;
-
-		public static DependencyProperty BufferLinesProperty = DependencyProperty.Register("BufferLines",
-			typeof(int), typeof(ChatBox));
-		public int BufferLines
-		{
-			get { return (int)this.GetValue(BufferLinesProperty); }
-			set { this.SetValue(BufferLinesProperty, value); }
-		}
 
 		public ChatBox()
 		{

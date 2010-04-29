@@ -7,25 +7,11 @@ using System.Windows.Media.TextFormatting;
 
 namespace Floe.UI
 {
-	public partial class ChatPresenter : Control, IScrollInfo
+	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
-		private Queue<string> _lines;
+		private Queue<string> _lines = new Queue<string>();
 		private ScrollViewer _viewer;
 		private bool _isAutoScrolling;
-
-		public static DependencyProperty BufferLinesProperty = DependencyProperty.Register("BufferLines",
-			typeof(int), typeof(ChatPresenter));
-		public int BufferLines
-		{
-			get { return (int)this.GetValue(BufferLinesProperty); }
-			set { this.SetValue(BufferLinesProperty, value); }
-		}
-
-		public ChatPresenter()
-		{
-			_lines = new Queue<string>();
-			_output = new List<TextLine>();
-		}
 
 		public void AppendLine(string text)
 		{
@@ -38,7 +24,7 @@ namespace Floe.UI
 
 			this.FormatText();
 
-			if (_isAutoScrolling && !_isSelecting)
+			if (_isAutoScrolling)
 			{
 				this.ScrollToEnd();
 			}

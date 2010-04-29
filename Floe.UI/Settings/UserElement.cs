@@ -5,7 +5,7 @@ namespace Floe.Configuration
 {
 	public class UserElement : ConfigurationElement
 	{
-		[ConfigurationProperty("nickname", DefaultValue = "", IsRequired = true)]
+		[ConfigurationProperty("nickname", DefaultValue = "")]
 		public string Nickname
 		{
 			get
@@ -19,14 +19,14 @@ namespace Floe.Configuration
 			set { this["nickname"] = value; }
 		}
 
-		[ConfigurationProperty("alternateNickname", DefaultValue = "", IsRequired = true)]
+		[ConfigurationProperty("alternateNickname", DefaultValue = "")]
 		public string AlternateNickname
 		{
 			get { return (string)this["alternateNickname"]; }
 			set { this["alternateNickname"] = value; }
 		}
 
-		[ConfigurationProperty("userName", DefaultValue = "", IsRequired = true)]
+		[ConfigurationProperty("userName", DefaultValue = "")]
 		public string UserName
 		{
 			get
@@ -43,7 +43,7 @@ namespace Floe.Configuration
 			}
 		}
 
-		[ConfigurationProperty("fullName", DefaultValue = "", IsRequired = true)]
+		[ConfigurationProperty("fullName", DefaultValue = "")]
 		public string FullName
 		{
 			get
@@ -57,7 +57,7 @@ namespace Floe.Configuration
 			set { this["fullName"] = value; }
 		}
 
-		[ConfigurationProperty("hostName", DefaultValue = "", IsRequired = true)]
+		[ConfigurationProperty("hostName", DefaultValue = "")]
 		public string HostName
 		{
 			get

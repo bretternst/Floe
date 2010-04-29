@@ -63,6 +63,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ChatBox\ChatBox.cs" />
+    <Compile Include="ChatBox\ChatBoxBase.cs" />
     <Compile Include="ChatBox\ChatPresenter.cs" />
     <Compile Include="ChatBox\ChatPresenter_Rendering.cs" />
     <Compile Include="ChatBox\ChatPresenter_Scrolling.cs" />
@@ -77,7 +78,7 @@
     </Compile>
     <Compile Include="Exceptions\InputException.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />
-    <Compile Include="Settings\OutputElement.cs" />
+    <Compile Include="Settings\TextElement.cs" />
     <Compile Include="Settings\PersistentConfiguration.cs" />
     <Compile Include="Settings\PreferencesSection.cs" />
     <Compile Include="Settings\ServerElement.cs" />

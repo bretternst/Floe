@@ -24,11 +24,11 @@ namespace Floe.Configuration
 			}
 		}
 
-		[ConfigurationProperty("output")]
-		public OutputElement Output
+		[ConfigurationProperty("text")]
+		public OutputElement Text
 		{
-			get { return (OutputElement)this["output"]; }
-			set { this["output"] = value; }
+			get { return (OutputElement)this["text"]; }
+			set { this["text"] = value; }
 		}
 
 		[ConfigurationProperty("windowPlacement")]

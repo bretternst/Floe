@@ -6,8 +6,10 @@ using System.Windows.Media;
 
 namespace Floe.UI
 {
-	public partial class ChatPresenter : Control, IScrollInfo
+	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
+		private double _extentHeight, _offset;
+
 		public bool CanHorizontallyScroll { get { return false; } set { } }
 		public bool CanVerticallyScroll { get { return true; } set { } }
 		public double ExtentHeight { get { return _extentHeight; } }
@@ -72,6 +74,7 @@ namespace Floe.UI
 		{
 			_offset = offset;
 			this.InvalidateVisual();
+			_viewer.InvalidateScrollInfo();
 		}
 
 		public void LineLeft()

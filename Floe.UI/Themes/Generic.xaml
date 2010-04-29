@@ -11,7 +11,9 @@
 								  Background="{TemplateBinding Background}"
 								  Padding="4,2,4,2">
 						<local:ChatPresenter x:Name="PART_ChatPresenter"
-											 BufferLines="{TemplateBinding BufferLines}"/>
+											 BufferLines="{TemplateBinding BufferLines}"
+											 MinimumCopyLength="{TemplateBinding MinimumCopyLength}"
+											 Background="Transparent" SnapsToDevicePixels="True"/>
 					</ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>

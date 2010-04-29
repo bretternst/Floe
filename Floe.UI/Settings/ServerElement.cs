@@ -75,7 +75,7 @@ namespace Floe.Configuration
 
 	public sealed class ServerElement : ConfigurationElement
 	{
-		[ConfigurationProperty("name", IsRequired = true)]
+		[ConfigurationProperty("name")]
 		public string Name
 		{
 			get { return (string)this["name"]; }
@@ -86,7 +86,7 @@ namespace Floe.Configuration
 			}
 		}
 
-		[ConfigurationProperty("hostName", IsRequired=true)]
+		[ConfigurationProperty("hostName")]
 		public string HostName
 		{
 			get
@@ -100,7 +100,7 @@ namespace Floe.Configuration
 			set { this["hostName"] = value; }
 		}
 
-		[ConfigurationProperty("port", IsRequired = true)]
+		[ConfigurationProperty("port", DefaultValue=6667)]
 		[IntegerValidator(MinValue = 0, MaxValue = 65535)]
 		public int Port
 		{
@@ -108,14 +108,14 @@ namespace Floe.Configuration
 			set { this["port"] = value; }
 		}
 
-		[ConfigurationProperty("connectOnStartup")]
+		[ConfigurationProperty("connectOnStartup", DefaultValue=false)]
 		public bool ConnectOnStartup
 		{
 			get { return (bool)this["connectOnStartup"]; }
 			set { this["connectOnStartup"] = value; }
 		}
 
-		[ConfigurationProperty("autoReconnect", DefaultValue = true)]
+		[ConfigurationProperty("autoReconnect", DefaultValue=true)]
 		public bool AutoReconnect
 		{
 			get { return (bool)this["autoReconnect"]; }

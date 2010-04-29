@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -9,7 +10,7 @@ using System.Windows.Media.TextFormatting;
 
 namespace Floe.UI
 {
-	public partial class ChatPresenter : Control, IScrollInfo
+	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
 		private class CustomTextRunProperties : TextRunProperties
 		{
@@ -43,7 +44,7 @@ namespace Floe.UI
 
 		private class CustomParagraphProperties : TextParagraphProperties
 		{
-			private TextRunProperties _defaultTextRunProperties;
+			private TextRunProperties _defaultProperties;
 			private double _indent;
 
 			public override FlowDirection FlowDirection { get { return FlowDirection.LeftToRight; } }
@@ -52,7 +53,7 @@ namespace Floe.UI
 			public override bool FirstLineInParagraph { get { return false; } }
 			public override TextWrapping TextWrapping { get { return TextWrapping.Wrap; } }
 			public override TextMarkerProperties TextMarkerProperties { get { return null; } }
-			public override TextRunProperties DefaultTextRunProperties { get { return _defaultTextRunProperties; } }
+			public override TextRunProperties DefaultTextRunProperties { get { return _defaultProperties; } }
 			public override double Indent { get { return _indent; } }
 
 			public void SetIndent(double indent)
@@ -62,40 +63,80 @@ namespace Floe.UI
 
 			public CustomParagraphProperties(TextRunProperties defaultTextRunProperties)
 			{
-				_defaultTextRunProperties = defaultTextRunProperties;
+				_defaultProperties = defaultTextRunProperties;
 			}
 		}
 
 		private class LineSource : TextSource
 		{
-			TextRunProperties _defaultProperties;
-			private IEnumerator<string> _enumerator;
+			private TextRunProperties _defaultProperties;
+			private CustomParagraphProperties _paraProperties;
+			private int _lineIdx, _charIdx;
+			private string[] _lines;
 
-			public LineSource(TextRunProperties defaultProperties, IEnumerable<string> lines)
+			public LineSource(TextRunProperties defaultProperties, CustomParagraphProperties paraProperties,
+				IEnumerable<string> lines)
 			{
 				_defaultProperties = defaultProperties;
-				_enumerator = lines.GetEnumerator();
+				_paraProperties = paraProperties;
+				_lines = lines.ToArray();
 			}
 
-			public int Length { get { return _enumerator.Current.Length; } }
+			public bool HasMore { get { return _lineIdx < _lines.Length; } }
+			public int BaseIndex { get { return _charIdx; } }
 
-			public bool MoveNext()
+			private void Next()
 			{
-				return _enumerator.MoveNext();
+				_charIdx += _lines[_lineIdx].Length + 1;
+				_lineIdx++;
 			}
 
-			public override TextRun GetTextRun(int idx)
+			private void Prev()
 			{
-				string text = _enumerator.Current;
+				_lineIdx--;
+				_charIdx -= _lines[_lineIdx].Length + 1;
+			}
 
-				if (idx < text.Length)
+			private void MoveToCharIndex(int charIdx)
+			{
+				int idx = charIdx - _charIdx;
+				while (idx < 0)
 				{
-					return new TextCharacters(text, idx, text.Length - idx, _defaultProperties);
+					this.Prev();
+					idx = charIdx - _charIdx;
+				}
+				while (idx > _lines[_lineIdx].Length)
+				{
+					this.Next();
+					idx = charIdx - _charIdx;
+				}
+			}
+
+			public override TextRun GetTextRun(int charIdx)
+			{
+				this.MoveToCharIndex(charIdx);
+				int idx = charIdx - _charIdx;
+				string text = _lines[_lineIdx];
+
+				TextRun result;
+
+				if (idx == 0)
+				{
+					_paraProperties.SetIndent(20.0);
+				}
+
+				if (idx >= text.Length)
+				{
+					this.Next();
+					result = new TextEndOfLine(1);
+					_paraProperties.SetIndent(0.0);
 				}
 				else
 				{
-					return new TextEndOfLine(1);
+					result = new TextCharacters(text, idx, text.Length - idx, _defaultProperties);
 				}
+
+				return result;
 			}
 
 			public override TextSpan<CultureSpecificCharacterBufferRange> GetPrecedingText(int textSourceCharacterIndexLimit)
@@ -109,9 +150,17 @@ namespace Floe.UI
 			}
 		}
 
-		private double _extentHeight, _offset, _visibleLineCount;
-		private List<TextLine> _output;
+		private List<TextLine> _output = new List<TextLine>();
 		private TextLine _lastLine;
+		private int _lastVisibleLineIdx = -1;
+
+		private Typeface Typeface
+		{
+			get
+			{
+				return new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch);
+			}
+		}
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
@@ -120,16 +169,24 @@ namespace Floe.UI
 			drawingContext.DrawRectangle(this.Background, null, new Rect(new Size(this.ActualWidth, this.ActualHeight)));
 
 			_isAutoScrolling = true;
-			_visibleLineCount = 0;
 
 			if (_lastLine == null)
 			{
 				return;
 			}
 
-			double height = 0.0, minHeight = _extentHeight - (_offset + this.ActualHeight - _lastLine.Height);
+			double height = 0.0, minHeight = this.ExtentHeight - (this.VerticalOffset + this.ActualHeight);
 			double vPos = this.ActualHeight;
 
+			TextFormatter formatter = null;
+			LineSource source = null;
+			CustomParagraphProperties paraProperties = null;
+			if (this.IsSelecting)
+			{
+				this.CreateFormatter(SystemColors.HighlightTextBrush, out formatter, out source, out paraProperties);
+			}
+
+			_lastVisibleLineIdx = -1;
 			for (int i = _output.Count - 1; i >= 0 && vPos >= 0.0; --i)
 			{
 				if ((height += _output[i].Height) < minHeight)
@@ -137,9 +194,16 @@ namespace Floe.UI
 					_isAutoScrolling = false;
 					continue;
 				}
-				_visibleLineCount++;
+				if (_lastVisibleLineIdx < 0)
+				{
+					_lastVisibleLineIdx = i;
+				}
 				vPos -= _output[i].Height;
 				_output[i].Draw(drawingContext, new Point(0.0, vPos), InvertAxes.None);
+				if (this.IsSelecting)
+				{
+					this.DrawSelectedLine(drawingContext, vPos, i, formatter, source, paraProperties);
+				}
 			}
 		}
 
@@ -148,36 +212,44 @@ namespace Floe.UI
 			this.FormatText();
 		}
 
+		private void CreateFormatter(Brush foreground, out TextFormatter formatter, out LineSource source,
+			out CustomParagraphProperties paraProperties)
+		{
+			formatter = TextFormatter.Create(TextFormattingMode.Display);
+			var textRunProperties = new CustomTextRunProperties(
+				this.Typeface, this.FontSize, this.Foreground, Brushes.Transparent);
+			paraProperties = new CustomParagraphProperties(textRunProperties);
+			source = new LineSource(textRunProperties, paraProperties, _lines);
+		}
+
+		private void CreateFormatter(out TextFormatter formatter, out LineSource source, out CustomParagraphProperties paraProperties)
+		{
+			this.CreateFormatter(this.Foreground, out formatter, out source, out paraProperties);
+		}
+
 		private void FormatText()
 		{
-			var formatter = TextFormatter.Create(TextFormattingMode.Display);
-			var textRunProperties = new CustomTextRunProperties(
-				new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch),
-				this.FontSize, this.Foreground, this.Background);
-			var paraProperties = new CustomParagraphProperties(textRunProperties);
-			var source = new LineSource(textRunProperties, _lines);
+			TextFormatter formatter;
+			LineSource source;
+			CustomParagraphProperties paraProperties;
+			this.CreateFormatter(out formatter, out source, out paraProperties);
 
 			_extentHeight = 0.0;
 			_output.Clear();
-			while (source.MoveNext())
+			int idx = 0;
+			while (source.HasMore)
 			{
-				int idx = 0;
-				while (idx < source.Length)
-				{
-					paraProperties.SetIndent(idx > 0 ? 20.0 : 0.0);
-					var textLine = formatter.FormatLine(source, idx, this.ActualWidth, paraProperties, null);
-					_output.Add(textLine);
-					idx += textLine.Length;
-					_extentHeight += textLine.Height;
-				}
+				var textLine = formatter.FormatLine(source, idx, this.ActualWidth, paraProperties, null);
+				idx += textLine.Length;
+				_extentHeight += textLine.Height;
+				_output.Add(textLine);
 			}
-			this.InvalidateVisual();
-			if (_viewer != null)
-			{
-				_viewer.InvalidateScrollInfo();
-			}
+
 			_lastLine = _output.Count > 0 ? _output[_output.Count - 1] : null;
-			_extentHeight += this.ActualHeight - (_output.Count > 0 ? _output[0].Height : 0.0);
+			_extentHeight += this.ActualHeight;
+
+			this.InvalidateVisual();
+			_viewer.InvalidateScrollInfo();
 		}
 	}
 }
