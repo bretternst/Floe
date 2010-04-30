@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="ChatContext.cs" />
     <Compile Include="ChatControl_Events.cs" />
+    <Compile Include="ChatWindow_Events.cs" />
     <Compile Include="CommandParser.cs" />
     <Compile Include="ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using Floe.Net;
 
@@ -7,6 +9,7 @@ namespace Floe.UI
 	public partial class ChatControl : UserControl
 	{
 		private bool _welcomeReceived = false;
+		private char[] _channelModes = new char[0];
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
@@ -163,8 +166,22 @@ namespace Floe.UI
 		{
 			if (this.Context.Target != null && this.Context.Target.Equals(e.Channel))
 			{
-				this.Write("Mode", string.Format("* {0} set mode: {1}", e.Who.Nickname,
-					string.Join(" ", IrcChannelMode.RenderModes(e.Modes))));
+				if (e.Who != null)
+				{
+					this.Write("Mode", string.Format("* {0} set mode: {1}", e.Who.Nickname,
+						string.Join(" ", IrcChannelMode.RenderModes(e.Modes))));
+
+					_channelModes = (from m in e.Modes.Where((newMode) => newMode.Parameter == null && newMode.Set).
+										 Select((newMode) => newMode.Mode).Union(_channelModes).Distinct()
+									 where !e.Modes.Any((newMode) => !newMode.Set && newMode.Mode == m)
+									 select m).ToArray();
+				}
+				else
+				{
+					_channelModes = (from m in e.Modes
+									 where m.Set && m.Parameter == null
+									 select m.Mode).ToArray();
+				}
 			}
 		}
 

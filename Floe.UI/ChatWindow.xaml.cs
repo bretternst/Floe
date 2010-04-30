@@ -59,6 +59,7 @@ namespace Floe.UI
 				context.Session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
 				context.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 				context.Session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
+				context.Session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			}
 			else
 			{
@@ -111,85 +112,6 @@ namespace Floe.UI
 			}
 
 			Interop.WindowPlacementHelper.Save(this);
-		}
-
-		private void Session_Joined(object sender, IrcChannelEventArgs e)
-		{
-			if (e.IsSelf)
-			{
-				this.Dispatcher.BeginInvoke((Action)(() =>
-				{
-					this.AddPage(new ChatContext((IrcSession)sender, e.Channel));
-				}));
-			}
-		}
-
-		private void Session_Parted(object sender, IrcChannelEventArgs e)
-		{
-			if (e.IsSelf)
-			{
-				this.Dispatcher.BeginInvoke((Action)(() =>
-				{
-					var page = this.FindPage((IrcSession)sender, e.Channel);
-					if (page != null)
-					{
-						this.RemovePage(page);
-					}
-				}));
-			}
-		}
-
-		private void Session_Kicked(object sender, IrcKickEventArgs e)
-		{
-			if (e.IsSelfKicked)
-			{
-				this.Dispatcher.BeginInvoke((Action)(() =>
-					{
-						var page = this.FindPage((IrcSession)sender, e.Channel);
-						if (page != null)
-						{
-							this.RemovePage(page);
-						}
-					}));
-			}
-		}
-
-		private void Session_StateChanged(object sender, EventArgs e)
-		{
-			if (((IrcSession)sender).State == IrcSessionState.Connecting)
-			{
-				foreach (var p in (from i in this.Items
-								  where i.Content.Context.Session == sender && i.Content.Context.Target != null
-								  select i.Content).ToArray())
-				{
-					this.RemovePage(p);
-				}
-			}
-		}
-
-		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
-		{
-			var session = sender as IrcSession;
-
-			switch (e.Command.Command)
-			{
-				case "VERSION":
-					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
-						"VERSION",
-						App.Product,
-						App.Version), true);
-					break;
-				case "PING":
-					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
-						"PONG",
-						e.Command.Arguments.Length > 0 ? e.Command.Arguments[0] : null), true);
-					break;
-				case "CLIENTINFO":
-					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
-						"CLIENTINFO",
-						"VERSION", "PING", "CLIENTINFO", "ACTION"), true);
-					break;
-			}
 		}
 	}
 }
