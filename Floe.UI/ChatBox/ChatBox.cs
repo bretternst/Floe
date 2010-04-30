@@ -19,6 +19,7 @@ namespace Floe.UI
 		public ChatBox()
 		{
 			this.DefaultStyleKey = typeof(ChatBox);
+			this.ApplyTemplate();
 		}
 
 		public override void OnApplyTemplate()

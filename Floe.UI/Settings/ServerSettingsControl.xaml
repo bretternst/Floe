@@ -36,9 +36,9 @@
 			</TextBox.Text>
 		</TextBox>
 		<Label Canvas.Left="179" Canvas.Top="76" Content="Hostname" Height="18" Name="label2" />
-		<TextBox Canvas.Left="178" Canvas.Top="92" Height="23" Name="txtHostName" Width="139">
+		<TextBox Canvas.Left="178" Canvas.Top="92" Height="23" Name="txtHostname" Width="139">
 			<TextBox.Text>
-				<Binding ElementName="lstServers" Path="SelectedItem.HostName" Mode="TwoWay" NotifyOnSourceUpdated="True">
+				<Binding ElementName="lstServers" Path="SelectedItem.Hostname" Mode="TwoWay" NotifyOnSourceUpdated="True">
 					<Binding.ValidationRules>
 						<ExceptionValidationRule/>
 					</Binding.ValidationRules>

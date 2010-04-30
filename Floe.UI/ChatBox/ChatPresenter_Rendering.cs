@@ -19,7 +19,7 @@ namespace Floe.UI
 			private Brush _foreground;
 			private Brush _background;
 
-			public override double FontHintingEmSize { get { return 0.0; } }
+			public override double FontHintingEmSize { get { return _fontSize; } }
 			public override TextDecorationCollection TextDecorations { get { return null; } }
 			public override TextEffectCollection TextEffects { get { return null; } }
 			public override CultureInfo CultureInfo { get { return CultureInfo.InvariantCulture; } }
@@ -74,14 +74,16 @@ namespace Floe.UI
 			private int _lineIdx, _charIdx;
 			private ChatLine[] _lines;
 			private ChatPalette _palette;
+			private Brush _foregroundOverride;
 
 			public LineSource(CustomTextRunProperties defaultProperties, CustomParagraphProperties paraProperties,
-				ChatPalette palette, IEnumerable<ChatLine> lines)
+				ChatPalette palette, IEnumerable<ChatLine> lines, Brush foregroundOverride)
 			{
 				_defaultProperties = defaultProperties;
 				_paraProperties = paraProperties;
 				_palette = palette;
 				_lines = lines.ToArray();
+				_foregroundOverride = foregroundOverride;
 			}
 
 			public bool HasMore { get { return _lineIdx < _lines.Length; } }
@@ -117,7 +119,8 @@ namespace Floe.UI
 			private CustomTextRunProperties GetProperties(ChatLine line)
 			{
 				return new CustomTextRunProperties(_defaultProperties.Typeface, _defaultProperties.FontRenderingEmSize,
-					_palette[line.ColorKey], _defaultProperties.BackgroundBrush);
+					_foregroundOverride != null ? _foregroundOverride : _palette[line.ColorKey], 
+					_defaultProperties.BackgroundBrush);
 			}
 
 			public override TextRun GetTextRun(int charIdx)
@@ -192,7 +195,7 @@ namespace Floe.UI
 			CustomParagraphProperties paraProperties = null;
 			if (this.IsSelecting)
 			{
-				this.CreateFormatter(SystemColors.HighlightTextBrush, out formatter, out source, out paraProperties);
+				this.CreateFormatter(out formatter, out source, out paraProperties, SystemColors.HighlightTextBrush);
 			}
 
 			_lastVisibleLineIdx = -1;
@@ -221,19 +224,19 @@ namespace Floe.UI
 			this.FormatText();
 		}
 
-		private void CreateFormatter(Brush foreground, out TextFormatter formatter, out LineSource source,
-			out CustomParagraphProperties paraProperties)
+		private void CreateFormatter(out TextFormatter formatter, out LineSource source,
+			out CustomParagraphProperties paraProperties, Brush foreground)
 		{
 			formatter = TextFormatter.Create(TextFormattingMode.Display);
 			var textRunProperties = new CustomTextRunProperties(
 				this.Typeface, this.FontSize, this.Foreground, Brushes.Transparent);
 			paraProperties = new CustomParagraphProperties(textRunProperties);
-			source = new LineSource(textRunProperties, paraProperties, this.Palette, _lines);
+			source = new LineSource(textRunProperties, paraProperties, this.Palette, _lines, foreground);
 		}
 
 		private void CreateFormatter(out TextFormatter formatter, out LineSource source, out CustomParagraphProperties paraProperties)
 		{
-			this.CreateFormatter(this.Foreground, out formatter, out source, out paraProperties);
+			this.CreateFormatter(out formatter, out source, out paraProperties, null);
 		}
 
 		private void FormatText()
@@ -258,7 +261,10 @@ namespace Floe.UI
 			_extentHeight += this.ActualHeight;
 
 			this.InvalidateVisual();
-			_viewer.InvalidateScrollInfo();
+			if (_viewer != null)
+			{
+				_viewer.InvalidateScrollInfo();
+			}
 		}
 	}
 }

@@ -82,6 +82,8 @@
 		<ListBox Name="lstCategories" Style="{StaticResource styleBigListBox}" Width="150" Padding="0" FontSize="14" AlternationCount="0" OverridesDefaultStyle="False" SnapsToDevicePixels="True" IsTextSearchEnabled="False" BorderThickness="0,0,1,0" SelectionChanged="lstCategories_SelectionChanged">
 			<ListBoxItem Content="User Information" />
 			<ListBoxItem Content="Servers" />
+			<ListBoxItem Content="Text Settings"/>
+			<ListBoxItem Content="Colors"/>
 		</ListBox>
 		<Grid Name="grdSettings" DockPanel.Dock="Right" Background="#FFEEEEEE">
 		</Grid>

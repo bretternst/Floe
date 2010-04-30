@@ -11,7 +11,7 @@ namespace Floe.Net
 		Bounce = 5,
 		UserModeIs = 221,
 		ServList = 234,
-		ServListend = 235,
+		ServListEnd = 235,
 		LUserClient = 251,
 		LUserOp = 252,
 		LUserUnknown = 253,

@@ -74,13 +74,20 @@
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChatContext.cs" />
+    <Compile Include="ChatControl_Events.cs" />
     <Compile Include="CommandParser.cs" />
     <Compile Include="ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Exceptions\InputException.cs" />
+    <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />
     <Compile Include="Settings\ColorsElement.cs" />
+    <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
+      <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\TextSettingsControl.xaml.cs">
+      <DependentUpon>TextSettingsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\TextElement.cs" />
     <Compile Include="Settings\PersistentConfiguration.cs" />
     <Compile Include="Settings\PreferencesSection.cs" />
@@ -107,6 +114,14 @@
     <Page Include="ChatWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Settings\ColorsSettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\TextSettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Settings\ServerSettingsControl.xaml">
       <SubType>Designer</SubType>

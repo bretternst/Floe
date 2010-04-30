@@ -62,8 +62,8 @@ namespace Floe.UI
 
 		private void OpenWindow()
 		{
-			var window = new ChatWindow(new IrcSession(App.Preferences.User.UserName,
-				App.Preferences.User.HostName, App.Preferences.User.FullName));
+			var window = new ChatWindow(new IrcSession(App.Preferences.User.Username,
+				App.Preferences.User.Hostname, App.Preferences.User.FullName));
 			window.Closed += new EventHandler(window_Closed);
 			window.Show();
 		}

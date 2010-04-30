@@ -16,24 +16,10 @@ namespace Floe.UI
 		public bool IsConnected { get { return this.Session.State == IrcSessionState.Connecting ||
 			this.Session.State == IrcSessionState.Connected; } }
 
-		public event EventHandler ChangingServer;
-
 		public ChatContext(IrcSession ircSession, IrcTarget target)
 		{
 			this.Session = ircSession;
 			this.Target = target;
-		}
-
-		public void OnChangeServer()
-		{
-			Dispatcher.BeginInvoke((Action)(() =>
-			{
-				var handler = this.ChangingServer;
-				if (handler != null)
-				{
-					handler(this, EventArgs.Empty);
-				}
-			}));
 		}
 
 		public override string ToString()

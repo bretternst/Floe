@@ -27,7 +27,7 @@ namespace Floe.Configuration
 		}
 
 		[ConfigurationProperty("userName", DefaultValue = "")]
-		public string UserName
+		public string Username
 		{
 			get
 			{
@@ -58,7 +58,7 @@ namespace Floe.Configuration
 		}
 
 		[ConfigurationProperty("hostName", DefaultValue = "")]
-		public string HostName
+		public string Hostname
 		{
 			get
 			{

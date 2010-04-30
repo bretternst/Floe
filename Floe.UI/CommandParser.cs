@@ -1,35 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Floe.Net;
 
 namespace Floe.UI
 {
-	public enum OutputType
+	public enum CommandEchoType
 	{
-		Client,
-		Server,
-		SelfMessage,
-		PrivateMessage,
-		Notice,
-		Topic,
-		Nick,
-		SelfAction,
-		Action,
-		Join,
-		Part,
-		Kicked,
-		SelfKicked
+		Error,
+		Message,
+		Action
 	}
 
-	public class CommandOutput
+	public class CommandEcho
 	{
-		public OutputType Type { get; private set; }
+		public CommandEchoType Type { get; private set; }
 		public string Text { get; private set; }
 
-		public CommandOutput(OutputType type, string text)
+		public CommandEcho(CommandEchoType type, string text)
 		{
 			this.Type = type;
 			this.Text = text;
@@ -40,7 +26,7 @@ namespace Floe.UI
 	{
 		private const char CommandChar = '/';
 
-		public static CommandOutput Execute(ChatContext context, string text)
+		public static CommandEcho Execute(ChatContext context, string text)
 		{
 			string command = text.Trim();
 
@@ -72,15 +58,15 @@ namespace Floe.UI
 
 				if (context.Target == null)
 				{
-					throw new InputException("Can't talk in this window.");
+					return new CommandEcho(CommandEchoType.Error, "Can't talk in this window.");
 				}
 
 				context.Session.PrivateMessage(context.Target, text);
-				return new CommandOutput(OutputType.SelfMessage, text);
+				return new CommandEcho(CommandEchoType.Message, text);
 			}
 		}
 
-		private static CommandOutput Execute(ChatContext context, string command, string arguments)
+		private static CommandEcho Execute(ChatContext context, string command, string arguments)
 		{
 			string[] args;
 
@@ -175,7 +161,7 @@ namespace Floe.UI
 					{
 						if (!context.Session.IsSelf(target))
 						{
-							throw new InputException("Can't set modes for another user.");
+							return new CommandEcho(CommandEchoType.Error, "Can't set modes for another user.");
 						}
 						if (args.Length > 1)
 						{
@@ -220,14 +206,15 @@ namespace Floe.UI
 				case "ACTION":
 					if (context.Target == null)
 					{
-						throw new InputException("Can't talk in this window.");
+						return new CommandEcho(CommandEchoType.Error, "Can't talk in this window.");
 					}
 					args = Split(command, arguments, 1, int.MaxValue);
 					context.Session.SendCtcp(context.Target,
 						new CtcpCommand("ACTION", args), false);
-					return new CommandOutput(OutputType.SelfAction, string.Join(" ", args));
+					return new CommandEcho(CommandEchoType.Action, string.Join(" ", args));
 				default:
-					throw new InputException("Unrecognized command.");
+					return new CommandEcho(CommandEchoType.Error,
+						string.Format("Unrecognized command: {0}", command));
 			}
 			return null;
 		}
@@ -237,7 +224,7 @@ namespace Floe.UI
 			string[] parts = StringUtility.Split(args, maxArgs);
 			if (parts.Length < minArgs)
 			{
-				throw new InputException(string.Format("{0} requires {1} parameters.", command, minArgs));
+				throw new Exception(string.Format("{0} requires {1} parameters.", command, minArgs));
 			}
 			return parts;
 		}

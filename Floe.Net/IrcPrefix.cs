@@ -39,8 +39,8 @@ namespace Floe.Net
 	public sealed class IrcPeer : IrcPrefix
 	{
 		public string Nickname { get; private set; }
-		public string UserName { get; private set; }
-		public string HostName { get; private set; }
+		public string Username { get; private set; }
+		public string Hostname { get; private set; }
 
 		public IrcPeer(string nickUserHost)
 			: base(nickUserHost)
@@ -49,7 +49,7 @@ namespace Floe.Net
 
 			if(parts.Length > 1)
 			{
-				this.HostName = parts[1];
+				this.Hostname = parts[1];
 			}
 
 			if(parts.Length > 0)
@@ -57,7 +57,7 @@ namespace Floe.Net
 				parts = parts[0].Split('!');
 				if (parts.Length > 0)
 				{
-					this.UserName = parts[1];
+					this.Username = parts[1];
 				}
 				if (parts.Length > 0)
 				{

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Configuration;
 
 namespace Floe.Configuration
@@ -24,7 +25,13 @@ namespace Floe.Configuration
 
 		public void Load()
 		{
-			_exeConfig = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoaming);
+			var map = new ExeConfigurationFileMap();
+			map.ExeConfigFilename = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
+			string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Floe.UI.App.Product);
+			path = Path.Combine(path, string.Format("{0}.config", Floe.UI.App.Product));
+			map.RoamingUserConfigFilename = path;
+
+			_exeConfig = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.PerUserRoaming);
 			_prefConfigSection = _exeConfig.GetSection(PreferencesConfigSectionName) as PreferencesSection;
 			if (_prefConfigSection == null)
 			{

@@ -128,6 +128,13 @@ namespace Floe.Configuration
 			set { this["topic"] = value; }
 		}
 
+		[ConfigurationProperty("error", DefaultValue = "Red")]
+		public string Error
+		{
+			get { return (string)this["error"]; }
+			set { this["error"] = value; }
+		}
+
 		public ChatPalette Palette
 		{
 			get
@@ -149,6 +156,7 @@ namespace Floe.Configuration
 				palette.Add("Part", converter.ConvertFromString(this.Part) as SolidColorBrush);
 				palette.Add("Quit", converter.ConvertFromString(this.Quit) as SolidColorBrush);
 				palette.Add("Topic", converter.ConvertFromString(this.Topic) as SolidColorBrush);
+				palette.Add("Error", converter.ConvertFromString(this.Error) as SolidColorBrush);
 
 				return palette;
 			}

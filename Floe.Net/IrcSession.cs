@@ -17,8 +17,8 @@ namespace Floe.Net
 		private IrcSessionState _state;
 
 		public string Nickname { get; private set; }
-		public string UserName { get; private set; }
-		public string HostName { get; private set; }
+		public string Username { get; private set; }
+		public string Hostname { get; private set; }
 		public string FullName { get; private set; }
 		public string Server { get; private set; }
 
@@ -30,12 +30,16 @@ namespace Floe.Net
 			}
 			private set
 			{
-				_state = value;
-				this.OnStateChanged();
+				if (_state != value)
+				{
+					_state = value;
+					this.OnStateChanged();
+				}
 			}
 		}
 
 		public event EventHandler<EventArgs> StateChanged;
+		public event EventHandler<ErrorEventArgs> ConnectionError;
 		public event EventHandler<IrcEventArgs> RawMessageReceived;
 		public event EventHandler<IrcEventArgs> RawMessageSent;
 		public event EventHandler<IrcNickEventArgs> NickChanged;
@@ -55,8 +59,8 @@ namespace Floe.Net
 		public IrcSession(string userName = "none", string hostName = "127.0.0.1", string fullname = "none")
 		{
 			this.State = IrcSessionState.Disconnected;
-			this.UserName = userName;
-			this.HostName = hostName;
+			this.Username = userName;
+			this.Hostname = hostName;
 			this.FullName = fullname;
 		}
 
@@ -84,6 +88,7 @@ namespace Floe.Net
 			_conn.Disconnected += new EventHandler(_conn_Disconnected);
 			_conn.MessageReceived += new EventHandler<IrcEventArgs>(_conn_MessageReceived);
 			_conn.MessageSent += new EventHandler<IrcEventArgs>(_conn_MessageSent);
+			_conn.ConnectionError += new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
 			_conn.Open();
 		}
 
@@ -275,6 +280,15 @@ namespace Floe.Net
 			}
 		}
 
+		private void OnConnectionError(ErrorEventArgs e)
+		{
+			var handler = this.ConnectionError;
+			if (handler != null)
+			{
+				handler(this, e);
+			}
+		}
+
 		private void OnMessageReceived(IrcEventArgs e)
 		{
 			var handler = this.RawMessageReceived;
@@ -457,6 +471,11 @@ namespace Floe.Net
 			}
 		}
 
+		private void _conn_ConnectionError(object sender, ErrorEventArgs e)
+		{
+			this.OnConnectionError(e);
+		}
+
 		private void _conn_MessageSent(object sender, IrcEventArgs e)
 		{
 			this.OnMessageSent(e);
@@ -510,7 +529,7 @@ namespace Floe.Net
 		private void _conn_Connected(object sender, EventArgs e)
 		{
 			this.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(IrcSession_CtcpCommand);
-			_conn.QueueMessage(new IrcMessage("USER", this.UserName, this.HostName, "*", this.FullName));
+			_conn.QueueMessage(new IrcMessage("USER", this.Username, this.Hostname, "*", this.FullName));
 			_conn.QueueMessage(new IrcMessage("NICK", this.Nickname));
 		}
 

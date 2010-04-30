@@ -25,9 +25,9 @@ namespace Floe.Configuration
 		}
 
 		[ConfigurationProperty("text")]
-		public OutputElement Text
+		public TextElement Text
 		{
-			get { return (OutputElement)this["text"]; }
+			get { return (TextElement)this["text"]; }
 			set { this["text"] = value; }
 		}
 
@@ -43,6 +43,13 @@ namespace Floe.Configuration
 		{
 			get { return (string)this["windowPlacement"]; }
 			set { this["windowPlacement"] = value; }
+		}
+
+		[ConfigurationProperty("customColors", DefaultValue = "")]
+		public string CustomColors
+		{
+			get { return (string)this["customColors"]; }
+			set { this["customColors"] = value; }
 		}
 	}
 }

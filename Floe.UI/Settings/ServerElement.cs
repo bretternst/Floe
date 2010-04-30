@@ -87,7 +87,7 @@ namespace Floe.Configuration
 		}
 
 		[ConfigurationProperty("hostName")]
-		public string HostName
+		public string Hostname
 		{
 			get
 			{

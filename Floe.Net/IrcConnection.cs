@@ -22,7 +22,7 @@ namespace Floe.Net
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
-		public event EventHandler<ErrorEventArgs> Error;
+		public event EventHandler<ErrorEventArgs> ConnectionError;
 		public event EventHandler<IrcEventArgs> MessageReceived;
 		public event EventHandler<IrcEventArgs> MessageSent;
 
@@ -100,7 +100,7 @@ namespace Floe.Net
 			}
 			catch (Exception ex)
 			{
-				this.OnError(ex);
+				this.OnConnectionError(ex);
 				this.OnDisconnected();
 				return;
 			}
@@ -207,9 +207,9 @@ namespace Floe.Net
 			}
 		}
 
-		private void OnError(Exception ex)
+		private void OnConnectionError(Exception ex)
 		{
-			var handler = this.Error;
+			var handler = this.ConnectionError;
 			if (handler != null)
 			{
 				handler(this, new ErrorEventArgs(ex));

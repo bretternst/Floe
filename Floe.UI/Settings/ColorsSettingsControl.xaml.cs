@@ -3,9 +3,9 @@ using System.Windows.Controls;
 
 namespace Floe.UI.Settings
 {
-	public partial class UserSettingsControl : UserControl
+	public partial class ColorsSettingsControl : UserControl
 	{
-		public UserSettingsControl()
+		public ColorsSettingsControl()
 		{
 			InitializeComponent();
 		}

@@ -123,14 +123,14 @@ namespace Floe.Net
 	public class IrcChannelModeEventArgs : IrcEventArgs
 	{
 		public IrcPeer Who { get; private set; }
-		public string Channel { get; private set; }
+		public IrcTarget Channel { get; private set; }
 		public ICollection<IrcChannelMode> Modes { get; private set; }
 
 		public IrcChannelModeEventArgs(IrcMessage message)
 			: base(message)
 		{
 			this.Who = message.From as IrcPeer;
-			this.Channel = message.Parameters.Count > 0 ? message.Parameters[0] : null;
+			this.Channel = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
 			this.Modes = message.Parameters.Count > 1 ? IrcChannelMode.ParseModes(message.Parameters.Skip(1)) : null;
 		}
 	}
