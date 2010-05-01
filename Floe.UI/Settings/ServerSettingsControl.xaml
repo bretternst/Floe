@@ -12,7 +12,7 @@
 		</Style>
 	</UserControl.Resources>
 	<Canvas>
-		<ListBox Canvas.Left="12" Canvas.Top="47" Height="188" Name="lstServers" Width="138" ItemsSource="{Binding Source={x:Static local:App.Preferences}, Path=Servers}" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+		<ListBox Canvas.Left="12" Canvas.Top="47" Height="188" Name="lstServers" Width="138" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
 		<Button Canvas.Left="12" Canvas.Top="18" Content="New" Height="23" Name="btnNew" Width="58" Click="btnNew_Click" />
 		<Button Canvas.Left="88" Canvas.Top="18" Content="Delete" Height="23" Name="btnDelete" Width="62" Click="btnDelete_Click">
 			<Button.Style>

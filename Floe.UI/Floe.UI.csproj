@@ -74,32 +74,36 @@
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChatContext.cs" />
+    <Compile Include="ChatControl_Commands.cs" />
     <Compile Include="ChatControl_Events.cs" />
     <Compile Include="ChatWindow_Events.cs" />
-    <Compile Include="CommandParser.cs" />
     <Compile Include="ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />
-    <Compile Include="Settings\ColorsElement.cs" />
+    <Compile Include="Settings\Configuration\BufferElement.cs" />
+    <Compile Include="Settings\BufferSettingsControl.xaml.cs">
+      <DependentUpon>BufferSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\Configuration\ColorsElement.cs" />
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\TextSettingsControl.xaml.cs">
       <DependentUpon>TextSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\TextElement.cs" />
-    <Compile Include="Settings\PersistentConfiguration.cs" />
-    <Compile Include="Settings\PreferencesSection.cs" />
-    <Compile Include="Settings\ServerElement.cs" />
+    <Compile Include="Settings\Configuration\TextElement.cs" />
+    <Compile Include="Settings\Configuration\PersistentSettings.cs" />
+    <Compile Include="Settings\Configuration\SettingsSection.cs" />
+    <Compile Include="Settings\Configuration\ServerElement.cs" />
     <Compile Include="Settings\ServerSettingsControl.xaml.cs">
       <DependentUpon>ServerSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\UserElement.cs" />
+    <Compile Include="Settings\Configuration\UserElement.cs" />
     <Compile Include="Settings\UserSettingsControl.xaml.cs">
       <DependentUpon>UserSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -107,12 +111,15 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utility\StringUtility.cs" />
     <Page Include="ChatControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ChatWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Settings\BufferSettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

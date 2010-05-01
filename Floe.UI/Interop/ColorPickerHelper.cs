@@ -42,7 +42,7 @@ namespace Floe.UI.Interop
 
 			try
 			{
-				string s = App.Preferences.CustomColors;
+				string s = App.Settings.Current.CustomColors;
 				if (!string.IsNullOrEmpty(s))
 				{
 					buf = Convert.FromBase64String(s);
@@ -65,7 +65,7 @@ namespace Floe.UI.Interop
 			buf = new byte[64];
 			Marshal.Copy(cs.lpCustColors, buf, 0, 64);
 			Marshal.FreeHGlobal(cs.lpCustColors);
-			App.Preferences.CustomColors = Convert.ToBase64String(buf);
+			App.Settings.Current.CustomColors = Convert.ToBase64String(buf);
 
 			Marshal.FreeHGlobal(cs.lpCustColors);
 

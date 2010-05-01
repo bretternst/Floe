@@ -29,5 +29,19 @@ namespace Floe.UI
 				this.ScrollToEnd();
 			}
 		}
+
+		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+		{
+			if (e.Property == Control.FontFamilyProperty ||
+				e.Property == Control.FontSizeProperty ||
+				e.Property == Control.FontStyleProperty ||
+				e.Property == Control.FontWeightProperty ||
+				e.Property == ChatBoxBase.PaletteProperty)
+			{
+				this.FormatText();
+			}
+			
+			base.OnPropertyChanged(e);
+		}
 	}
 }

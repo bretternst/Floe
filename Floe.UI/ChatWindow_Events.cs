@@ -40,7 +40,7 @@ namespace Floe.UI
 					var page = this.FindPage((IrcSession)sender, e.Channel);
 					if (page != null)
 					{
-						this.RemovePage(page);
+						this.RemovePage(page.Context);
 					}
 				}));
 			}
@@ -55,7 +55,7 @@ namespace Floe.UI
 					var page = this.FindPage((IrcSession)sender, e.Channel);
 					if (page != null)
 					{
-						this.RemovePage(page);
+						this.RemovePage(page.Context);
 					}
 				}));
 			}
@@ -69,7 +69,7 @@ namespace Floe.UI
 								   where i.Content.Context.Session == sender && i.Content.Context.Target != null
 								   select i.Content).ToArray())
 				{
-					this.RemovePage(p);
+					this.RemovePage(p.Context);
 				}
 			}
 		}
@@ -104,6 +104,26 @@ namespace Floe.UI
 			_userModes = (from m in e.Modes.Where((newMode) => newMode.Set).Select((newMode) => newMode.Mode).Union(_userModes).Distinct()
 						  where !e.Modes.Any((newMode) => !newMode.Set)
 						  select m).ToArray();
+		}
+
+		private void SubscribeEvents(IrcSession session)
+		{
+			session.Joined += new EventHandler<IrcChannelEventArgs>(Session_Joined);
+			session.Parted += new EventHandler<IrcChannelEventArgs>(Session_Parted);
+			session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
+			session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
+			session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
+		}
+
+		public void UnsubscribeEvents(IrcSession session)
+		{
+			session.Joined -= new EventHandler<IrcChannelEventArgs>(Session_Joined);
+			session.Parted -= new EventHandler<IrcChannelEventArgs>(Session_Parted);
+			session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
+			session.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
+			session.UserModeChanged -= new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 		}
 	}
 }

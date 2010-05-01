@@ -9,22 +9,14 @@ namespace Floe.UI
 {
     public partial class App : Application
     {
-		private static Lazy<PersistentConfiguration> _config =
-			new Lazy<PersistentConfiguration>(() => new PersistentConfiguration(), true);
+		private static Lazy<PersistentSettings> _config =
+			new Lazy<PersistentSettings>(() => new PersistentSettings(), true);
 
-		public static PersistentConfiguration Configuration
+		public static PersistentSettings Settings
 		{
 			get
 			{
 				return _config.Value;
-			}
-		}
-
-		public static PreferencesSection Preferences
-		{
-			get
-			{
-				return Configuration.Preferences;
 			}
 		}
 
@@ -62,9 +54,10 @@ namespace Floe.UI
 
 		private void OpenWindow()
 		{
-			var window = new ChatWindow(new IrcSession(App.Preferences.User.Username,
-				App.Preferences.User.Hostname, App.Preferences.User.FullName));
+			var window = new ChatWindow();
 			window.Closed += new EventHandler(window_Closed);
+			window.AddPage(new ChatContext(new IrcSession(App.Settings.Current.User.Username,
+				App.Settings.Current.User.Hostname, App.Settings.Current.User.FullName), null));
 			window.Show();
 		}
 
@@ -72,7 +65,7 @@ namespace Floe.UI
 		{
 			this.OpenWindow();
 
-			if (App.Preferences.Servers.Count < 1)
+			if (App.Settings.Current.Servers.Count < 1)
 			{
 				ShowSettings();
 			}
@@ -88,7 +81,7 @@ namespace Floe.UI
 
 		private void App_Exit(object sender, ExitEventArgs e)
 		{
-			App.Configuration.Save();
+			App.Settings.Save();
 		}
 	}
 }

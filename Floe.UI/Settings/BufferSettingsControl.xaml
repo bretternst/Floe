@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="Floe.UI.Settings.BufferSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:local="clr-namespace:Floe.UI"
+             mc:Ignorable="d"
+             d:DesignHeight="235" d:DesignWidth="384">
+	<Canvas>
+		<GroupBox Canvas.Left="12" Canvas.Top="0" Header="Buffer" Height="86" Name="groupBox1" Width="360" BorderBrush="#FFC3C3C3">
+			<Canvas>
+				<Label Content="Output Lines" Height="24" Name="label1" Canvas.Left="6" Canvas.Top="4" />
+				<Label Canvas.Left="201" Canvas.Top="4" Content="Input History" Height="24" Name="label3" />
+				<TextBox Canvas.Left="118" Canvas.Top="4" Height="23" Name="txtOutputLines" Width="56">
+					<TextBox.Text>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Buffer.BufferLines" Mode="TwoWay">
+							<Binding.ValidationRules>
+								<ExceptionValidationRule/>
+							</Binding.ValidationRules>
+						</Binding>
+					</TextBox.Text>
+				</TextBox>
+				<TextBox Canvas.Left="286" Canvas.Top="4" Height="23" Name="txtInputHistory" Width="56">
+					<TextBox.Text>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Buffer.InputHistory" Mode="TwoWay">
+							<Binding.ValidationRules>
+								<ExceptionValidationRule/>
+							</Binding.ValidationRules>
+						</Binding>
+					</TextBox.Text>
+				</TextBox>
+				<Label Canvas.Left="6" Canvas.Top="30" Content="Auto Copy Length" Height="27" Name="label2" />
+				<TextBox Canvas.Left="118" Canvas.Top="30" Height="23" Name="txtMinimumCopyLength" Width="56">
+					<TextBox.Text>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Buffer.MinimumCopyLength" Mode="TwoWay">
+							<Binding.ValidationRules>
+								<ExceptionValidationRule/>
+							</Binding.ValidationRules>
+						</Binding>
+					</TextBox.Text>
+				</TextBox>
+			</Canvas>
+		</GroupBox>
+	</Canvas>
+</UserControl>

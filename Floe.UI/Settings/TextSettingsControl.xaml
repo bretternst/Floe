@@ -7,50 +7,16 @@
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384" x:Name="TextSettings">
 	<Canvas>
-		<GroupBox Canvas.Left="6" Canvas.Top="155" Header="Buffer" Height="86" Name="groupBox1" Width="360" BorderBrush="#FFC3C3C3">
-			<Canvas>
-				<Label Content="Output Lines" Height="24" Name="label1" Canvas.Left="6" Canvas.Top="4" />
-				<Label Canvas.Left="201" Canvas.Top="4" Content="Input History" Height="24" Name="label3" />
-				<TextBox Canvas.Left="118" Canvas.Top="4" Height="23" Name="txtOutputLines" Width="56">
-					<TextBox.Text>
-						<Binding Source="{x:Static local:App.Preferences}" Path="Text.BufferLines" Mode="TwoWay">
-							<Binding.ValidationRules>
-								<ExceptionValidationRule/>
-							</Binding.ValidationRules>
-						</Binding>
-					</TextBox.Text>
-				</TextBox>
-				<TextBox Canvas.Left="286" Canvas.Top="4" Height="23" Name="txtInputHistory" Width="56">
-					<TextBox.Text>
-						<Binding Source="{x:Static local:App.Preferences}" Path="Text.InputHistory" Mode="TwoWay">
-							<Binding.ValidationRules>
-								<ExceptionValidationRule/>
-							</Binding.ValidationRules>
-						</Binding>
-					</TextBox.Text>
-				</TextBox>
-				<Label Canvas.Left="6" Canvas.Top="30" Content="Auto Copy Length" Height="27" Name="label2" />
-				<TextBox Canvas.Left="118" Canvas.Top="30" Height="23" Name="txtMinimumCopyLength" Width="56">
-					<TextBox.Text>
-						<Binding Source="{x:Static local:App.Preferences}" Path="Text.MinimumCopyLength" Mode="TwoWay">
-							<Binding.ValidationRules>
-								<ExceptionValidationRule/>
-							</Binding.ValidationRules>
-						</Binding>
-					</TextBox.Text>
-				</TextBox>
-			</Canvas>
-		</GroupBox>
 		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="154" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
 			<Canvas Canvas.Left="42" Canvas.Top="130" Width="348">
 				<Label Canvas.Left="6" Canvas.Top="6" Content="Font Family" Height="28" Name="label4" />
 				<ComboBox Canvas.Left="83" Canvas.Top="6" Height="28" Name="lstFontFamily" Width="219" SelectedValuePath="FontFamilyName"
 						  ItemsSource="{Binding ElementName=TextSettings, Path=FontFamilyItems}"
-						  SelectedValue="{Binding Source={x:Static local:App.Preferences}, Path=Text.FontFamily, Mode=TwoWay}" FontSize="16" />
+						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=TwoWay}" FontSize="16" />
 				<Label Canvas.Left="19" Canvas.Top="40" Content="Size (em)" Height="28" Name="label5" />
 				<TextBox Canvas.Left="83" Canvas.Top="40" Height="23" Name="txtFontSize" Width="56">
 					<TextBox.Text>
-						<Binding Source="{x:Static local:App.Preferences}" Path="Text.FontSize" Mode="TwoWay">
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Text.FontSize" Mode="TwoWay">
 							<Binding.ValidationRules>
 								<ExceptionValidationRule/>
 							</Binding.ValidationRules>
@@ -60,7 +26,7 @@
 				<Label Canvas.Left="160" Canvas.Top="40" Content="Weight" Height="28" Name="label6" />
 				<ComboBox Canvas.Left="214" Canvas.Top="40" Height="23" Name="txtFontWeight" Width="88"
 						  ItemsSource="{Binding ElementName=TextSettings, Path=FontWeightItems}"
-						  SelectedValue="{Binding Source={x:Static local:App.Preferences}, Path=Text.FontWeight, Mode=TwoWay}"/>
+						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=TwoWay}"/>
 				<TextBlock Canvas.Left="6" Canvas.Top="69" Height="68" Name="txtPreview" TextAlignment="Center" VerticalAlignment="Center" Width="336"
 						   FontFamily="{Binding ElementName=lstFontFamily, Path=SelectedValue}"
 						   FontSize="{Binding ElementName=txtFontSize, Path=Text}"

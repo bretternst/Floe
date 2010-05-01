@@ -1,19 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Configuration;
+using System.ComponentModel;
 
 namespace Floe.Configuration
 {
-	public sealed class PersistentConfiguration
+	public sealed class PersistentSettings : INotifyPropertyChanged
 	{
-		private const string PreferencesConfigSectionName = "floe.preferences";
+		private const string SettingsConfigSectionName = "floe.settings";
 
 		private System.Configuration.Configuration _exeConfig;
-		private PreferencesSection _prefConfigSection;
+		private SettingsSection _prefConfigSection;
 
-		public PreferencesSection Preferences { get { return _prefConfigSection; } }
+		public SettingsSection Current { get { return _prefConfigSection; } }
 
-		public PersistentConfiguration()
+		public PersistentSettings()
 		{
 			this.Load();
 		}
@@ -32,12 +33,25 @@ namespace Floe.Configuration
 			map.RoamingUserConfigFilename = path;
 
 			_exeConfig = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.PerUserRoaming);
-			_prefConfigSection = _exeConfig.GetSection(PreferencesConfigSectionName) as PreferencesSection;
+			_prefConfigSection = _exeConfig.GetSection(SettingsConfigSectionName) as SettingsSection;
 			if (_prefConfigSection == null)
 			{
-				_prefConfigSection = new PreferencesSection();
+				_prefConfigSection = new SettingsSection();
 				_prefConfigSection.SectionInformation.AllowExeDefinition = ConfigurationAllowExeDefinition.MachineToLocalUser;
-				_exeConfig.Sections.Add(PreferencesConfigSectionName, _prefConfigSection);
+				_exeConfig.Sections.Add(SettingsConfigSectionName, _prefConfigSection);
+			}
+
+			this.OnPropertyChanged("Current");
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		private void OnPropertyChanged(string name)
+		{
+			var handler = this.PropertyChanged;
+			if (handler != null)
+			{
+				handler(this, new PropertyChangedEventArgs(name));
 			}
 		}
 	}

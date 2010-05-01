@@ -135,7 +135,7 @@ namespace Floe.UI
 					string text = txtInput.Text;
 					txtInput.Clear();
 					_history.AddFirst(text);
-					while(_history.Count > App.Preferences.Text.InputHistory)
+					while(_history.Count > App.Settings.Current.Buffer.InputHistory)
 					{
 						_history.RemoveLast();
 					}
@@ -149,22 +149,7 @@ namespace Floe.UI
 		{
 			try
 			{
-				var echo = CommandParser.Execute(this.Context, text);
-				if (echo != null)
-				{
-					switch (echo.Type)
-					{
-						case CommandEchoType.Error:
-							this.Write("Error", echo.Text);
-							break;
-						case CommandEchoType.Action:
-							this.Write("Own", string.Format("* {0} {1}", this.Context.Session.Nickname, echo.Text));
-							break;
-						case CommandEchoType.Message:
-							this.Write("Own", string.Format("<{0}> {1}", this.Context.Session.Nickname, echo.Text));
-							break;
-					}
-				}
+				this.Execute(text);
 			}
 			catch (IrcException ex)
 			{

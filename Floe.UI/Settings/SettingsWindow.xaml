@@ -84,6 +84,7 @@
 			<ListBoxItem Content="Servers" />
 			<ListBoxItem Content="Text Settings"/>
 			<ListBoxItem Content="Colors"/>
+			<ListBoxItem Content="Buffer"/>
 		</ListBox>
 		<Grid Name="grdSettings" DockPanel.Dock="Right" Background="#FFEEEEEE">
 		</Grid>

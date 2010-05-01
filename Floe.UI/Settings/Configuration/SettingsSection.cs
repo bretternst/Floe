@@ -5,7 +5,7 @@ using Floe.UI.Interop;
 
 namespace Floe.Configuration
 {
-	public sealed class PreferencesSection : ConfigurationSection
+	public sealed class SettingsSection : ConfigurationSection
 	{
 		[ConfigurationProperty("user")]
 		public UserElement User
@@ -36,6 +36,13 @@ namespace Floe.Configuration
 		{
 			get { return (ColorsElement)this["colors"]; }
 			set { this["colors"] = value; }
+		}
+
+		[ConfigurationProperty("buffer")]
+		public BufferElement Buffer
+		{
+			get { return (BufferElement)this["buffer"]; }
+			set { this["buffer"] = value; }
 		}
 
 		[ConfigurationProperty("windowPlacement")]

@@ -10,12 +10,13 @@ namespace Floe.UI.Settings
 		{
 			InitializeComponent();
 
-			App.Configuration.Save();
+			App.Settings.Save();
 
 			grdSettings.Children.Add(new UserSettingsControl());
 			grdSettings.Children.Add(new ServerSettingsControl());
 			grdSettings.Children.Add(new TextSettingsControl());
 			grdSettings.Children.Add(new ColorsSettingsControl());
+			grdSettings.Children.Add(new BufferSettingsControl());
 
 			if (lstCategories.SelectedIndex < 0)
 			{
@@ -25,13 +26,13 @@ namespace Floe.UI.Settings
 
 		private void btnApply_Click(object sender, RoutedEventArgs e)
 		{
-			App.Configuration.Save();
+			App.Settings.Save();
 			this.Close();
 		}
 
 		private void btnCancel_Click(object sender, RoutedEventArgs e)
 		{
-			App.Configuration.Load();
+			App.Settings.Load();
 			this.Close();
 		}
 

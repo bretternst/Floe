@@ -247,6 +247,7 @@ namespace Floe.UI
 			this.CreateFormatter(out formatter, out source, out paraProperties);
 
 			_extentHeight = 0.0;
+			_output.ForEach((tl) => tl.Dispose());
 			_output.Clear();
 			int idx = 0;
 			while (source.HasMore)

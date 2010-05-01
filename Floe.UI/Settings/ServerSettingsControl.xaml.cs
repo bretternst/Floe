@@ -10,12 +10,12 @@ namespace Floe.UI.Settings
 	{
 		public ServerSettingsControl()
 		{
-			if (App.Preferences.Servers.Count == 0)
+			if (App.Settings.Current.Servers.Count == 0)
 			{
 				var server = new ServerElement();
 				server.Name = "New Server";
 				server.Port = 6667;
-				App.Preferences.Servers.Add(server);
+				App.Settings.Current.Servers.Add(server);
 			}
 
 			InitializeComponent();
@@ -29,7 +29,7 @@ namespace Floe.UI.Settings
 
 			string newName = server.Name = "New Server";
 			int i = 1;
-			while (App.Preferences.Servers.OfType<ServerElement>().Any((s) => s.Name == (server.Name = string.Format(newName, i))))
+			while (App.Settings.Current.Servers.OfType<ServerElement>().Any((s) => s.Name == (server.Name = string.Format(newName, i))))
 			{
 				if (++i == 2)
 				{
@@ -38,7 +38,7 @@ namespace Floe.UI.Settings
 			}
 			server.Port = 6667;
 
-			App.Preferences.Servers.Add(server);
+			App.Settings.Current.Servers.Add(server);
 			lstServers.Items.Refresh();
 			lstServers.SelectedItem = server;
 		}
@@ -46,7 +46,7 @@ namespace Floe.UI.Settings
 		private void btnDelete_Click(object sender, RoutedEventArgs e)
 		{
 			int selectedIndex = lstServers.SelectedIndex;
-			App.Preferences.Servers.RemoveAt(selectedIndex);
+			App.Settings.Current.Servers.RemoveAt(selectedIndex);
 			lstServers.Items.Refresh();
 			lstServers.SelectedIndex = Math.Min(lstServers.Items.Count-1, selectedIndex);
 		}
@@ -56,7 +56,7 @@ namespace Floe.UI.Settings
 			int i = 2;
 			var server = lstServers.SelectedItem as ServerElement;
 			string origName = server.Name;
-			while (App.Preferences.Servers.OfType<ServerElement>().Any((s) => s.Name == server.Name && s != server))
+			while (App.Settings.Current.Servers.OfType<ServerElement>().Any((s) => s.Name == server.Name && s != server))
 			{
 				server.Name = origName + " " + i++;
 			}

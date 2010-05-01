@@ -14,16 +14,16 @@
 		<Label Canvas.Left="63" Canvas.Top="127" Content="Full Name:" Height="28" Name="label5" />
 		<TextBox Canvas.Left="136" Canvas.Top="14" Height="23" Name="txtNickname" Width="109">
 			<TextBox.Text>
-				<Binding Source="{x:Static local:App.Preferences}" Path="User.Nickname" Mode="TwoWay">
+				<Binding Source="{x:Static local:App.Settings}" Path="Current.User.Nickname" Mode="TwoWay">
 					<Binding.ValidationRules>
 						<ExceptionValidationRule/>
 					</Binding.ValidationRules>
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<TextBox Canvas.Left="136" Canvas.Top="48" Height="23" Name="txtAltNickname" Width="109" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.AlternateNickname, Mode=TwoWay}"/>
-		<TextBox Canvas.Left="136" Canvas.Top="127" Height="23" Name="txtFullName" Width="159" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.FullName, Mode=TwoWay}"/>
-		<TextBox Canvas.Left="136" Canvas.Top="161" Height="23" Name="txtUsername" Width="109" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.Username, Mode=TwoWay}"/>
-		<TextBox Canvas.Left="136" Canvas.Top="195" Height="23" Name="txtHostname" Width="159" Text="{Binding Source={x:Static local:App.Preferences}, Path=User.Hostname, Mode=TwoWay}"/>
+		<TextBox Canvas.Left="136" Canvas.Top="48" Height="23" Name="txtAltNickname" Width="109" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.User.AlternateNickname, Mode=TwoWay}"/>
+		<TextBox Canvas.Left="136" Canvas.Top="127" Height="23" Name="txtFullName" Width="159" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.User.FullName, Mode=TwoWay}"/>
+		<TextBox Canvas.Left="136" Canvas.Top="161" Height="23" Name="txtUsername" Width="109" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.User.Username, Mode=TwoWay}"/>
+		<TextBox Canvas.Left="136" Canvas.Top="195" Height="23" Name="txtHostname" Width="159" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.User.Hostname, Mode=TwoWay}"/>
 	</Canvas>
 </UserControl>
