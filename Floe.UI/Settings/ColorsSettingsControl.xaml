@@ -6,6 +6,84 @@
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384">
+	<UserControl.Resources>
+		<Style x:Key="ColorButton" TargetType="Button">
+			<Setter Property="OverridesDefaultStyle" Value="True"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Margin" Value="5,3,5,3"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border BorderThickness="2"
+							Padding="4,2,4,2"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							Background="{TemplateBinding Background}"
+							CornerRadius="6">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="30"></ColumnDefinition>
+									<ColumnDefinition></ColumnDefinition>
+								</Grid.ColumnDefinitions>
+								<Rectangle Grid.Column="0" HorizontalAlignment="Left" Width="20" Height="12" Fill="{TemplateBinding Foreground}"/>
+								<ContentPresenter Grid.Column="1" HorizontalAlignment="Left"/>
+							</Grid>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter Property="BorderBrush" Value="#5380AC"/>
+							</Trigger>
+							<Trigger Property="IsPressed" Value="True">
+								<Setter Property="Background" Value="LightSteelBlue"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</UserControl.Resources>
 	<Canvas>
+		<Border BorderThickness="3,2,3,2" Canvas.Left="12" Canvas.Top="12" Height="182" Width="360"
+				Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}" BorderBrush="#FF6F6F6F">
+			<WrapPanel TextBlock.FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
+				   TextBlock.FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}"
+				   TextBlock.FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontStyle, Mode=OneWay}">
+				<Button Content="Default" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Action" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Action, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Info" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Info, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Mode" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Mode, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Nick" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Nick, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Notice" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Notice, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Topic" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Topic, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="CTCP" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Ctcp, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Invite" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Invite, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Join" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Join, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Part" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Part, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Kick" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Kick, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Quit" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Quit, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Own Text" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Own, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Error" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Error, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Input" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+			</WrapPanel>
+		</Border>
+		<Button Canvas.Left="12" Canvas.Top="200" Height="23" Width="118" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=TwoWay}">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="30"></ColumnDefinition>
+					<ColumnDefinition></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<Rectangle Grid.Column="0" HorizontalAlignment="Left" Width="20" Height="12" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+				<TextBlock Grid.Column="1">Background</TextBlock>
+			</Grid>
+		</Button>
+		<Button Canvas.Left="134" Canvas.Top="200" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=TwoWay}" Height="23" Width="118">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="30" />
+					<ColumnDefinition />
+				</Grid.ColumnDefinitions>
+				<Rectangle Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" Grid.Column="0" Height="12" HorizontalAlignment="Left" Width="20" />
+				<TextBlock Grid.Column="1">Input Box</TextBlock>
+			</Grid>
+		</Button>
 	</Canvas>
 </UserControl>

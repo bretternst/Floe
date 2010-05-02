@@ -16,11 +16,12 @@ namespace Floe.Net
 		private IrcConnection _conn;
 		private IrcSessionState _state;
 
+		public string Server { get; private set; }
+		public int Port { get; private set; }
 		public string Nickname { get; private set; }
 		public string Username { get; private set; }
 		public string Hostname { get; private set; }
 		public string FullName { get; private set; }
-		public string Server { get; private set; }
 
 		public IrcSessionState State
 		{
@@ -56,15 +57,14 @@ namespace Floe.Net
 		public event EventHandler<IrcInfoEventArgs> InfoReceived;
 		public event EventHandler<CtcpEventArgs> CtcpCommandReceived;
 
-		public IrcSession(string userName = "none", string hostName = "127.0.0.1", string fullname = "none")
+		public IrcSession()
 		{
 			this.State = IrcSessionState.Disconnected;
-			this.Username = userName;
-			this.Hostname = hostName;
-			this.FullName = fullname;
+
 		}
 
-		public void Open(string server, int port, string nickname)
+		public void Open(string server, int port, string nickname,
+			string userName = "none", string hostName = "127.0.0.1", string fullname = "none")
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -72,6 +72,10 @@ namespace Floe.Net
 			}
 			this.Nickname = nickname;
 			this.Server = server;
+			this.Port = port;
+			this.Username = userName;
+			this.Hostname = hostName;
+			this.FullName = fullname;
 
 			if (_conn != null)
 			{

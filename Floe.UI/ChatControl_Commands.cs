@@ -178,7 +178,11 @@ namespace Floe.UI
 						this.Context.Session.Quit("Changing servers");
 					}
 					this.Context.Session.Open(args[0], port,
-						!string.IsNullOrEmpty(this.Context.Session.Nickname) ? this.Context.Session.Nickname : App.Settings.Current.User.Nickname);
+						!string.IsNullOrEmpty(this.Context.Session.Nickname) ? 
+							this.Context.Session.Nickname : App.Settings.Current.User.Nickname,
+						App.Settings.Current.User.Username,
+						App.Settings.Current.User.Hostname,
+						App.Settings.Current.User.FullName);
 					break;
 				case "ME":
 				case "ACTION":

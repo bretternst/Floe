@@ -46,19 +46,19 @@ namespace Floe.UI
 			this.Exit += new ExitEventHandler(App_Exit);
 		}
 
-		public void ShowSettings()
-		{
-			var settings = new Settings.SettingsWindow();
-			settings.ShowDialog();
-		}
-
 		private void OpenWindow()
 		{
 			var window = new ChatWindow();
 			window.Closed += new EventHandler(window_Closed);
-			window.AddPage(new ChatContext(new IrcSession(App.Settings.Current.User.Username,
-				App.Settings.Current.User.Hostname, App.Settings.Current.User.FullName), null));
+			window.AddPage(new ChatContext(new IrcSession(), null));
 			window.Show();
+		}
+
+		public void ShowSettings()
+		{
+			var settings = new Settings.SettingsWindow();
+			settings.Owner = this.MainWindow;
+			settings.ShowDialog();
 		}
 
 		private void App_Startup(object sender, StartupEventArgs e)

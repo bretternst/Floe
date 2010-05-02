@@ -19,8 +19,8 @@
 											<Setter TargetName="Border" Property="Background">
 												<Setter.Value>
 													<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-														<GradientStop Color="#FFEFE1CA" Offset="0" />
-														<GradientStop Color="#FFD8A653" Offset="1" />
+														<GradientStop Color="#FEFAF6" Offset="0" />
+														<GradientStop Color="#EEA24F" Offset="1" />
 													</LinearGradientBrush>
 												</Setter.Value>
 											</Setter>
@@ -50,8 +50,8 @@
 											<Setter TargetName="Border" Property="Background">
 												<Setter.Value>
 													<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-														<GradientStop Color="#FFEFE1CA" Offset="0" />
-														<GradientStop Color="#FFD8A653" Offset="1" />
+														<GradientStop Color="#FEFAF6" Offset="0" />
+														<GradientStop Color="#EEA24F" Offset="1" />
 													</LinearGradientBrush>
 												</Setter.Value>
 											</Setter>

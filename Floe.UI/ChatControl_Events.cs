@@ -15,7 +15,7 @@ namespace Floe.UI
 		{
 			if (this.Context.Session.State == IrcSessionState.Disconnected)
 			{
-				this.Write("Error", "*** Disconnected");
+				this.Write("Error", "* Disconnected");
 				if (this.Context.Target == null)
 				{
 					this.Dispatcher.BeginInvoke((Action)(() => this.Header = "Server"));
@@ -25,6 +25,8 @@ namespace Floe.UI
 				this.Context.Target == null)
 			{
 				_welcomeReceived = false;
+				this.Write("Client", string.Format(
+					"* Connecting to {0}:{1}", this.Context.Session.Server, this.Context.Session.Port));
 				this.Dispatcher.BeginInvoke((Action)(() => this.Header = this.Context.Session.Server));
 			}
 		}
@@ -33,7 +35,7 @@ namespace Floe.UI
 		{
 			if (this.Context.Target == null)
 			{
-				this.Write("Error", string.Format("*** {0}",
+				this.Write("Error", string.Format("* {0}",
 					string.IsNullOrEmpty(e.Exception.Message) ? e.Exception.GetType().Name : e.Exception.Message));
 			}
 		}
@@ -74,7 +76,7 @@ namespace Floe.UI
 
 		private void Session_InfoReceived(object sender, IrcInfoEventArgs e)
 		{
-			var line = new ChatLine("ServerInfo", string.Format("*** {0}", e.Text));
+			var line = new ChatLine("ServerInfo", string.Format("* {0}", e.Text));
 
 			switch (e.Code)
 			{
