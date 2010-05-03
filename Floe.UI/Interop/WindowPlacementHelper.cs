@@ -67,7 +67,7 @@ namespace Floe.UI.Interop
 		{
 			try
 			{
-				string s = App.Settings.Current.WindowPlacement;
+				string s = App.Settings.Current.Windows.Placement;
 				byte[] buf = Convert.FromBase64String(s);
 				int size = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
 				IntPtr p = Marshal.AllocHGlobal(size);
@@ -98,7 +98,7 @@ namespace Floe.UI.Interop
 			Marshal.StructureToPtr(wp, p, true);
 			Marshal.Copy(p, buf, 0, size);
 			Marshal.FreeHGlobal(p);
-			App.Settings.Current.WindowPlacement = Convert.ToBase64String(buf);
+			App.Settings.Current.Windows.Placement = Convert.ToBase64String(buf);
 		}
 	}
 }

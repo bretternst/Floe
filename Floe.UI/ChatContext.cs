@@ -21,10 +21,5 @@ namespace Floe.UI
 			this.Session = ircSession;
 			this.Target = target;
 		}
-
-		public override string ToString()
-		{
-			return this.Target == null ? "Server" : this.Target.ToString();
-		}
 	}
 }

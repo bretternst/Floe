@@ -40,6 +40,13 @@ namespace Floe.UI
 			}
 		}
 
+		public static void ShowSettings()
+		{
+			var settings = new Settings.SettingsWindow();
+			settings.Owner = Application.Current.MainWindow;
+			settings.ShowDialog();
+		}
+
 		public App()
 		{
 			this.Startup += new StartupEventHandler(App_Startup);
@@ -50,15 +57,8 @@ namespace Floe.UI
 		{
 			var window = new ChatWindow();
 			window.Closed += new EventHandler(window_Closed);
-			window.AddPage(new ChatContext(new IrcSession(), null));
+			window.AddPage(new ChatContext(new IrcSession(), null), true);
 			window.Show();
-		}
-
-		public void ShowSettings()
-		{
-			var settings = new Settings.SettingsWindow();
-			settings.Owner = this.MainWindow;
-			settings.ShowDialog();
 		}
 
 		private void App_Startup(object sender, StartupEventArgs e)

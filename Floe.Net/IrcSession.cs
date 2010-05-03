@@ -22,6 +22,8 @@ namespace Floe.Net
 		public string Username { get; private set; }
 		public string Hostname { get; private set; }
 		public string FullName { get; private set; }
+		public string NetworkName { get; private set; }
+		public char[] UserModes { get; private set; }
 
 		public IrcSessionState State
 		{
@@ -60,7 +62,7 @@ namespace Floe.Net
 		public IrcSession()
 		{
 			this.State = IrcSessionState.Disconnected;
-
+			this.UserModes = new char[0];
 		}
 
 		public void Open(string server, int port, string nickname,
@@ -76,6 +78,8 @@ namespace Floe.Net
 			this.Username = userName;
 			this.Hostname = hostName;
 			this.FullName = fullname;
+			this.NetworkName = this.Server;
+			this.UserModes = new char[0];
 
 			if (_conn != null)
 			{
@@ -275,6 +279,14 @@ namespace Floe.Net
 			this.Mode(IrcUserMode.ParseModes(modes));
 		}
 
+		public void Mode(IrcTarget target)
+		{
+			if (target.Type == IrcTargetType.Channel)
+			{
+				this.Send("MODE", target);
+			}
+		}
+
 		private void OnStateChanged()
 		{
 			var handler = this.StateChanged;
@@ -439,6 +451,14 @@ namespace Floe.Net
 				}
 				else
 				{
+					var e = new IrcUserModeEventArgs(message, this.Nickname);
+					if (e.IsSelf)
+					{
+						this.UserModes = (from m in e.Modes.Where((newMode) => newMode.Set).Select((newMode) => newMode.Mode).Union(this.UserModes).Distinct()
+										  where !e.Modes.Any((newMode) => !newMode.Set)
+										  select m).ToArray();
+					}
+
 					var handler = this.UserModeChanged;
 					if (handler != null)
 					{
@@ -453,15 +473,20 @@ namespace Floe.Net
 			int code;
 			if (int.TryParse(message.Command, out code))
 			{
-				var args = new IrcInfoEventArgs(message);
-				if (args.Code == IrcCode.Welcome)
+				var e = new IrcInfoEventArgs(message);
+				if (e.Code == IrcCode.Welcome)
 				{
+					if (e.Text.StartsWith("Welcome to the "))
+					{
+						var parts = e.Text.Split(' ');
+						this.NetworkName = parts[3];
+					}
 					this.State = IrcSessionState.Connected;
 				}
 				var handler = this.InfoReceived;
 				if (handler != null)
 				{
-					handler(this, args);
+					handler(this, e);
 				}
 			}
 		}
@@ -487,6 +512,8 @@ namespace Floe.Net
 
 		private void _conn_MessageReceived(object sender, IrcEventArgs e)
 		{
+			this.OnMessageReceived(e);
+
 			switch (e.Message.Command)
 			{
 				case "PING":
@@ -526,13 +553,10 @@ namespace Floe.Net
 					this.OnOther(e.Message);
 					break;
 			}
-
-			this.OnMessageReceived(e);
 		}
 
 		private void _conn_Connected(object sender, EventArgs e)
 		{
-			this.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(IrcSession_CtcpCommand);
 			_conn.QueueMessage(new IrcMessage("USER", this.Username, this.Hostname, "*", this.FullName));
 			_conn.QueueMessage(new IrcMessage("NICK", this.Nickname));
 		}
@@ -540,12 +564,6 @@ namespace Floe.Net
 		private void _conn_Disconnected(object sender, EventArgs e)
 		{
 			this.State = IrcSessionState.Disconnected;
-			this.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(IrcSession_CtcpCommand);
-		}
-
-		private void IrcSession_CtcpCommand(object sender, CtcpEventArgs e)
-		{
-
 		}
 	}
 }

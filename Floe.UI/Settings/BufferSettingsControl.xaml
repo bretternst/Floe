@@ -39,6 +39,14 @@
 						</Binding>
 					</TextBox.Text>
 				</TextBox>
+				<Label Canvas.Left="186" Canvas.Top="30" Content="Max Paste Lines" Height="28" Name="label4" />
+				<TextBox Canvas.Left="286" Canvas.Top="32" Height="23" Name="txtMaxPasteLines" Width="56">
+					<Binding Mode="TwoWay" Path="Current.Buffer.MaximumPasteLines" Source="{x:Static local:App.Settings}">
+						<Binding.ValidationRules>
+							<ExceptionValidationRule />
+						</Binding.ValidationRules>
+					</Binding>
+				</TextBox>
 			</Canvas>
 		</GroupBox>
 	</Canvas>

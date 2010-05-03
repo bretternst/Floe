@@ -2,137 +2,138 @@
 using System.Configuration;
 using System.Windows.Media;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 using Floe.UI;
 
 namespace Floe.Configuration
 {
-	public class ColorsElement : ConfigurationElement
+	public class ColorsElement : ConfigurationElement, INotifyPropertyChanged
 	{
 		[ConfigurationProperty("background", DefaultValue = "Black")]
 		public string Background
 		{
 			get { return (string)this["background"]; }
-			set { this["background"] = value; }
+			set { this["background"] = value; OnPropertyChanged("Background"); }
 		}
 
 		[ConfigurationProperty("editBackground", DefaultValue = "Black")]
 		public string EditBackground
 		{
 			get { return (string)this["editBackground"]; }
-			set { this["editBackground"] = value; }
+			set { this["editBackground"] = value; OnPropertyChanged("EditBackground"); }
 		}
 
 		[ConfigurationProperty("edit", DefaultValue = "White")]
 		public string Edit
 		{
 			get { return (string)this["edit"]; }
-			set { this["edit"] = value; }
+			set { this["edit"] = value; OnPropertyChanged("Edit"); }
 		}
 
 		[ConfigurationProperty("default", DefaultValue = "White")]
 		public string Default
 		{
 			get { return (string)this["default"]; }
-			set { this["default"] = value; }
+			set { this["default"] = value; OnPropertyChanged("Default"); }
 		}
 
 		[ConfigurationProperty("action", DefaultValue = "White")]
 		public string Action
 		{
 			get { return (string)this["action"]; }
-			set { this["action"] = value; }
+			set { this["action"] = value; OnPropertyChanged("Action"); }
 		}
 
 		[ConfigurationProperty("ctcp", DefaultValue = "Yellow")]
 		public string Ctcp
 		{
 			get { return (string)this["ctcp"]; }
-			set { this["ctcp"] = value; }
+			set { this["ctcp"] = value; OnPropertyChanged("Ctcp"); }
 		}
 
 		[ConfigurationProperty("info", DefaultValue = "White")]
 		public string Info
 		{
 			get { return (string)this["info"]; }
-			set { this["info"] = value; }
+			set { this["info"] = value; OnPropertyChanged("Info"); }
 		}
 
 		[ConfigurationProperty("invite", DefaultValue = "Yellow")]
 		public string Invite
 		{
 			get { return (string)this["invite"]; }
-			set { this["invite"] = value; }
+			set { this["invite"] = value; OnPropertyChanged("Invite"); }
 		}
 
-		[ConfigurationProperty("join", DefaultValue = "PaleGreen")]
+		[ConfigurationProperty("join", DefaultValue = "Lavender")]
 		public string Join
 		{
 			get { return (string)this["join"]; }
-			set { this["join"] = value; }
+			set { this["join"] = value; OnPropertyChanged("Join"); }
 		}
 
-		[ConfigurationProperty("kick", DefaultValue = "PaleGreen")]
+		[ConfigurationProperty("kick", DefaultValue = "Lavender")]
 		public string Kick
 		{
 			get { return (string)this["kick"]; }
-			set { this["kick"] = value; }
+			set { this["kick"] = value; OnPropertyChanged("Kick"); }
 		}
 
 		[ConfigurationProperty("mode", DefaultValue = "Yellow")]
 		public string Mode
 		{
 			get { return (string)this["mode"]; }
-			set { this["mode"] = value; }
+			set { this["mode"] = value; OnPropertyChanged("Mode"); }
 		}
 
 		[ConfigurationProperty("nick", DefaultValue = "Yellow")]
 		public string Nick
 		{
 			get { return (string)this["nick"]; }
-			set { this["nick"] = value; }
+			set { this["nick"] = value; OnPropertyChanged("Nick"); }
 		}
 
 		[ConfigurationProperty("notice", DefaultValue = "Yellow")]
 		public string Notice
 		{
 			get { return (string)this["notice"]; }
-			set { this["notice"] = value; }
+			set { this["notice"] = value; OnPropertyChanged("Notice"); }
 		}
 
 		[ConfigurationProperty("own", DefaultValue = "Gray")]
 		public string Own
 		{
 			get { return (string)this["own"]; }
-			set { this["own"] = value; }
+			set { this["own"] = value; OnPropertyChanged("Own"); }
 		}
 
-		[ConfigurationProperty("part", DefaultValue = "PaleGreen")]
+		[ConfigurationProperty("part", DefaultValue = "Lavender")]
 		public string Part
 		{
 			get { return (string)this["part"]; }
-			set { this["part"] = value; }
+			set { this["part"] = value; OnPropertyChanged("Part"); }
 		}
 
-		[ConfigurationProperty("quit", DefaultValue = "PaleGreen")]
+		[ConfigurationProperty("quit", DefaultValue = "Lavender")]
 		public string Quit
 		{
 			get { return (string)this["quit"]; }
-			set { this["quit"] = value; }
+			set { this["quit"] = value; OnPropertyChanged("Quit"); }
 		}
 
 		[ConfigurationProperty("topic", DefaultValue = "Yellow")]
 		public string Topic
 		{
 			get { return (string)this["topic"]; }
-			set { this["topic"] = value; }
+			set { this["topic"] = value; OnPropertyChanged("Topic"); }
 		}
 
 		[ConfigurationProperty("error", DefaultValue = "Red")]
 		public string Error
 		{
 			get { return (string)this["error"]; }
-			set { this["error"] = value; }
+			set { this["error"] = value; OnPropertyChanged("Error"); }
 		}
 
 		public ChatPalette Palette
@@ -159,6 +160,18 @@ namespace Floe.Configuration
 				palette.Add("Error", converter.ConvertFromString(this.Error) as SolidColorBrush);
 
 				return palette;
+			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public void OnPropertyChanged(string name)
+		{
+			var handler = this.PropertyChanged;
+			if (handler != null)
+			{
+				handler(this, new PropertyChangedEventArgs(name));
+				handler(this, new PropertyChangedEventArgs("Palette"));
 			}
 		}
 	}

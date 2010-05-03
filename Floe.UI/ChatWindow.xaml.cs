@@ -38,7 +38,7 @@ namespace Floe.UI
 			InitializeComponent();
 		}
 
-		public void AddPage(ChatContext context)
+		public void AddPage(ChatContext context, bool switchToPage)
 		{
 			var page = new ChatControl(context);
 			var item = new ChatTabItem(page);
@@ -59,8 +59,10 @@ namespace Floe.UI
 					}
 				}
 			}
-			tabsChat.SelectedItem = item;
-			Keyboard.Focus(this.CurrentControl);
+			if (switchToPage)
+			{
+				tabsChat.SelectedItem = item;
+			}
 		}
 
 		public void RemovePage(ChatContext context)
@@ -94,6 +96,11 @@ namespace Floe.UI
 				{
 					page.Context.Session.Quit("Leaving");
 				}
+			}
+
+			foreach (var page in this.Items)
+			{
+				page.Content.Dispose();
 			}
 
 			Interop.WindowPlacementHelper.Save(this);

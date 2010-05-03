@@ -38,6 +38,11 @@ namespace Floe.UI
 			_presenter.AppendLine(line);
 		}
 
+		public void Clear()
+		{
+			_presenter.Clear();
+		}
+
 		public void PageUp()
 		{
 			_presenter.PageUp();

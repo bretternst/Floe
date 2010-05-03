@@ -42,6 +42,7 @@
     <AssemblyOriginatorKeyFile>..\Floe.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationFramework.Aero" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
@@ -90,6 +91,7 @@
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Settings\Configuration\WindowsElement.cs" />
     <Compile Include="Settings\TextSettingsControl.xaml.cs">
       <DependentUpon>TextSettingsControl.xaml</DependentUpon>
     </Compile>

@@ -17,8 +17,8 @@ namespace Floe.Configuration
 			set { this["bufferLines"] = value; this.OnPropertyChanged("BufferLines"); }
 		}
 
-		[ConfigurationProperty("inputHistory", DefaultValue = 10)]
-		[IntegerValidator(MinValue = 1, MaxValue = 100)]
+		[ConfigurationProperty("inputHistory", DefaultValue = 50)]
+		[IntegerValidator(MinValue = 1, MaxValue = 1000)]
 		public int InputHistory
 		{
 			get { return (int)this["inputHistory"]; }
@@ -31,6 +31,14 @@ namespace Floe.Configuration
 		{
 			get { return (int)this["minimumCopyLength"]; }
 			set { this["minimumCopyLength"] = value; this.OnPropertyChanged("MinimumCopyLength"); }
+		}
+
+		[ConfigurationProperty("maximumPasteLines", DefaultValue = 10)]
+		[IntegerValidator(MinValue = 1, MaxValue = 100)]
+		public int MaximumPasteLines
+		{
+			get { return (int)this["maximumPasteLines"]; }
+			set { this["maximumPasteLines"] = value; this.OnPropertyChanged("MaximumPasteLines"); }
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

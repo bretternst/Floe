@@ -30,6 +30,12 @@ namespace Floe.UI
 			}
 		}
 
+		public void Clear()
+		{
+			_lines.Clear();
+			this.FormatText();
+		}
+
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 		{
 			if (e.Property == Control.FontFamilyProperty ||

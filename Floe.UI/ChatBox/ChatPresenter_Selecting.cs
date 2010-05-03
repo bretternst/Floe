@@ -45,7 +45,7 @@ namespace Floe.UI
 			get
 			{
 				int start = this.SelectionStart, end = this.SelectionEnd;
-				if (end > start)
+				if (start >= 0 && end > 0 && end > start)
 				{
 					var output = new StringBuilder();
 					var baseIdx = 0;

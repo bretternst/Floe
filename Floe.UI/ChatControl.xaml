@@ -9,7 +9,7 @@
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Bottom" BorderBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"
 				BorderThickness="0,1,0,0">
-		<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown"
+			<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown"
 				 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=OneWay}"
 				 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=OneWay}"
 				 FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
@@ -18,14 +18,29 @@
 				 FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}"
 				 Padding="1,2,2,2" Margin="0" BorderThickness="0"/>
 		</Border>
-		<local:ChatBox x:Name="boxOutput" 
-					   Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition Name="colNickList"
+								  Width="0"
+								  MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=Grid}, Path=ActualWidth}"/>
+			</Grid.ColumnDefinitions>
+		<local:ChatBox x:Name="boxOutput" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"
 					   BufferLines="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.BufferLines, Mode=OneWay}"
 					   MinimumCopyLength="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.MinimumCopyLength, Mode=OneWay}"
 					   Palette="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Palette, Mode=OneWay}"
 					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
 					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontSize, Mode=OneWay}"
 					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontStyle, Mode=OneWay}"
-					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}"/>
+					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}" />
+			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0"
+					 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"
+					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
+					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontSize, Mode=OneWay}"
+					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontStyle, Mode=OneWay}"
+					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}"
+					 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"/>
+			<GridSplitter Grid.Column="1" Name="splitter" IsEnabled="false" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent"/>
+		</Grid>
 	</DockPanel>
 </UserControl>

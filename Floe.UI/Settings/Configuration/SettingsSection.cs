@@ -45,18 +45,11 @@ namespace Floe.Configuration
 			set { this["buffer"] = value; }
 		}
 
-		[ConfigurationProperty("windowPlacement")]
-		public string WindowPlacement
+		[ConfigurationProperty("windows")]
+		public WindowsElement Windows
 		{
-			get { return (string)this["windowPlacement"]; }
-			set { this["windowPlacement"] = value; }
-		}
-
-		[ConfigurationProperty("customColors", DefaultValue = "")]
-		public string CustomColors
-		{
-			get { return (string)this["customColors"]; }
-			set { this["customColors"] = value; }
+			get { return (WindowsElement)this["windows"]; }
+			set { this["windows"] = value; }
 		}
 	}
 }

@@ -26,7 +26,7 @@ namespace Floe.UI
 			{
 				this.Dispatcher.BeginInvoke((Action)(() =>
 				{
-					this.AddPage(new ChatContext((IrcSession)sender, e.Channel));
+					this.AddPage(new ChatContext((IrcSession)sender, e.Channel), true);
 				}));
 			}
 		}
@@ -99,11 +99,22 @@ namespace Floe.UI
 			}
 		}
 
-		private void Session_UserModeChanged(object sender, IrcUserModeEventArgs e)
+		private void session_RawMessageReceived(object sender, IrcEventArgs e)
 		{
-			_userModes = (from m in e.Modes.Where((newMode) => newMode.Set).Select((newMode) => newMode.Mode).Union(_userModes).Distinct()
-						  where !e.Modes.Any((newMode) => !newMode.Set)
-						  select m).ToArray();
+			if (e.Message.Command == "PRIVMSG" && e.Message.Parameters.Count == 2)
+			{
+				var target = new IrcTarget(e.Message.Parameters[0]);
+				if (target.Type == IrcTargetType.Nickname && e.Message.From is IrcPeer)
+				{
+					var session = sender as IrcSession;
+					target = new IrcTarget((IrcPeer)e.Message.From);
+					var control = this.FindPage(session, target);
+					if (control == null)
+					{
+						Dispatcher.Invoke((Action)(() => this.AddPage(new ChatContext(session, target), false)));
+					}
+				}
+			}
 		}
 
 		private void SubscribeEvents(IrcSession session)
@@ -113,7 +124,7 @@ namespace Floe.UI
 			session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
 			session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
-			session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
+			session.RawMessageReceived += new EventHandler<IrcEventArgs>(session_RawMessageReceived);
 		}
 
 		public void UnsubscribeEvents(IrcSession session)
@@ -123,7 +134,7 @@ namespace Floe.UI
 			session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
 			session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
-			session.UserModeChanged -= new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
+			session.RawMessageReceived -= new EventHandler<IrcEventArgs>(session_RawMessageReceived);
 		}
 	}
 }
