@@ -9,7 +9,7 @@ namespace Floe.UI
 {
 	public class ChatBoxBase : Control
 	{
-		public static DependencyProperty BufferLinesProperty = DependencyProperty.Register("BufferLines",
+		public static readonly DependencyProperty BufferLinesProperty = DependencyProperty.Register("BufferLines",
 			typeof(int), typeof(ChatBoxBase));
 		public int BufferLines
 		{
@@ -17,7 +17,7 @@ namespace Floe.UI
 			set { this.SetValue(BufferLinesProperty, value); }
 		}
 
-		public static DependencyProperty MinimumCopyLengthProperty = DependencyProperty.Register("MinimumCopyLength",
+		public static readonly DependencyProperty MinimumCopyLengthProperty = DependencyProperty.Register("MinimumCopyLength",
 			typeof(int), typeof(ChatBoxBase));
 		public int MinimumCopyLength
 		{
@@ -25,7 +25,7 @@ namespace Floe.UI
 			set { this.SetValue(MinimumCopyLengthProperty, value); }
 		}
 
-		public static DependencyProperty PaletteProperty = DependencyProperty.Register("Palette",
+		public static readonly DependencyProperty PaletteProperty = DependencyProperty.Register("Palette",
 			typeof(ChatPalette), typeof(ChatBoxBase));
 		public ChatPalette Palette
 		{

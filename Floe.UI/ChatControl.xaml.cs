@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Text.RegularExpressions;
-using System.Linq;
 using Floe.Net;
 
 namespace Floe.UI
@@ -17,18 +16,12 @@ namespace Floe.UI
 		public ChatControl(ChatContext context)
 		{
 			_history = new LinkedList<string>();
+			this.Nicknames = new ObservableCollection<NicknameItem>();
 			this.Context = context;
 			this.Header = context.Target == null ? "Server" : context.Target.ToString();
-			this.SubscribeEvents();
-			this.Loaded += (sender, e) =>
-			{
-				Keyboard.Focus(txtInput);
-				this.SetTitle();
-			};
 
 			InitializeComponent();
-
-			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
+			this.SubscribeEvents();
 
 			if (this.IsChannel)
 			{
@@ -39,6 +32,10 @@ namespace Floe.UI
 			else if (this.IsNickname)
 			{
 				_prefix = this.Target.Name;
+			}
+			else if (this.IsServer)
+			{
+				this.IsDefault = true;
 			}
 		}
 
@@ -63,6 +60,24 @@ namespace Floe.UI
 		{
 			get { return (string)this.GetValue(TitleProperty); }
 			set { this.SetValue(TitleProperty, value); }
+		}
+
+		public static readonly DependencyProperty IsDefaultProperty =
+			DependencyProperty.Register("IsDefault", typeof(bool), typeof(ChatControl));
+		public bool IsDefault
+		{
+			get { return (bool)this.GetValue(IsDefaultProperty); }
+			set { this.SetValue(IsDefaultProperty, value); }
+		}
+
+		public void Connect(string hostname, int port)
+		{
+			this.Session.Open(hostname, port,
+				!string.IsNullOrEmpty(this.Session.Nickname) ?
+					this.Session.Nickname : App.Settings.Current.User.Nickname,
+				App.Settings.Current.User.Username,
+				App.Settings.Current.User.Hostname,
+				App.Settings.Current.User.FullName);
 		}
 
 		protected override void OnInitialized(EventArgs e)
@@ -159,21 +174,13 @@ namespace Floe.UI
 
 		private void Write(string styleKey, string text)
 		{
-			var line = new ChatLine(styleKey, text);
-
-			Dispatcher.BeginInvoke((Action)(() =>
-			{
-				boxOutput.AppendLine(line);
-			}));
+			boxOutput.AppendLine(new ChatLine(styleKey, text));
 		}
 
 		private void SetInputText(string text)
 		{
-			Dispatcher.BeginInvoke((Action)(() =>
-				{
-					txtInput.Text = text;
-					txtInput.SelectionStart = text.Length;
-				}));
+			txtInput.Text = text;
+			txtInput.SelectionStart = text.Length;
 		}
 
 		private void SetTitle()
@@ -187,29 +194,24 @@ namespace Floe.UI
 			{
 				if (this.Session.State == IrcSessionState.Disconnected)
 				{
-					this.SetTitle(string.Format("{0} - Not Connected", App.Product));
+					this.Title = string.Format("{0} - Not Connected", App.Product);
 				}
 				else
 				{
-					this.SetTitle(string.Format("{0} - {1} ({2}) on {3}", App.Product, this.Session.Nickname,
-						userModes, this.Session.NetworkName));
+					this.Title = string.Format("{0} - {1} ({2}) on {3}", App.Product, this.Session.Nickname,
+						userModes, this.Session.NetworkName);
 				}
 			}
 			else if (this.Target.Type == IrcTargetType.Nickname)
 			{
-				this.SetTitle(string.Format("{0} - {1} ({2}) on {3} - {4}", App.Product, this.Session.Nickname,
-					userModes, this.Session.NetworkName, _prefix));
+				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4}", App.Product, this.Session.Nickname,
+					userModes, this.Session.NetworkName, _prefix);
 			}
 			else if (this.Target.Type == IrcTargetType.Channel)
 			{
-				this.SetTitle(string.Format("{0} - {1} ({2}) on {3} - {4} ({5}) - {6}", App.Product, this.Session.Nickname,
-					userModes, this.Session.NetworkName, this.Target.ToString(), channelModes, _topic));
+				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4} ({5}) - {6}", App.Product, this.Session.Nickname,
+					userModes, this.Session.NetworkName, this.Target.ToString(), channelModes, _topic);
 			}
-		}
-
-		private void SetTitle(string text)
-		{
-			Dispatcher.BeginInvoke((Action)(() => this.Title = text));
 		}
 
 		private void SubmitInput()
@@ -235,48 +237,6 @@ namespace Floe.UI
 			if (this.IsChannel)
 			{
 				App.Settings.Current.Windows.NickListWidth = colNickList.Width.Value;
-			}
-		}
-
-		private void txtInput_KeyDown(object sender, KeyEventArgs e)
-		{
-			switch (e.Key)
-			{
-				case Key.Enter:
-					this.SubmitInput();
-					break;
-			}
-		}
-
-		private void txtInput_Pasting(object sender, DataObjectPastingEventArgs e)
-		{
-			if (e.DataObject.GetDataPresent(typeof(string)))
-			{
-				var text = e.DataObject.GetData(typeof(string)) as string;
-				if (text.Contains(Environment.NewLine))
-				{
-					e.CancelCommand();
-
-					this.Dispatcher.BeginInvoke((Action)(() =>
-						{
-							var parts = text.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0).ToArray();
-							if (parts.Length > App.Settings.Current.Buffer.MaximumPasteLines)
-							{
-								if (MessageBox.Show(string.Format("Are you sure you want to paste more than {0} lines?",
-									App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warnings", MessageBoxButton.YesNo,
-									MessageBoxImage.Question) == MessageBoxResult.No)
-								{
-									return;
-								}
-							}
-							foreach (var part in parts)
-							{
-								txtInput.Text = txtInput.Text.Substring(0, txtInput.SelectionStart);
-								txtInput.Text += part;
-								this.SubmitInput();
-							}
-						}));
-				}
 			}
 		}
 	}

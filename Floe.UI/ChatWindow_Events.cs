@@ -24,10 +24,10 @@ namespace Floe.UI
 		{
 			if (e.IsSelf)
 			{
-				this.Dispatcher.BeginInvoke((Action)(() =>
+				this.BeginInvoke(() =>
 				{
 					this.AddPage(new ChatContext((IrcSession)sender, e.Channel), true);
-				}));
+				});
 			}
 		}
 
@@ -35,14 +35,14 @@ namespace Floe.UI
 		{
 			if (e.IsSelf)
 			{
-				this.Dispatcher.BeginInvoke((Action)(() =>
+				this.BeginInvoke(() =>
 				{
-					var page = this.FindPage((IrcSession)sender, e.Channel);
-					if (page != null)
+					var context = this.FindPage((IrcSession)sender, e.Channel);
+					if (context != null)
 					{
-						this.RemovePage(page.Context);
+						this.RemovePage(context);
 					}
-				}));
+				});
 			}
 		}
 
@@ -50,14 +50,14 @@ namespace Floe.UI
 		{
 			if (e.IsSelfKicked)
 			{
-				this.Dispatcher.BeginInvoke((Action)(() =>
+				this.BeginInvoke(() =>
 				{
-					var page = this.FindPage((IrcSession)sender, e.Channel);
-					if (page != null)
+					var context = this.FindPage((IrcSession)sender, e.Channel);
+					if (context != null)
 					{
-						this.RemovePage(page.Context);
+						this.RemovePage(context);
 					}
-				}));
+				});
 			}
 		}
 
@@ -65,12 +65,15 @@ namespace Floe.UI
 		{
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)
 			{
-				foreach (var p in (from i in this.Items
-								   where i.Content.Context.Session == sender && i.Content.Context.Target != null
-								   select i.Content).ToArray())
-				{
-					this.RemovePage(p.Context);
-				}
+				this.BeginInvoke(() =>
+					{
+						foreach (var p in (from i in this.Items
+										   where i.Content.Context.Session == sender && i.Content.Context.Target != null
+										   select i.Content).ToArray())
+						{
+							this.RemovePage(p.Context);
+						}
+					});
 			}
 		}
 
@@ -111,8 +114,48 @@ namespace Floe.UI
 					var control = this.FindPage(session, target);
 					if (control == null)
 					{
-						Dispatcher.Invoke((Action)(() => this.AddPage(new ChatContext(session, target), false)));
+						this.Invoke(() => this.AddPage(new ChatContext(session, target), false));
 					}
+				}
+			}
+		}
+
+		private void chatControl_Query(object sender, QueryEventArgs e)
+		{
+			var control = e.OriginalSource as ChatControl;
+			if (control != null)
+			{
+				var target = new IrcTarget(e.Nickname);
+				var context = this.FindPage(control.Session, target);
+				this.BeginInvoke(() =>
+					{
+						if (context != null)
+						{
+							this.SwitchToPage(context);
+						}
+						else
+						{
+							this.AddPage(new ChatContext(control.Session, target), true);
+						}
+					});
+			}
+		}
+
+		private void tabsChat_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			var context = ((ChatTabItem)tabsChat.SelectedItem).Content.Context;
+			foreach (var item in this.Items)
+			{
+				bool isDefault = false;
+				if (item == tabsChat.SelectedItem ||
+					item.Content.Context.Session != context.Session && item.Content.IsServer)
+				{
+					isDefault = true;
+				}
+
+				if (item.Content.IsDefault != isDefault)
+				{
+					item.Content.IsDefault = isDefault;
 				}
 			}
 		}
@@ -125,6 +168,7 @@ namespace Floe.UI
 			session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived += new EventHandler<IrcEventArgs>(session_RawMessageReceived);
+			this.AddHandler(ChatControl.QueryEvent, new QueryEventHandler(chatControl_Query));
 		}
 
 		public void UnsubscribeEvents(IrcSession session)

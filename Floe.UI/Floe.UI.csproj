@@ -77,10 +77,12 @@
     <Compile Include="ChatContext.cs" />
     <Compile Include="ChatControl_Commands.cs" />
     <Compile Include="ChatControl_Events.cs" />
+    <Compile Include="ChatControl_NickList.cs" />
     <Compile Include="ChatWindow_Events.cs" />
     <Compile Include="ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DependencyObjectExtensions.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />
     <Compile Include="Settings\Configuration\BufferElement.cs" />

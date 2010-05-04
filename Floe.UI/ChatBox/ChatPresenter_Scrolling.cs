@@ -74,7 +74,10 @@ namespace Floe.UI
 		{
 			_offset = offset;
 			this.InvalidateVisual();
-			_viewer.InvalidateScrollInfo();
+			if (_viewer != null)
+			{
+				_viewer.InvalidateScrollInfo();
+			}
 		}
 
 		public void LineLeft()

@@ -13,6 +13,7 @@ using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 
 using Floe.Net;
+using Floe.Configuration;
 
 namespace Floe.UI
 {
@@ -36,6 +37,23 @@ namespace Floe.UI
 			this.Items = new ObservableCollection<ChatTabItem>();
 			this.DataContext = this;
 			InitializeComponent();
+
+			this.AddPage(new ChatContext(new IrcSession(), null), true);
+
+			if (Application.Current.MainWindow == this)
+			{
+				int i = 0;
+				foreach (var server in from ServerElement s in App.Settings.Current.Servers
+									   where s.ConnectOnStartup == true
+									   select s)
+				{
+					if (i++ > 0)
+					{
+						this.AddPage(new ChatContext(new IrcSession(), null), false);
+					}
+					this.Items[this.Items.Count - 1].Content.Connect(server.Hostname, server.Port);
+				}
+			}
 		}
 
 		public void AddPage(ChatContext context, bool switchToPage)
@@ -79,6 +97,21 @@ namespace Floe.UI
 			}
 		}
 
+		public void SwitchToPage(ChatContext context)
+		{
+			var item = (from p in this.Items where p.Content.Context == context select p).FirstOrDefault();
+			if (item != null)
+			{
+				tabsChat.SelectedIndex = this.Items.IndexOf(item);
+			}
+		}
+
+		public ChatContext FindPage(IrcSession session, IrcTarget target)
+		{
+			return this.Items.Where((i) => i.Content.Context.Session == session && i.Content.Context.Target != null &&
+				i.Content.Context.Target.Equals(target)).Select((p) => p.Content.Context).FirstOrDefault();
+		}
+
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
@@ -104,12 +137,6 @@ namespace Floe.UI
 			}
 
 			Interop.WindowPlacementHelper.Save(this);
-		}
-
-		private ChatControl FindPage(IrcSession session, IrcTarget target)
-		{
-			return this.Items.Where((i) => i.Content.Context.Session == session && i.Content.Context.Target != null &&
-				i.Content.Context.Target.Equals(target)).Select((p) => p.Content).FirstOrDefault();
 		}
 	}
 }

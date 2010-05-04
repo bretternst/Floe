@@ -57,7 +57,6 @@ namespace Floe.UI
 		{
 			var window = new ChatWindow();
 			window.Closed += new EventHandler(window_Closed);
-			window.AddPage(new ChatContext(new IrcSession(), null), true);
 			window.Show();
 		}
 

@@ -287,6 +287,16 @@ namespace Floe.Net
 			}
 		}
 
+		public void List(string channels, string target)
+		{
+			this.Send("LIST", channels, target);
+		}
+
+		public void List(string channels)
+		{
+			this.Send("LIST", channels);
+		}
+
 		private void OnStateChanged()
 		{
 			var handler = this.StateChanged;

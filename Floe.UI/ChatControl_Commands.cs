@@ -13,6 +13,14 @@ namespace Floe.UI
 	{
 		private const char CommandChar = '/';
 
+		public static readonly RoutedEvent QueryEvent = EventManager.RegisterRoutedEvent("Query", RoutingStrategy.Bubble,
+			typeof(QueryEventHandler), typeof(ChatControl));
+
+		private void Query(string nickname)
+		{
+			this.RaiseEvent(new QueryEventArgs(QueryEvent, nickname));
+		}
+
 		private void Execute(string text)
 		{
 			string command = text.Trim();
@@ -178,12 +186,7 @@ namespace Floe.UI
 					{
 						this.Session.Quit("Changing servers");
 					}
-					this.Session.Open(args[0], port,
-						!string.IsNullOrEmpty(this.Session.Nickname) ? 
-							this.Session.Nickname : App.Settings.Current.User.Nickname,
-						App.Settings.Current.User.Username,
-						App.Settings.Current.User.Hostname,
-						App.Settings.Current.User.FullName);
+					this.Connect(args[0], port);
 					break;
 				case "ME":
 				case "ACTION":
@@ -206,6 +209,17 @@ namespace Floe.UI
 					args = Split(command, arguments, 2, 2);
 					this.Session.PrivateMessage(new IrcTarget(args[0]), args[1]);
 					this.Write("Own", string.Format("-> [{0}] {1}", args[0], args[1]));
+					break;
+				case "LIST":
+					args = Split(command, arguments, 1, 2);
+					if (args.Length > 1)
+					{
+						this.Session.List(args[0], args[1]);
+					}
+					else
+					{
+						this.Session.List(args[0]);
+					}
 					break;
 				default:
 					this.Write("Error", string.Format("Unrecognized command: {0}", command));
@@ -268,4 +282,17 @@ namespace Floe.UI
 			return parts.ToArray();
 		}
 	}
+
+	public class QueryEventArgs : RoutedEventArgs
+	{
+		public string Nickname { get; private set; }
+
+		public QueryEventArgs(RoutedEvent evt, string nickname)
+			: base(evt)
+		{
+			this.Nickname = nickname;
+		}
+	}
+
+	public delegate void QueryEventHandler(object sender, QueryEventArgs e);
 }

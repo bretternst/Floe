@@ -11,7 +11,18 @@ namespace Floe.UI
 	{
 		private Queue<ChatLine> _lines = new Queue<ChatLine>();
 		private ScrollViewer _viewer;
-		private bool _isAutoScrolling;
+		private bool _isAutoScrolling = true;
+
+		public ChatPresenter()
+		{
+			this.Loaded += (sender, e) =>
+				{
+					if (_isAutoScrolling)
+					{
+						this.ScrollToEnd();
+					}
+				};
+		}
 
 		public void AppendLine(ChatLine line)
 		{
