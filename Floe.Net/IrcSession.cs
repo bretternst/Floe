@@ -22,6 +22,7 @@ namespace Floe.Net
 		public string Username { get; private set; }
 		public string Hostname { get; private set; }
 		public string FullName { get; private set; }
+		public bool AutoReconnect { get; set; }
 		public string NetworkName { get; private set; }
 		public char[] UserModes { get; private set; }
 
@@ -66,7 +67,7 @@ namespace Floe.Net
 		}
 
 		public void Open(string server, int port, string nickname,
-			string userName = "none", string hostName = "127.0.0.1", string fullname = "none")
+			string userName = "none", string hostName = "127.0.0.1", string fullname = "none", bool autoReconnect = false)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -80,6 +81,7 @@ namespace Floe.Net
 			this.FullName = fullname;
 			this.NetworkName = this.Server;
 			this.UserModes = new char[0];
+			this.AutoReconnect = autoReconnect;
 
 			if (_conn != null)
 			{
@@ -303,6 +305,11 @@ namespace Floe.Net
 			if (handler != null)
 			{
 				handler(this, EventArgs.Empty);
+			}
+
+			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
+			{
+				_conn.Open();
 			}
 		}
 

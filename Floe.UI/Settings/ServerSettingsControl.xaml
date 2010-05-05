@@ -12,9 +12,9 @@
 		</Style>
 	</UserControl.Resources>
 	<Canvas>
-		<ListBox Canvas.Left="12" Canvas.Top="47" Height="188" Name="lstServers" Width="138" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
-		<Button Canvas.Left="12" Canvas.Top="18" Content="New" Height="23" Name="btnNew" Width="58" Click="btnNew_Click" />
-		<Button Canvas.Left="88" Canvas.Top="18" Content="Delete" Height="23" Name="btnDelete" Width="62" Click="btnDelete_Click">
+		<ListBox Canvas.Left="12" Canvas.Top="41" Height="194" Name="lstServers" Width="138" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+		<Button Canvas.Left="12" Canvas.Top="12" Content="New" Height="23" Name="btnNew" Width="58" Click="btnNew_Click" />
+		<Button Canvas.Left="88" Canvas.Top="12" Content="Delete" Height="23" Name="btnDelete" Width="62" Click="btnDelete_Click">
 			<Button.Style>
 				<Style TargetType="Button">
 					<Style.Triggers>
@@ -25,8 +25,8 @@
 				</Style>
 			</Button.Style>
 		</Button>
-		<Label Canvas.Left="179" Canvas.Top="31" Content="Description" Height="18" Name="label1" />
-		<TextBox Canvas.Left="178" Canvas.Top="47" Height="23" Name="txtName" Width="139" SourceUpdated="txtName_SourceUpdated">
+		<Label Canvas.Left="166" Canvas.Top="12" Content="Description" Height="18" Name="label1" />
+		<TextBox Canvas.Left="165" Canvas.Top="29" Height="23" Name="txtName" Width="139" SourceUpdated="txtName_SourceUpdated">
 			<TextBox.Text>
 				<Binding ElementName="lstServers" Path="SelectedItem.Name" Mode="TwoWay" NotifyOnSourceUpdated="True">
 					<Binding.ValidationRules>
@@ -35,8 +35,8 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<Label Canvas.Left="179" Canvas.Top="76" Content="Hostname" Height="18" Name="label2" />
-		<TextBox Canvas.Left="178" Canvas.Top="92" Height="23" Name="txtHostname" Width="139">
+		<Label Canvas.Left="166" Canvas.Top="55" Content="Server" Height="18" Name="label2" />
+		<TextBox Canvas.Left="166" Canvas.Top="71" Height="23" Name="txtHostname" Width="138">
 			<TextBox.Text>
 				<Binding ElementName="lstServers" Path="SelectedItem.Hostname" Mode="TwoWay" NotifyOnSourceUpdated="True">
 					<Binding.ValidationRules>
@@ -45,8 +45,8 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<Label Canvas.Left="217" Canvas.Top="126" Content="Port" Height="18" Name="label3" Width="27"/>
-		<TextBox Canvas.Left="250" Canvas.Top="121" Height="23" Name="txtPort" Width="67">
+		<Label Canvas.Left="310" Canvas.Top="74" Content=":" Height="18" Name="label3" Width="9"/>
+		<TextBox Canvas.Left="320" Canvas.Top="71" Height="23" Name="txtPort" Width="52">
 			<TextBox.Text>
 				<Binding ElementName="lstServers" Path="SelectedItem.Port" Mode="TwoWay" NotifyOnSourceUpdated="True">
 					<Binding.ValidationRules>
@@ -55,7 +55,9 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<CheckBox Canvas.Left="179" Canvas.Top="170" Content="Connect On Startup" Height="16" Name="chkConnectOnStartup" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.ConnectOnStartup, Mode=TwoWay}"/>
-		<CheckBox Canvas.Left="179" Canvas.Top="192" Content="Automatically Reconnect" Height="16" Name="chkAutoReconnect" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.AutoReconnect, Mode=TwoWay}"/>
+		<CheckBox Canvas.Left="165" Canvas.Top="100" Content="Connect On Startup" Height="16" Name="chkConnectOnStartup" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.ConnectOnStartup, Mode=TwoWay}"/>
+		<CheckBox Canvas.Left="165" Canvas.Top="122" Content="Automatically Reconnect" Height="16" Name="chkAutoReconnect" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.AutoReconnect, Mode=TwoWay}"/>
+		<Label Canvas.Left="166" Canvas.Top="143" Content="On Connect:" Height="28" Name="label4" />
+		<TextBox Canvas.Left="165" Canvas.Top="159" Height="76" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
 	</Canvas>
 </UserControl>

@@ -121,5 +121,12 @@ namespace Floe.Configuration
 			get { return (bool)this["autoReconnect"]; }
 			set { this["autoReconnect"] = value; }
 		}
+
+		[ConfigurationProperty("onConnect", DefaultValue="")]
+		public string OnConnect
+		{
+			get { return (string)this["onConnect"]; }
+			set { this["onConnect"] = value; }
+		}
 	}
 }

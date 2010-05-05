@@ -40,49 +40,8 @@ namespace Floe.UI
 			}
 		}
 
-		protected string SelectedText
-		{
-			get
-			{
-				int start = this.SelectionStart, end = this.SelectionEnd;
-				if (start >= 0 && end > 0 && end > start)
-				{
-					var output = new StringBuilder();
-					var baseIdx = 0;
-					foreach (var s in _lines)
-					{
-						start = Math.Max(0, this.SelectionStart - baseIdx);
-						end = Math.Min(s.Length, this.SelectionEnd - baseIdx + 1);
-						if(end > start)
-						{
-							output.Append(s.Text.Substring(start, end - start));
-							if (this.SelectionEnd > baseIdx + end)
-							{
-								output.AppendLine();
-							}
-						}
-						baseIdx += s.Length + 1;
-						if(this.SelectionEnd < baseIdx)
-						{
-							break;
-						}
-					}
-					return output.ToString();
-				}
-				else
-				{
-					return "";
-				}
-			}
-		}
-
 		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
 		{
-			if (_lastLine == null)
-			{
-				return;
-			}
-
 			var p = e.GetPosition(this);
 			int idx = this.GetCharIndexAt(p);
 			if (idx >= 0 && idx < int.MaxValue)
@@ -98,14 +57,13 @@ namespace Floe.UI
 
 		protected override void OnMouseMove(MouseEventArgs e)
 		{
-			if (!_isSelecting)
+			if (_isSelecting)
 			{
-				return;
+				_selEnd = this.GetCharIndexAt(e.GetPosition(this));
+				this.InvalidateVisual();
+				e.Handled = true;
 			}
 
-			_selEnd = this.GetCharIndexAt(e.GetPosition(this));
-
-			this.InvalidateVisual();
 			base.OnMouseMove(e);
 		}
 
@@ -116,7 +74,7 @@ namespace Floe.UI
 				return;
 			}
 
-			string selText = this.SelectedText;
+			string selText = this.GetSelectedText();
 			if (selText.Length >= this.MinimumCopyLength)
 			{
 				Clipboard.SetText(selText);
@@ -134,52 +92,128 @@ namespace Floe.UI
 
 		private int GetCharIndexAt(Point p)
 		{
-			double x = p.X, y = this.ActualHeight - p.Y;
-			if (y < 0.0)
+			if (p.Y > this.ActualHeight)
 			{
 				return int.MaxValue;
 			}
-
-			double vPos = 0.0;
-			int i = 0;
-			for (i = _lastVisibleLineIdx; i >= 0 && vPos <= this.ViewportHeight; --i)
+			FormattedLine block = null;
+			for (int j = _bottomBlock; j >= 0; --j)
 			{
-				vPos += _output[i].Height;
-				if (vPos > y)
+				if (p.Y >= _blocks[j].Y && p.Y < _blocks[j].Y + _blocks[j].Height)
 				{
+					block = _blocks[j];
 					break;
 				}
 			}
-			if (i < 0)
+			if (block == null)
 			{
-				i = 0;
+				return -1;
 			}
-			var ch = _output[i].GetCharacterHitFromDistance(x);
-			return ch.FirstCharacterIndex;
+
+			int line = (int)(p.Y - block.Y) / (int)_lineHeight;
+			int idx = 0;
+			if (line > 0 || p.X >= block.TextX)
+			{
+				idx += block.TimeString.Length + block.NickString.Length;
+				var ch = block.Text[line].GetCharacterHitFromDistance(p.X - block.TextX);
+				idx += Math.Min(ch.FirstCharacterIndex, block.TextString.Length - 1);
+			}
+			else if (p.X >= block.NickX || block.Time == null)
+			{
+				idx += block.TimeString.Length;
+				var ch = block.Nick.GetCharacterHitFromDistance(p.X - block.NickX);
+				idx += Math.Min(ch.FirstCharacterIndex, block.NickString.Length - 1);
+			}
+			else
+			{
+				var ch = block.Time.GetCharacterHitFromDistance(p.X);
+				idx += Math.Min(ch.FirstCharacterIndex, block.TimeString.Length - 1);
+			}
+			return idx + block.CharStart;
 		}
 
-		private void DrawSelectedLine(DrawingContext dc, double y, int idx, TextFormatter formatter,
-			LineSource source, CustomParagraphProperties paraProperties)
+		private void FindSelectedArea(int idx, int txtLen, int txtOffset, double x, TextLine line, ref double start, ref double end)
 		{
-			TextLine line = _output[idx];
-			int lineStart = line.GetCharacterHitFromDistance(0.0).FirstCharacterIndex;
-			int lineEnd = lineStart + line.Length;
-			int selStart = Math.Max(lineStart, this.SelectionStart);
-			int selEnd = Math.Min(lineEnd, this.SelectionEnd);
-
-			if (selStart <= lineEnd && selEnd >= lineStart)
+			int first = Math.Max(txtOffset, this.SelectionStart - idx);
+			int last = Math.Min(txtLen - 1 + txtOffset, this.SelectionEnd - idx);
+			if (last > first)
 			{
-				foreach (var bounds in line.GetTextBounds(selStart, selEnd - selStart + 1))
+				start = Math.Min(start, line.GetDistanceFromCharacterHit(new CharacterHit(first, 0)) + x);
+				end = Math.Max(end, line.GetDistanceFromCharacterHit(new CharacterHit(last, 1)) + x);
+			}
+		}
+
+		private static Lazy<Brush> _highlightBrush = new Lazy<Brush>(() =>
+			{
+				var c = SystemColors.HighlightColor;
+				c.A = 102;
+				return new SolidColorBrush(c);
+			}, true);
+
+		private void DrawSelectedLine(DrawingContext dc, FormattedLine block)
+		{
+			if (this.SelectionEnd < block.CharStart || this.SelectionStart >= block.CharEnd ||
+				this.SelectionStart >= this.SelectionEnd)
+			{
+				return;
+			}
+
+			int idx = block.CharStart, txtOffset = 0;
+			double y = block.Y;
+			for (int i = 0; i < block.Text.Length; i++)
+			{
+				double start = double.MaxValue, end = double.MinValue;
+				if (i == 0)
 				{
-					var rect = new Rect(bounds.Rectangle.X, bounds.Rectangle.Y + y, bounds.Rectangle.Width, bounds.Rectangle.Height + 1);
-					dc.DrawRectangle(SystemColors.HighlightBrush, null, rect);
-					var clip = new RectangleGeometry(rect);
-					dc.PushClip(clip);
-					var selText = formatter.FormatLine(source, selStart, this.ViewportWidth, paraProperties, null);
-					selText.Draw(dc, new Point(rect.X, y), InvertAxes.None);
-					dc.Pop();
+					if (block.Time != null)
+					{
+						this.FindSelectedArea(idx, block.TimeString.Length, 0, 0.0, block.Time, ref start, ref end);
+						idx += block.TimeString.Length;
+					}
+					this.FindSelectedArea(idx, block.NickString.Length, 0, block.NickX, block.Nick, ref start, ref end);
+					idx += block.NickString.Length;
+				}
+				this.FindSelectedArea(idx, block.Text[i].Length, txtOffset, block.TextX, block.Text[i], ref start, ref end);
+				txtOffset += block.Text[i].Length;
+
+				if (end > start)
+				{
+					dc.DrawRectangle(_highlightBrush.Value, null,
+						new Rect(new Point(start, y), new Point(end, y + _lineHeight)));
+				}
+				y += _lineHeight;
+			}
+		}
+
+		private string GetSelectedText()
+		{
+			var output = new StringBuilder();
+			foreach (var block in _blocks)
+			{
+				if (this.SelectionEnd < block.CharStart || this.SelectionStart >= block.CharEnd)
+				{
+					continue;
+				}
+
+				int idx = block.CharStart;
+				output.Append(this.GetSelectedText(idx, block.TimeString, output));
+				idx += block.TimeString.Length;
+				output.Append(this.GetSelectedText(idx, block.NickString, output));
+				idx += block.NickString.Length;
+				output.Append(this.GetSelectedText(idx, block.TextString, output));
+				if (this.SelectionEnd >= block.CharEnd)
+				{
+					output.AppendLine();
 				}
 			}
+			return output.ToString();
+		}
+
+		private string GetSelectedText(int idx, string s, StringBuilder output)
+		{
+			int first = Math.Max(0, this.SelectionStart - idx);
+			int last = Math.Min(s.Length - 1, this.SelectionEnd - idx);
+			return last >= first ? s.Substring(first, last - first + 1) : "";
 		}
 	}
 }

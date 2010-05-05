@@ -40,7 +40,7 @@ namespace Floe.Net
 
 		public void Open()
 		{
-			if (_tcpClient != null)
+			if (_tcpClient != null && _tcpClient.Connected)
 			{
 				throw new InvalidOperationException("The connection is already open.");
 			}

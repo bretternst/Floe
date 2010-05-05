@@ -22,56 +22,55 @@ namespace Floe.UI
 
 		public void LineUp()
 		{
-			if (_lastLine != null)
-			{
-				this.SetVerticalOffset(Math.Max(0.0, _offset - _lastLine.Height));
-			}
+			this.SetVerticalOffset(Math.Max(0.0, _offset - _lineHeight));
 		}
 
 		public void LineDown()
 		{
-			if (_lastLine != null && _extentHeight > this.ActualHeight)
+			if (_extentHeight > this.ActualHeight)
 			{
-				this.SetVerticalOffset(Math.Min(_extentHeight - this.ActualHeight, _offset + _lastLine.Height));
+				this.SetVerticalOffset(Math.Min(_extentHeight - this.ActualHeight, _offset + _lineHeight));
 			}
 		}
 
 		public void MouseWheelUp()
 		{
-			if (_lastLine != null)
-			{
-				this.SetVerticalOffset(Math.Max(0.0, _offset - _lastLine.Height * SystemParameters.WheelScrollLines));
-			}
+			this.SetVerticalOffset(Math.Max(0.0, _offset - _lineHeight * SystemParameters.WheelScrollLines));
 		}
 
 		public void MouseWheelDown()
 		{
-			if (_lastLine != null && _extentHeight > this.ActualHeight)
+			if (_extentHeight > this.ActualHeight)
 			{
 				this.SetVerticalOffset(Math.Min(_extentHeight - this.ActualHeight,
-					_offset + _lastLine.Height * SystemParameters.WheelScrollLines));
+					_offset + _lineHeight * SystemParameters.WheelScrollLines));
 			}
 		}
 
 		public void PageUp()
 		{
-			if (_lastLine != null)
-			{
-				this.SetVerticalOffset(Math.Max(0.0, _offset - _lastLine.Height * (this.VisibleLineCount - 1)));
-			}
+			this.SetVerticalOffset(Math.Max(0.0, _offset - _lineHeight * (this.VisibleLineCount - 1)));
 		}
 
 		public void PageDown()
 		{
-			if (_lastLine != null && _extentHeight > this.ActualHeight)
+			if (_extentHeight > this.ActualHeight)
 			{
 				this.SetVerticalOffset(Math.Min(_extentHeight - this.ActualHeight,
-					_offset + _lastLine.Height * (this.VisibleLineCount - 1)));
+					_offset + _lineHeight * (this.VisibleLineCount - 1)));
 			}
 		}
 
 		public void SetVerticalOffset(double offset)
 		{
+			var delta = offset - _offset;
+			_blocks.ForEach((b) =>
+				{
+					if (b.Y >= 0.0)
+					{
+						b.Y += delta;
+					}
+				});
 			_offset = offset;
 			this.InvalidateVisual();
 			if (_viewer != null)
@@ -127,7 +126,7 @@ namespace Floe.UI
 		{
 			get
 			{
-				return _lastLine != null ? (int)Math.Ceiling(this.ActualHeight / _lastLine.Height) : 0;
+				return _lineHeight == 0.0 ? 0 : (int)Math.Ceiling(this.ActualHeight / _lineHeight);
 			}
 		}
 	}

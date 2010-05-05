@@ -51,7 +51,7 @@ namespace Floe.UI
 					{
 						this.AddPage(new ChatContext(new IrcSession(), null), false);
 					}
-					this.Items[this.Items.Count - 1].Content.Connect(server.Hostname, server.Port);
+					this.Items[this.Items.Count - 1].Content.Connect(server);
 				}
 			}
 		}
@@ -127,6 +127,7 @@ namespace Floe.UI
 			{
 				if (page.Context.IsConnected)
 				{
+					page.Context.Session.AutoReconnect = false;
 					page.Context.Session.Quit("Leaving");
 				}
 			}

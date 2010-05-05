@@ -45,6 +45,7 @@ namespace Floe.UI
 		public bool IsServer { get { return this.Target == null; } }
 		public bool IsChannel { get { return this.Target != null && this.Target.Type == IrcTargetType.Channel; } }
 		public bool IsNickname { get { return this.Target != null && this.Target.Type == IrcTargetType.Nickname; } }
+		public string Perform { get; set; }
 
 		public static readonly DependencyProperty HeaderProperty =
 			DependencyProperty.Register("Header", typeof(string), typeof(ChatControl));
@@ -70,14 +71,21 @@ namespace Floe.UI
 			set { this.SetValue(IsDefaultProperty, value); }
 		}
 
-		public void Connect(string hostname, int port)
+		public void Connect(Floe.Configuration.ServerElement server)
+		{
+			this.Perform = server.OnConnect;
+			this.Connect(server.Hostname, server.Port, server.AutoReconnect);
+		}
+
+		public void Connect(string hostname, int port, bool autoReconnect)
 		{
 			this.Session.Open(hostname, port,
 				!string.IsNullOrEmpty(this.Session.Nickname) ?
 					this.Session.Nickname : App.Settings.Current.User.Nickname,
 				App.Settings.Current.User.Username,
 				App.Settings.Current.User.Hostname,
-				App.Settings.Current.User.FullName);
+				App.Settings.Current.User.FullName,
+				autoReconnect);
 		}
 
 		protected override void OnInitialized(EventArgs e)
@@ -86,7 +94,7 @@ namespace Floe.UI
 
 			if (this.IsChannel)
 			{
-				this.Write("Join", string.Format("* Now talking on {0}", this.Target.Name));
+				this.Write("Join", "*", string.Format("Now talking on {0}", this.Target.Name));
 			}
 		}
 
@@ -168,13 +176,13 @@ namespace Floe.UI
 			}
 			catch (IrcException ex)
 			{
-				this.Write("Error", ex.Message);
+				this.Write("Error", "*", ex.Message);
 			}
 		}
 
-		private void Write(string styleKey, string text)
+		private void Write(string styleKey, string nick, string text)
 		{
-			boxOutput.AppendLine(new ChatLine(styleKey, text));
+			boxOutput.AppendLine(new ChatLine(styleKey, nick, text));
 		}
 
 		private void SetInputText(string text)

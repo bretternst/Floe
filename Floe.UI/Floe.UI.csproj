@@ -65,6 +65,7 @@
     </ApplicationDefinition>
     <Compile Include="ChatBox\ChatBox.cs" />
     <Compile Include="ChatBox\ChatBoxBase.cs" />
+    <Compile Include="ChatBox\ChatFormatter.cs" />
     <Compile Include="ChatBox\ChatLine.cs" />
     <Compile Include="ChatBox\ChatPalette.cs" />
     <Compile Include="ChatBox\ChatPresenter.cs" />

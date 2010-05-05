@@ -7,21 +7,18 @@ namespace Floe.UI
 {
 	public class ChatLine
 	{
+		public DateTime Time { get; private set; }
 		public string ColorKey { get; private set; }
+		public string Nick { get; private set; }
 		public string Text { get; private set; }
 
-		public ChatLine(string colorKey, string text)
+		public ChatLine(string colorKey, string nick, string text)
 		{
-			this.Text = text;
+			this.Time = DateTime.Now;
 			this.ColorKey = colorKey;
+			this.Nick = nick;
+			this.Text = text;
 		}
-
-		public ChatLine(string text)
-			: this(text, null)
-		{
-		}
-
-		public int Length { get { return this.Text.Length; } }
 
 		public override string ToString()
 		{
