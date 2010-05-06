@@ -24,11 +24,11 @@ namespace Floe.Configuration
 			}
 		}
 
-		[ConfigurationProperty("text")]
-		public TextElement Text
+		[ConfigurationProperty("formatting")]
+		public FormattingElement Formatting
 		{
-			get { return (TextElement)this["text"]; }
-			set { this["text"] = value; }
+			get { return (FormattingElement)this["formatting"]; }
+			set { this["formatting"] = value; }
 		}
 
 		[ConfigurationProperty("colors")]

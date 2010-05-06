@@ -143,19 +143,22 @@ namespace Floe.UI
 
 		private void tabsChat_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			var context = ((ChatTabItem)tabsChat.SelectedItem).Content.Context;
-			foreach (var item in this.Items)
+			if (tabsChat.SelectedItem != null)
 			{
-				bool isDefault = false;
-				if (item == tabsChat.SelectedItem ||
-					item.Content.Context.Session != context.Session && item.Content.IsServer)
+				var context = ((ChatTabItem)tabsChat.SelectedItem).Content.Context;
+				foreach (var item in this.Items)
 				{
-					isDefault = true;
-				}
+					bool isDefault = false;
+					if (item == tabsChat.SelectedItem ||
+						item.Content.Context.Session != context.Session && item.Content.IsServer)
+					{
+						isDefault = true;
+					}
 
-				if (item.Content.IsDefault != isDefault)
-				{
-					item.Content.IsDefault = isDefault;
+					if (item.Content.IsDefault != isDefault)
+					{
+						item.Content.IsDefault = isDefault;
+					}
 				}
 			}
 		}

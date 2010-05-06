@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace Floe.UI
 {
-	public static class DependencyObjectExtensions
+	public static class Extensions
 	{
 		public static void Invoke(this DependencyObject obj, Action action)
 		{

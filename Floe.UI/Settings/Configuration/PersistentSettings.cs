@@ -13,6 +13,8 @@ namespace Floe.Configuration
 		private SettingsSection _prefConfigSection;
 
 		public SettingsSection Current { get { return _prefConfigSection; } }
+		public string BasePath { get { return Path.GetDirectoryName(_exeConfig.FilePath); } }
+		public bool IsFirstLaunch { get; private set; }
 
 		public PersistentSettings()
 		{
@@ -30,15 +32,25 @@ namespace Floe.Configuration
 			map.ExeConfigFilename = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
 			string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Floe.UI.App.Product);
 			path = Path.Combine(path, string.Format("{0}.config", Floe.UI.App.Product));
+			this.IsFirstLaunch = !File.Exists(path);
 			map.RoamingUserConfigFilename = path;
 
-			_exeConfig = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.PerUserRoaming);
-			_prefConfigSection = _exeConfig.GetSection(SettingsConfigSectionName) as SettingsSection;
-			if (_prefConfigSection == null)
+			try
 			{
-				_prefConfigSection = new SettingsSection();
-				_prefConfigSection.SectionInformation.AllowExeDefinition = ConfigurationAllowExeDefinition.MachineToLocalUser;
-				_exeConfig.Sections.Add(SettingsConfigSectionName, _prefConfigSection);
+				_exeConfig = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.PerUserRoaming);
+				_prefConfigSection = _exeConfig.GetSection(SettingsConfigSectionName) as SettingsSection;
+				if (_prefConfigSection == null)
+				{
+					_prefConfigSection = new SettingsSection();
+					_prefConfigSection.SectionInformation.AllowExeDefinition = ConfigurationAllowExeDefinition.MachineToLocalUser;
+					_exeConfig.Sections.Add(SettingsConfigSectionName, _prefConfigSection);
+				}
+			}
+			catch (Exception ex)
+			{
+				System.Windows.MessageBox.Show(string.Format("Unable to load user configuration: {0}. You may want to delete the configuration file and try again.",
+					ex.Message, path));
+				Environment.Exit(-1);
 			}
 
 			this.OnPropertyChanged("Current");

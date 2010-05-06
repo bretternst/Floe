@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Floe.UI.Settings
 {
-	public partial class TextSettingsControl : UserControl
+	public partial class FormattingSettingsControl : UserControl
 	{
 		public class FontFamilyListItem : ComboBoxItem
 		{
@@ -23,7 +23,7 @@ namespace Floe.UI.Settings
 		public ICollection<FontFamilyListItem> FontFamilyItems { get; private set; }
 		public ICollection<string> FontWeightItems { get; private set; }
 
-		public TextSettingsControl()
+		public FormattingSettingsControl()
 		{
 			this.FontFamilyItems = (from font in Fonts.SystemFontFamilies
 								orderby font.Source

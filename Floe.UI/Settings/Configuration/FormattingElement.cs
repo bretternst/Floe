@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Floe.Configuration
 {
-	public class TextElement : ConfigurationElement, INotifyPropertyChanged
+	public class FormattingElement : ConfigurationElement, INotifyPropertyChanged
 	{
 		[ConfigurationProperty("fontFamily", DefaultValue = "Consolas")]
 		public string FontFamily
@@ -40,6 +40,43 @@ namespace Floe.Configuration
 		{
 			get { return (string)this["fontWeight"]; }
 			set { this["fontWeight"] = value; this.OnPropertyChanged("FontWeight"); }
+		}
+
+		[ConfigurationProperty("showTimestamp", DefaultValue=true)]
+		public bool ShowTimestamp
+		{
+			get { return (bool)this["showTimestamp"]; }
+			set { this["showTimestamp"] = value; this.OnPropertyChanged("ShowTimestamp"); }
+		}
+
+		[ConfigurationProperty("timestampFormat", DefaultValue = "[HH:mm]")]
+		public string TimestampFormat
+		{
+			get { return (string)this["timestampFormat"]; }
+			set
+			{
+				DateTime.Now.ToString(value);
+				if (value.Trim().Length < 1)
+				{
+					throw new ArgumentException("String cannot be empty.");
+				}
+				this["timestampFormat"] = value;
+				this.OnPropertyChanged("TimestampFormat");
+			}
+		}
+
+		[ConfigurationProperty("useTabularView", DefaultValue=false)]
+		public bool UseTabularView
+		{
+			get { return (bool)this["useTabularView"]; }
+			set { this["useTabularView"] = value; this.OnPropertyChanged("UseTabularView"); }
+		}
+
+		[ConfigurationProperty("colorizeNicknames", DefaultValue = false)]
+		public bool ColorizeNicknames
+		{
+			get { return (bool)this["colorizeNicknames"]; }
+			set { this["colorizeNicknames"] = value; this.OnPropertyChanged("ColorizeNicknames"); }
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

@@ -14,7 +14,14 @@
 											 BufferLines="{TemplateBinding BufferLines}"
 											 MinimumCopyLength="{TemplateBinding MinimumCopyLength}"
 											 Palette="{TemplateBinding Palette}"
-											 Background="Transparent" SnapsToDevicePixels="True"/>
+											 ShowTimestamp="{TemplateBinding ShowTimestamp}"
+											 TimestampFormat="{TemplateBinding TimestampFormat}"
+											 UseTabularView="{TemplateBinding UseTabularView}"
+											 ColorizeNicknames="{TemplateBinding ColorizeNicknames}"
+											 NewMarkerColor="{TemplateBinding NewMarkerColor}"
+											 OldMarkerColor="{TemplateBinding OldMarkerColor}"
+											 Background="{TemplateBinding Background}"
+											 SnapsToDevicePixels="True"/>
 					</ScrollViewer>
 				</ControlTemplate>
 			</Setter.Value>

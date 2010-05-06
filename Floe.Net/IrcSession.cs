@@ -89,6 +89,7 @@ namespace Floe.Net
 				_conn.Disconnected -= new EventHandler(_conn_Disconnected);
 				_conn.MessageReceived -= new EventHandler<IrcEventArgs>(_conn_MessageReceived);
 				_conn.MessageSent -= new EventHandler<IrcEventArgs>(_conn_MessageSent);
+				_conn.ConnectionError -= new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
 				_conn.WaitForClose();
 			}
 

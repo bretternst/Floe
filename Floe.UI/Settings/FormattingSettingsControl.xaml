@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Floe.UI.Settings.TextSettingsControl"
+﻿<UserControl x:Class="Floe.UI.Settings.FormattingSettingsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,16 +7,16 @@
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384" x:Name="TextSettings">
 	<Canvas>
-		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="154" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
+		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="138" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
 			<Canvas Canvas.Left="42" Canvas.Top="130" Width="348">
 				<Label Canvas.Left="6" Canvas.Top="6" Content="Font Family" Height="28" Name="label4" />
 				<ComboBox Canvas.Left="83" Canvas.Top="6" Height="28" Name="lstFontFamily" Width="219" SelectedValuePath="FontFamilyName"
 						  ItemsSource="{Binding ElementName=TextSettings, Path=FontFamilyItems}"
-						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=TwoWay}" FontSize="16" />
+						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=TwoWay}" FontSize="16" />
 				<Label Canvas.Left="19" Canvas.Top="40" Content="Size (em)" Height="28" Name="label5" />
 				<TextBox Canvas.Left="83" Canvas.Top="40" Height="23" Name="txtFontSize" Width="56">
 					<TextBox.Text>
-						<Binding Source="{x:Static local:App.Settings}" Path="Current.Text.FontSize" Mode="TwoWay">
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Formatting.FontSize" Mode="TwoWay">
 							<Binding.ValidationRules>
 								<ExceptionValidationRule/>
 							</Binding.ValidationRules>
@@ -26,18 +26,28 @@
 				<Label Canvas.Left="160" Canvas.Top="40" Content="Weight" Height="28" Name="label6" />
 				<ComboBox Canvas.Left="214" Canvas.Top="40" Height="23" Name="txtFontWeight" Width="88"
 						  ItemsSource="{Binding ElementName=TextSettings, Path=FontWeightItems}"
-						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=TwoWay}"/>
-				<TextBlock Canvas.Left="6" Canvas.Top="69" Height="68" Name="txtPreview" TextAlignment="Center" VerticalAlignment="Center" Width="336"
+						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=TwoWay}"/>
+				<TextBlock Canvas.Left="6" Canvas.Top="69" Height="47" Name="txtPreview" TextAlignment="Center" VerticalAlignment="Center" Width="336"
 						   FontFamily="{Binding ElementName=lstFontFamily, Path=SelectedValue}"
 						   FontSize="{Binding ElementName=txtFontSize, Path=Text}"
 						   FontWeight="{Binding ElementName=txtFontWeight, Path=SelectedValue}">
 					ABCDEFGHIJKLMNOPQRSTUVWXYZ<LineBreak/>
 					abcdefghijklmnopqrstuvwxyz<LineBreak/>
-					0123456789 !@#$%^&amp;*()<LineBreak/>
-					-=_+[]{}\|;:'"&lt;&gt;,./?`~
 				</TextBlock>
 			</Canvas>
 		</GroupBox>
 		<Grid Width="324" Canvas.Left="18" Canvas.Top="103" />
+		<CheckBox Canvas.Left="18" Canvas.Top="147" Content="Show Timestamp" Height="16" Name="chkShowTimestamp" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ShowTimestamp}"/>
+		<TextBox Canvas.Left="132" Canvas.Top="144" Height="23" Name="txtTimestampFormat" Width="64" IsEnabled="{Binding ElementName=chkShowTimestamp, Path=IsChecked}">
+			<TextBox.Text>
+				<Binding Source="{x:Static local:App.Settings}" Path="Current.Formatting.TimestampFormat" Mode="TwoWay">
+					<Binding.ValidationRules>
+						<ExceptionValidationRule/>
+					</Binding.ValidationRules>
+				</Binding>
+			</TextBox.Text>
+		</TextBox>
+		<CheckBox Canvas.Left="18" Canvas.Top="169" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
+		<CheckBox Canvas.Left="18" Canvas.Top="191" Content="Colorize Nicknames" Height="16" Name="chkColorizeNicknames" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}"/>
 	</Canvas>
 </UserControl>

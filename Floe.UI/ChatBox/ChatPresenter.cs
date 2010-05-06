@@ -5,13 +5,14 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.TextFormatting;
 
+using System.Windows.Media;
+
 namespace Floe.UI
 {
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
 		private Queue<ChatLine> _lines = new Queue<ChatLine>();
 		private ScrollViewer _viewer;
-		private bool _isAutoScrolling = true;
 
 		public ChatPresenter()
 		{
@@ -34,11 +35,6 @@ namespace Floe.UI
 			}
 
 			this.FormatText();
-
-			if (_isAutoScrolling)
-			{
-				this.ScrollToEnd();
-			}
 		}
 
 		public void Clear()
@@ -53,7 +49,12 @@ namespace Floe.UI
 				e.Property == Control.FontSizeProperty ||
 				e.Property == Control.FontStyleProperty ||
 				e.Property == Control.FontWeightProperty ||
-				e.Property == ChatBoxBase.PaletteProperty)
+				e.Property == ChatBoxBase.PaletteProperty ||
+				e.Property == ChatBoxBase.ShowTimestampProperty ||
+				e.Property == ChatBoxBase.TimestampFormatProperty ||
+				e.Property == ChatBoxBase.UseTabularViewProperty ||
+				e.Property == ChatBoxBase.ColorizeNicknamesProperty ||
+				e.Property == ChatBoxBase.NewMarkerColorProperty)
 			{
 				this.FormatText();
 			}

@@ -76,9 +76,9 @@
 	<Canvas>
 		<Border BorderThickness="3,2,3,2" Canvas.Left="12" Canvas.Top="12" Height="182" Width="360"
 				Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}" BorderBrush="#FF6F6F6F">
-			<WrapPanel TextBlock.FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
-				   TextBlock.FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}"
-				   TextBlock.FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontStyle, Mode=OneWay}">
+			<WrapPanel TextBlock.FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
+				   TextBlock.FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
+				   TextBlock.FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}">
 				<Button Content="Default" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 				<Button Content="Action" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Action, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 				<Button Content="Info" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Info, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
@@ -95,6 +95,8 @@
 				<Button Content="Own Text" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Own, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 				<Button Content="Error" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Error, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 				<Button Content="Input" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="New Marker" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+				<Button Content="Old Marker" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 			</WrapPanel>
 		</Border>
 		<Button Canvas.Left="12" Canvas.Top="200" Height="23" Width="118" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=TwoWay}">

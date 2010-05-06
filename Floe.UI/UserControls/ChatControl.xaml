@@ -20,10 +20,10 @@
 			<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown"
 				 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=OneWay}"
 				 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=OneWay}"
-				 FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
-				 FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontSize, Mode=OneWay}"
-				 FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontStyle, Mode=OneWay}"
-				 FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}"
+				 FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
+				 FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
+				 FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
+				 FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
 				 Padding="1,2,2,2" Margin="0" BorderThickness="0"/>
 		</Border>
 		<Grid>
@@ -37,16 +37,22 @@
 					   BufferLines="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.BufferLines, Mode=OneWay}"
 					   MinimumCopyLength="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.MinimumCopyLength, Mode=OneWay}"
 					   Palette="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Palette, Mode=OneWay}"
-					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
-					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontSize, Mode=OneWay}"
-					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontStyle, Mode=OneWay}"
-					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}" />
+					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
+					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
+					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
+					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
+					   ShowTimestamp="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ShowTimestamp, Mode=OneWay}"
+					   TimestampFormat="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.TimestampFormat, Mode=OneWay}"
+					   UseTabularView="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=OneWay}"
+					   ColorizeNicknames="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=OneWay}"
+					   NewMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=OneWay}"
+					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"/>
 			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0" Padding="2,0,0,0"
 					 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"
-					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontFamily, Mode=OneWay}"
-					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontSize, Mode=OneWay}"
-					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontStyle, Mode=OneWay}"
-					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Text.FontWeight, Mode=OneWay}"
+					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
+					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
+					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
+					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
 					 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"
 					 ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Nicknames}">
 				<ListBox.ItemContainerStyle>

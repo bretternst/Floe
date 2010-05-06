@@ -9,6 +9,7 @@ namespace Floe.UI
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
 		private double _extentHeight, _offset;
+		private bool _isAutoScrolling = true;
 
 		public bool CanHorizontallyScroll { get { return false; } set { } }
 		public bool CanVerticallyScroll { get { return true; } set { } }
@@ -77,6 +78,8 @@ namespace Floe.UI
 			{
 				_viewer.InvalidateScrollInfo();
 			}
+
+			_isAutoScrolling = _offset > _extentHeight - this.ActualHeight - _lineHeight;
 		}
 
 		public void LineLeft()

@@ -18,12 +18,5 @@ namespace Floe.Configuration
 			get { return (string)this["customColors"]; }
 			set { this["customColors"] = value; }
 		}
-
-		[ConfigurationProperty("nickListWidth", DefaultValue=115.0)]
-		public double NickListWidth
-		{
-			get { return (double)this["nickListWidth"]; }
-			set { this["nickListWidth"] = value; }
-		}
 	}
 }

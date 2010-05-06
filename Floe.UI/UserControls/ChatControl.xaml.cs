@@ -10,8 +10,11 @@ namespace Floe.UI
 {
 	public partial class ChatControl : UserControl, IDisposable
 	{
+		private const double DefaultNickListWidth = 115.0;
 		private LinkedList<string> _history;
 		private LinkedListNode<string> _historyNode;
+		private LogFileHandle _logFile;
+		private ChatLine _markerLine;
 
 		public ChatControl(ChatContext context)
 		{
@@ -23,11 +26,23 @@ namespace Floe.UI
 			InitializeComponent();
 			this.SubscribeEvents();
 
+			if (!this.IsServer)
+			{
+				_logFile = App.OpenLogFile(this.Session.NetworkName, this.Target.Name);
+				while (_logFile.Buffer.Count > 0)
+				{
+					var cl = _logFile.Buffer.Dequeue();
+					cl.Decoration = _logFile.Buffer.Count == 0 ? ChatDecoration.OldMarker : ChatDecoration.None;
+					boxOutput.AppendLine(cl);
+				}
+			}
+
 			if (this.IsChannel)
 			{
+				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
 				this.Session.Mode(this.Target);
 				splitter.IsEnabled = true;
-				colNickList.Width = new GridLength(App.Settings.Current.Windows.NickListWidth);
+				colNickList.Width = new GridLength(DefaultNickListWidth);
 			}
 			else if (this.IsNickname)
 			{
@@ -37,6 +52,9 @@ namespace Floe.UI
 			{
 				this.IsDefault = true;
 			}
+
+			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
+			this.Unloaded += new RoutedEventHandler(ChatControl_Unloaded);
 		}
 
 		public ChatContext Context { get; private set; }
@@ -86,16 +104,6 @@ namespace Floe.UI
 				App.Settings.Current.User.Hostname,
 				App.Settings.Current.User.FullName,
 				autoReconnect);
-		}
-
-		protected override void OnInitialized(EventArgs e)
-		{
-			base.OnInitialized(e);
-
-			if (this.IsChannel)
-			{
-				this.Write("Join", "*", string.Format("Now talking on {0}", this.Target.Name));
-			}
 		}
 
 		protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -176,13 +184,40 @@ namespace Floe.UI
 			}
 			catch (IrcException ex)
 			{
-				this.Write("Error", "*", ex.Message);
+				this.Write("Error", ex.Message);
 			}
 		}
 
-		private void Write(string styleKey, string nick, string text)
+		private void Write(string styleKey, int nickHashCode, string nick, string text)
 		{
-			boxOutput.AppendLine(new ChatLine(styleKey, nick, text));
+			var cl = new ChatLine(styleKey, nickHashCode, nick, text, ChatDecoration.None);
+
+			if (_hasDeactivated)
+			{
+				_hasDeactivated = false;
+				if (_markerLine != null)
+				{
+					_markerLine.Decoration = ChatDecoration.None;
+				}
+				_markerLine = cl;
+				cl.Decoration = ChatDecoration.NewMarker;
+			}
+
+			boxOutput.AppendLine(cl);
+			if (_logFile != null)
+			{
+				_logFile.WriteLine(cl);
+			}
+		}
+
+		private void Write(string styleKey, IrcPeer peer, string text)
+		{
+			this.Write(styleKey, string.Format("{0}@{1}", peer.Username, peer.Hostname).GetHashCode(), peer.Nickname, text);
+		}
+
+		private void Write(string styleKey, string text)
+		{
+			this.Write(styleKey, 0, "*", text);
 		}
 
 		private void SetInputText(string text)
@@ -241,10 +276,9 @@ namespace Floe.UI
 		public void Dispose()
 		{
 			this.UnsubscribeEvents();
-
-			if (this.IsChannel)
+			if (_logFile != null)
 			{
-				App.Settings.Current.Windows.NickListWidth = colNickList.Width.Value;
+				_logFile.Dispose();
 			}
 		}
 	}

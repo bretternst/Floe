@@ -63,11 +63,6 @@ namespace Floe.UI
 		private void App_Startup(object sender, StartupEventArgs e)
 		{
 			this.OpenWindow();
-
-			if (App.Settings.Current.Servers.Count < 1)
-			{
-				ShowSettings();
-			}
 		}
 
 		private void window_Closed(object sender, EventArgs e)

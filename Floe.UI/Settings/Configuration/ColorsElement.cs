@@ -136,6 +136,20 @@ namespace Floe.Configuration
 			set { this["error"] = value; OnPropertyChanged("Error"); }
 		}
 
+		[ConfigurationProperty("newMarker", DefaultValue = "#FF002B00")]
+		public string NewMarker
+		{
+			get { return (string)this["newMarker"]; }
+			set { this["newMarker"] = value; OnPropertyChanged("NewMarker"); }
+		}
+
+		[ConfigurationProperty("oldMarker", DefaultValue = "#FF002B00")]
+		public string OldMarker
+		{
+			get { return (string)this["oldMarker"]; }
+			set { this["oldMarker"] = value; OnPropertyChanged("OldMarker"); }
+		}
+
 		public ChatPalette Palette
 		{
 			get

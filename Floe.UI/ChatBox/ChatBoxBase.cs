@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Controls;
 
 namespace Floe.UI
@@ -31,6 +32,54 @@ namespace Floe.UI
 		{
 			get { return (ChatPalette)this.GetValue(PaletteProperty); }
 			set { this.SetValue(PaletteProperty, value); }
+		}
+
+		public static readonly DependencyProperty ShowTimestampProperty = DependencyProperty.Register("ShowTimestamp",
+			typeof(bool), typeof(ChatBoxBase));
+		public bool ShowTimestamp
+		{
+			get { return (bool)this.GetValue(ShowTimestampProperty); }
+			set { this.SetValue(ShowTimestampProperty, value); }
+		}
+
+		public static readonly DependencyProperty TimestampFormatProperty = DependencyProperty.Register("TimestampFormat",
+			typeof(string), typeof(ChatBoxBase));
+		public string TimestampFormat
+		{
+			get { return (string)this.GetValue(TimestampFormatProperty); }
+			set { this.SetValue(TimestampFormatProperty, value); }
+		}
+
+		public static readonly DependencyProperty UseTabularViewProperty = DependencyProperty.Register("UseTabularView",
+			typeof(bool), typeof(ChatBoxBase));
+		public bool UseTabularView
+		{
+			get { return (bool)this.GetValue(UseTabularViewProperty); }
+			set { this.SetValue(UseTabularViewProperty, value); }
+		}
+
+		public static readonly DependencyProperty ColorizeNicknamesProperty = DependencyProperty.Register("ColorizeNicknames",
+			typeof(bool), typeof(ChatBoxBase));
+		public bool ColorizeNicknames
+		{
+			get { return (bool)this.GetValue(ColorizeNicknamesProperty); }
+			set { this.SetValue(ColorizeNicknamesProperty, value); }
+		}
+
+		public static readonly DependencyProperty NewMarkerColorProperty = DependencyProperty.Register("NewMarkerColor",
+			typeof(Color), typeof(ChatBoxBase));
+		public Color NewMarkerColor
+		{
+			get { return (Color)this.GetValue(NewMarkerColorProperty); }
+			set { this.SetValue(NewMarkerColorProperty, value); }
+		}
+
+		public static readonly DependencyProperty OldMarkerColorProperty = DependencyProperty.Register("OldMarkerColor",
+			typeof(Color), typeof(ChatBoxBase));
+		public Color OldMarkerColor
+		{
+			get { return (Color)this.GetValue(OldMarkerColorProperty); }
+			set { this.SetValue(OldMarkerColorProperty, value); }
 		}
 	}
 }

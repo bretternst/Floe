@@ -15,6 +15,7 @@ namespace Floe.UI
 	{
 		private bool _isSelecting;
 		private int _selStart = -1, _selEnd = -1;
+		private bool _isDragging;
 
 		protected int SelectionStart
 		{
@@ -43,13 +44,21 @@ namespace Floe.UI
 		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
 		{
 			var p = e.GetPosition(this);
-			int idx = this.GetCharIndexAt(p);
-			if (idx >= 0 && idx < int.MaxValue)
+			if (Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0 && this.UseTabularView)
 			{
-				_isSelecting = true;
-				Mouse.OverrideCursor = Cursors.IBeam;
+				_isDragging = true;
 				this.CaptureMouse();
-				_selStart = idx;
+			}
+			else
+			{
+				int idx = this.GetCharIndexAt(p);
+				if (idx >= 0 && idx < int.MaxValue)
+				{
+					_isSelecting = true;
+					Mouse.OverrideCursor = Cursors.IBeam;
+					this.CaptureMouse();
+					_selStart = idx;
+				}
 			}
 
 			base.OnMouseDown(e);
@@ -63,30 +72,52 @@ namespace Floe.UI
 				this.InvalidateVisual();
 				e.Handled = true;
 			}
+			else if (_isDragging)
+			{
+				var p = e.GetPosition(this);
+				_columnWidth = Math.Max(DefaultColumnWidth, Math.Min(this.ActualWidth / 2.0, p.X));
+				this.FormatText();
+			}
+			else if (this.UseTabularView)
+			{
+				var p = e.GetPosition(this);
+				if (Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
+				{
+					Mouse.OverrideCursor = Cursors.SizeWE;
+				}
+				else
+				{
+					Mouse.OverrideCursor = null;
+				}
+			}
 
 			base.OnMouseMove(e);
 		}
 
 		protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
 		{
-			if (!_isSelecting)
+			if (_isDragging)
 			{
-				return;
+				_isDragging = false;
+				this.ReleaseMouseCapture();
+				Mouse.OverrideCursor = null;
 			}
-
-			string selText = this.GetSelectedText();
-			if (selText.Length >= this.MinimumCopyLength)
+			else if (_isSelecting)
 			{
-				Clipboard.SetText(selText);
+				string selText = this.GetSelectedText();
+				if (selText.Length >= this.MinimumCopyLength)
+				{
+					Clipboard.SetText(selText);
+				}
+
+				this.ReleaseMouseCapture();
+				Mouse.OverrideCursor = null;
+				_isSelecting = false;
+				_selStart = -1;
+				_selEnd = -1;
+
+				this.InvalidateVisual();
 			}
-
-			this.ReleaseMouseCapture();
-			Mouse.OverrideCursor = null;
-			_isSelecting = false;
-			_selStart = -1;
-			_selEnd = -1;
-
-			this.InvalidateVisual();
 			base.OnMouseMove(e);
 		}
 
@@ -95,6 +126,10 @@ namespace Floe.UI
 			if (p.Y > this.ActualHeight)
 			{
 				return int.MaxValue;
+			}
+			if (_blocks.Count < 1)
+			{
+				return -1;
 			}
 			FormattedLine block = null;
 			for (int j = _bottomBlock; j >= 0; --j)
@@ -136,7 +171,7 @@ namespace Floe.UI
 		{
 			int first = Math.Max(txtOffset, this.SelectionStart - idx);
 			int last = Math.Min(txtLen - 1 + txtOffset, this.SelectionEnd - idx);
-			if (last > first)
+			if (last >= first)
 			{
 				start = Math.Min(start, line.GetDistanceFromCharacterHit(new CharacterHit(first, 0)) + x);
 				end = Math.Max(end, line.GetDistanceFromCharacterHit(new CharacterHit(last, 1)) + x);
@@ -196,11 +231,25 @@ namespace Floe.UI
 				}
 
 				int idx = block.CharStart;
-				output.Append(this.GetSelectedText(idx, block.TimeString, output));
+				bool start, end;
+				output.Append(this.GetSelectedText(idx, block.TimeString, output, out start, out end));
 				idx += block.TimeString.Length;
-				output.Append(this.GetSelectedText(idx, block.NickString, output));
+				string nick = this.GetSelectedText(idx, block.NickString, output, out start, out end);
+				if (start && this.UseTabularView && block.NickString != "*")
+				{
+					output.Append('<');
+				}
+				output.Append(nick);
+				if (end && this.UseTabularView)
+				{
+					if (block.NickString != "*")
+					{
+						output.Append('>');
+					}
+					output.Append(' ');
+				}
 				idx += block.NickString.Length;
-				output.Append(this.GetSelectedText(idx, block.TextString, output));
+				output.Append(this.GetSelectedText(idx, block.TextString, output, out start, out end));
 				if (this.SelectionEnd >= block.CharEnd)
 				{
 					output.AppendLine();
@@ -209,10 +258,12 @@ namespace Floe.UI
 			return output.ToString();
 		}
 
-		private string GetSelectedText(int idx, string s, StringBuilder output)
+		private string GetSelectedText(int idx, string s, StringBuilder output, out bool start, out bool end)
 		{
 			int first = Math.Max(0, this.SelectionStart - idx);
 			int last = Math.Min(s.Length - 1, this.SelectionEnd - idx);
+			start = first == 0;
+			end = last >= s.Length - 1;
 			return last >= first ? s.Substring(first, last - first + 1) : "";
 		}
 	}

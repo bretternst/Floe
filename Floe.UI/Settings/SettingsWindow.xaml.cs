@@ -14,7 +14,7 @@ namespace Floe.UI.Settings
 
 			grdSettings.Children.Add(new UserSettingsControl());
 			grdSettings.Children.Add(new ServerSettingsControl());
-			grdSettings.Children.Add(new TextSettingsControl());
+			grdSettings.Children.Add(new FormattingSettingsControl());
 			grdSettings.Children.Add(new ColorsSettingsControl());
 			grdSettings.Children.Add(new BufferSettingsControl());
 
@@ -41,6 +41,15 @@ namespace Floe.UI.Settings
 			for (int i = 0; i < grdSettings.Children.Count; i++)
 			{
 				grdSettings.Children[i].Visibility = i == lstCategories.SelectedIndex ? Visibility.Visible : Visibility.Collapsed;
+			}
+		}
+
+		private void SettingsWindow_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+		{
+			var txtBox = e.NewFocus as TextBox;
+			if (txtBox != null && txtBox.Text.Length > 0 && txtBox.CaretIndex == 0)
+			{
+				txtBox.CaretIndex = txtBox.Text.Length;
 			}
 		}
 	}

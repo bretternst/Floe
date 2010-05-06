@@ -63,8 +63,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="App_Logging.cs" />
     <Compile Include="ChatBox\ChatBox.cs" />
     <Compile Include="ChatBox\ChatBoxBase.cs" />
+    <Compile Include="ChatBox\ChatDecoration.cs" />
     <Compile Include="ChatBox\ChatFormatter.cs" />
     <Compile Include="ChatBox\ChatLine.cs" />
     <Compile Include="ChatBox\ChatPalette.cs" />
@@ -72,18 +74,18 @@
     <Compile Include="ChatBox\ChatPresenter_Rendering.cs" />
     <Compile Include="ChatBox\ChatPresenter_Scrolling.cs" />
     <Compile Include="ChatBox\ChatPresenter_Selecting.cs" />
-    <Compile Include="ChatControl.xaml.cs">
+    <Compile Include="UserControls\ChatControl.xaml.cs">
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChatContext.cs" />
-    <Compile Include="ChatControl_Commands.cs" />
-    <Compile Include="ChatControl_Events.cs" />
-    <Compile Include="ChatControl_NickList.cs" />
-    <Compile Include="ChatWindow_Events.cs" />
-    <Compile Include="ChatWindow.xaml.cs">
+    <Compile Include="UserControls\ChatControl_Commands.cs" />
+    <Compile Include="UserControls\ChatControl_Events.cs" />
+    <Compile Include="UserControls\ChatControl_NickList.cs" />
+    <Compile Include="UserControls\ChatWindow_Events.cs" />
+    <Compile Include="UserControls\ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DependencyObjectExtensions.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />
     <Compile Include="Settings\Configuration\BufferElement.cs" />
@@ -95,10 +97,10 @@
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\Configuration\WindowsElement.cs" />
-    <Compile Include="Settings\TextSettingsControl.xaml.cs">
-      <DependentUpon>TextSettingsControl.xaml</DependentUpon>
+    <Compile Include="Settings\FormattingSettingsControl.xaml.cs">
+      <DependentUpon>FormattingSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\Configuration\TextElement.cs" />
+    <Compile Include="Settings\Configuration\FormattingElement.cs" />
     <Compile Include="Settings\Configuration\PersistentSettings.cs" />
     <Compile Include="Settings\Configuration\SettingsSection.cs" />
     <Compile Include="Settings\Configuration\ServerElement.cs" />
@@ -116,11 +118,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="ChatControl.xaml">
+    <Page Include="UserControls\ChatControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ChatWindow.xaml">
+    <Page Include="UserControls\ChatWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -132,7 +134,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Settings\TextSettingsControl.xaml">
+    <Page Include="Settings\FormattingSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

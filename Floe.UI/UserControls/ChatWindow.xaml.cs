@@ -38,22 +38,7 @@ namespace Floe.UI
 			this.DataContext = this;
 			InitializeComponent();
 
-			this.AddPage(new ChatContext(new IrcSession(), null), true);
-
-			if (Application.Current.MainWindow == this)
-			{
-				int i = 0;
-				foreach (var server in from ServerElement s in App.Settings.Current.Servers
-									   where s.ConnectOnStartup == true
-									   select s)
-				{
-					if (i++ > 0)
-					{
-						this.AddPage(new ChatContext(new IrcSession(), null), false);
-					}
-					this.Items[this.Items.Count - 1].Content.Connect(server);
-				}
-			}
+			this.Loaded += new RoutedEventHandler(ChatWindow_Loaded);
 		}
 
 		public void AddPage(ChatContext context, bool switchToPage)
@@ -110,6 +95,31 @@ namespace Floe.UI
 		{
 			return this.Items.Where((i) => i.Content.Context.Session == session && i.Content.Context.Target != null &&
 				i.Content.Context.Target.Equals(target)).Select((p) => p.Content.Context).FirstOrDefault();
+		}
+
+		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
+		{
+			this.AddPage(new ChatContext(new IrcSession(), null), true);
+
+			if (Application.Current.MainWindow == this)
+			{
+				if (App.Settings.IsFirstLaunch)
+				{
+					App.ShowSettings();
+				}
+
+				int i = 0;
+				foreach (var server in from ServerElement s in App.Settings.Current.Servers
+									   where s.ConnectOnStartup == true
+									   select s)
+				{
+					if (i++ > 0)
+					{
+						this.AddPage(new ChatContext(new IrcSession(), null), false);
+					}
+					this.Items[this.Items.Count - 1].Content.Connect(server);
+				}
+			}
 		}
 
 		protected override void OnSourceInitialized(EventArgs e)

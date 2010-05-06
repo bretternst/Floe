@@ -1,7 +1,8 @@
 ﻿<Window x:Class="Floe.UI.Settings.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Settings" Height="322" Width="551" WindowStyle="SingleBorderWindow" ShowInTaskbar="False" ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+        Title="Settings" Height="322" Width="551" WindowStyle="SingleBorderWindow" ShowInTaskbar="False" ResizeMode="NoResize"
+		WindowStartupLocation="CenterOwner" GotKeyboardFocus="SettingsWindow_GotKeyboardFocus">
 	<Window.Resources>
 		<Style x:Key="styleBigListBox" TargetType="ListBox">
 			<Setter Property="ItemContainerStyle">
@@ -82,7 +83,7 @@
 		<ListBox Name="lstCategories" Style="{StaticResource styleBigListBox}" Width="150" Padding="0" FontSize="14" AlternationCount="0" OverridesDefaultStyle="False" SnapsToDevicePixels="True" IsTextSearchEnabled="False" BorderThickness="0,0,1,0" SelectionChanged="lstCategories_SelectionChanged">
 			<ListBoxItem Content="User Information" />
 			<ListBoxItem Content="Servers" />
-			<ListBoxItem Content="Text Settings"/>
+			<ListBoxItem Content="Formatting"/>
 			<ListBoxItem Content="Colors"/>
 			<ListBoxItem Content="Buffer"/>
 		</ListBox>

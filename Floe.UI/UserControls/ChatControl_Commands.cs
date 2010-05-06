@@ -47,11 +47,11 @@ namespace Floe.UI
 					if (!this.IsServer)
 					{
 						this.Session.PrivateMessage(this.Target, text);
-						this.Write("Own", this.Session.Nickname, text);
+						this.Write("Own", 0, this.Session.Nickname, text);
 					}
 					else
 					{
-						this.Write("Error", "*", "Can't talk in this window.");
+						this.Write("Error", "Can't talk in this window.");
 					}
 				}
 			}
@@ -195,12 +195,12 @@ namespace Floe.UI
 				case "ACTION":
 					if (this.IsServer)
 					{
-						this.Write("Error", "*", "Can't talk in this window.");
+						this.Write("Error", "Can't talk in this window.");
 					}
 					args = Split(command, arguments, 1, int.MaxValue);
 					this.Session.SendCtcp(this.Target,
 						new CtcpCommand("ACTION", args), false);
-					this.Write("Own", "*", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
+					this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
 					break;
 				case "SETUP":
 					App.ShowSettings();
@@ -211,7 +211,7 @@ namespace Floe.UI
 				case "MSG":
 					args = Split(command, arguments, 2, 2);
 					this.Session.PrivateMessage(new IrcTarget(args[0]), args[1]);
-					this.Write("Own", "*", string.Format("-> [{0}] {1}", args[0], args[1]));
+					this.Write("Own", string.Format("-> [{0}] {1}", args[0], args[1]));
 					break;
 				case "LIST":
 					args = Split(command, arguments, 1, 2);
@@ -225,7 +225,7 @@ namespace Floe.UI
 					}
 					break;
 				default:
-					this.Write("Error", "*", string.Format("Unrecognized command: {0}", command));
+					this.Write("Error", string.Format("Unrecognized command: {0}", command));
 					break;
 			}
 		}

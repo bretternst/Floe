@@ -20,7 +20,6 @@ namespace Floe.UI
 			private Typeface _typeface;
 			private double _fontSize;
 			private Brush _foreground;
-			private Brush _background;
 
 			public override double FontHintingEmSize { get { return _fontSize; } }
 			public override TextDecorationCollection TextDecorations { get { return null; } }
@@ -28,26 +27,24 @@ namespace Floe.UI
 			public override CultureInfo CultureInfo { get { return CultureInfo.InvariantCulture; } }
 			public override Typeface Typeface { get { return _typeface; } }
 			public override double FontRenderingEmSize { get { return _fontSize; } }
-			public override Brush BackgroundBrush { get { return _background; } }
+			public override Brush BackgroundBrush { get { return Brushes.Transparent; } }
 			public override Brush ForegroundBrush { get { return _foreground; } }
 
-			public CustomTextRunProperties(Typeface typeface, double fontSize, Brush foreground, Brush background)
+			public CustomTextRunProperties(Typeface typeface, double fontSize, Brush foreground)
 			{
 				_typeface = typeface;
 				_fontSize = fontSize;
 				_foreground = foreground;
-				_background = background;
 			}
 		}
 
 		private class CustomParagraphProperties : TextParagraphProperties
 		{
 			private TextRunProperties _defaultProperties;
-			private TextAlignment _textAlignment;
 			private TextWrapping _textWrapping;
 
 			public override FlowDirection FlowDirection { get { return FlowDirection.LeftToRight; } }
-			public override TextAlignment TextAlignment { get { return _textAlignment; } }
+			public override TextAlignment TextAlignment { get { return TextAlignment.Left; } }
 			public override double LineHeight { get { return 0.0; } }
 			public override bool FirstLineInParagraph { get { return false; } }
 			public override TextWrapping TextWrapping { get { return _textWrapping; } }
@@ -58,7 +55,6 @@ namespace Floe.UI
 			public CustomParagraphProperties(TextRunProperties defaultTextRunProperties)
 			{
 				_defaultProperties = defaultTextRunProperties;
-				_textAlignment = TextAlignment.Left;
 				_textWrapping = TextWrapping.Wrap;
 			}
 		}
@@ -70,19 +66,17 @@ namespace Floe.UI
 		private CustomParagraphProperties _paraProperties;
 		private TextFormatter _formatter;
 
-		public ChatFormatter(Typeface typeface, double fontSize, Brush foreground, Brush background)
+		public ChatFormatter(Typeface typeface, double fontSize, Brush foreground)
 		{
-			_runProperties = new CustomTextRunProperties(typeface, fontSize, foreground, background);
+			_runProperties = new CustomTextRunProperties(typeface, fontSize, foreground);
 			_paraProperties = new CustomParagraphProperties(_runProperties);
 			_formatter = TextFormatter.Create(TextFormattingMode.Display);
 		}
 
-		public IEnumerable<TextLine> Format(string text, double width, Brush foreground,
-			TextAlignment textAlignment, TextWrapping textWrapping)
+		public IEnumerable<TextLine> Format(string text, double width, Brush foreground, TextWrapping textWrapping)
 		{
 			_text = text;
-			_runProperties = new CustomTextRunProperties(_runProperties.Typeface, _runProperties.FontRenderingEmSize,
-				foreground, _runProperties.BackgroundBrush);
+			_runProperties = new CustomTextRunProperties(_runProperties.Typeface, _runProperties.FontRenderingEmSize, foreground);
 			_paraProperties = new CustomParagraphProperties(_runProperties);
 
 			int idx = 0;
