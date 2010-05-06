@@ -32,7 +32,7 @@ namespace Floe.UI
 				while (_logFile.Buffer.Count > 0)
 				{
 					var cl = _logFile.Buffer.Dequeue();
-					cl.Decoration = _logFile.Buffer.Count == 0 ? ChatDecoration.OldMarker : ChatDecoration.None;
+					cl.Marker = _logFile.Buffer.Count == 0 ? ChatMarker.OldMarker : ChatMarker.None;
 					boxOutput.AppendLine(cl);
 				}
 			}
@@ -190,17 +190,17 @@ namespace Floe.UI
 
 		private void Write(string styleKey, int nickHashCode, string nick, string text)
 		{
-			var cl = new ChatLine(styleKey, nickHashCode, nick, text, ChatDecoration.None);
+			var cl = new ChatLine(styleKey, nickHashCode, nick, text, ChatMarker.None);
 
 			if (_hasDeactivated)
 			{
 				_hasDeactivated = false;
 				if (_markerLine != null)
 				{
-					_markerLine.Decoration = ChatDecoration.None;
+					_markerLine.Marker = ChatMarker.None;
 				}
 				_markerLine = cl;
-				cl.Decoration = ChatDecoration.NewMarker;
+				cl.Marker = ChatMarker.NewMarker;
 			}
 
 			boxOutput.AppendLine(cl);

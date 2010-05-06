@@ -100,7 +100,7 @@ namespace Floe.UI
 			}
 
 			var time = DateTime.FromBinary(dt);
-			return new ChatLine(parts[0], time, hashCode, parts[3], parts[4], ChatDecoration.None);
+			return new ChatLine(parts[0], time, hashCode, parts[3], parts[4], ChatMarker.None);
 		}
 
 		public void WriteLine(ChatLine line)
@@ -108,7 +108,7 @@ namespace Floe.UI
 			if (_logFile != null)
 			{
 				var s = string.Format("{0}\t{1}\t{2}\t{3}\t{4}{5}",
-					line.ColorKey, line.Time.ToBinary(), line.NickHashCode, line.Nick, line.Text, Environment.NewLine);
+					line.ColorKey, line.Time.ToBinary(), line.NickHashCode, line.Nick, line.RawText, Environment.NewLine);
 				if (s.Length > 512)
 				{
 					s = s.Substring(0, 512);

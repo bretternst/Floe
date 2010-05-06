@@ -17,11 +17,10 @@ namespace Floe.UI
 
 		private class FormattedLine
 		{
-			public ChatDecoration Decoration { get; set; }
+			public ChatLine Source { get; set; }
 			public Brush Foreground { get; set; }
 
 			public string TimeString { get; set; }
-			public int NickHashCode { get; set; }
 			public string NickString { get; set; }
 			public string TextString { get; set; }
 
@@ -87,13 +86,12 @@ namespace Floe.UI
 
 				_blocks.Add(new FormattedLine()
 				{
+					Source = srcLine,
 					Foreground = this.Palette[srcLine.ColorKey],
 					TimeString = (srcLine.Nick != "*" && this.ShowTimestamp) ?
 						srcLine.Time.ToString(this.TimestampFormat+" ") : "",
-					NickHashCode = srcLine.NickHashCode,
 					NickString = nick,
 					TextString = srcLine.Text,
-					Decoration = srcLine.Decoration
 				});
 			}
 
@@ -102,7 +100,8 @@ namespace Floe.UI
 				{
 					if (l.TimeString.Length > 0)
 					{
-						l.Time = formatter.Format(l.TimeString, this.ActualWidth, l.Foreground, TextWrapping.NoWrap).First();
+						l.Time = formatter.Format(l.TimeString, null, this.ActualWidth, l.Foreground, this.Background,
+							TextWrapping.NoWrap).First();
 						l.NickX = l.Time.WidthIncludingTrailingWhitespace;
 					}
 				});
@@ -116,11 +115,12 @@ namespace Floe.UI
 			_blocks.ForEach((l) =>
 				{
 					var nickBrush = l.Foreground;
-					if (this.ColorizeNicknames && l.NickHashCode != 0)
+					if (this.ColorizeNicknames && l.Source.NickHashCode != 0)
 					{
-						nickBrush = this.GetNickColor(l.NickHashCode);
+						nickBrush = this.GetNickColor(l.Source.NickHashCode);
 					}
-					l.Nick = formatter.Format(l.NickString, this.ActualWidth - l.NickX, nickBrush, TextWrapping.NoWrap).First();
+					l.Nick = formatter.Format(l.NickString, null, this.ActualWidth - l.NickX, nickBrush, this.Background,
+						TextWrapping.NoWrap).First();
 					l.TextX = l.NickX + l.Nick.WidthIncludingTrailingWhitespace;
 					_columnWidth = Math.Max(_columnWidth, l.TextX);
 				});
@@ -138,7 +138,8 @@ namespace Floe.UI
 			var offset = 0;
 			_blocks.ForEach((l) =>
 				{
-					l.Text = formatter.Format(l.TextString, this.ActualWidth - l.TextX, l.Foreground, TextWrapping.Wrap).ToArray();
+					l.Text = formatter.Format(l.TextString, l.Source, this.ActualWidth - l.TextX, l.Foreground,
+						this.Background, TextWrapping.Wrap).ToArray();
 					l.Height = l.Text.Sum((t) => t.Height);
 					_extentHeight += l.Height;
 					_lineHeight = l.Text[0].Height;
@@ -215,14 +216,14 @@ namespace Floe.UI
 				{
 					block.Y = vPos;
 
-					if ((block.Decoration & ChatDecoration.NewMarker) > 0)
+					if ((block.Source.Marker & ChatMarker.NewMarker) > 0)
 					{
 						var markerBrush = new LinearGradientBrush(this.NewMarkerColor,
 							this.BackgroundColor, 90.0);
 						dc.DrawRectangle(markerBrush, null,
 							new Rect(new Point(0.0, block.Y), new Size(this.ActualWidth, _lineHeight * 5)));
 					}
-					if ((block.Decoration & ChatDecoration.OldMarker) > 0)
+					if ((block.Source.Marker & ChatMarker.OldMarker) > 0)
 					{
 						var markerBrush = new LinearGradientBrush(this.BackgroundColor,
 							this.OldMarkerColor, 90.0);

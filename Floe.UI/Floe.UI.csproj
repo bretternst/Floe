@@ -74,6 +74,7 @@
     <Compile Include="ChatBox\ChatPresenter_Rendering.cs" />
     <Compile Include="ChatBox\ChatPresenter_Scrolling.cs" />
     <Compile Include="ChatBox\ChatPresenter_Selecting.cs" />
+    <Compile Include="ChatBox\IrcColors.cs" />
     <Compile Include="UserControls\ChatControl.xaml.cs">
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>

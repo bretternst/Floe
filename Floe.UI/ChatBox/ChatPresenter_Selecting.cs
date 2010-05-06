@@ -240,7 +240,7 @@ namespace Floe.UI
 					output.Append('<');
 				}
 				output.Append(nick);
-				if (end && this.UseTabularView)
+				if (nick.Length > 0 && end && this.UseTabularView)
 				{
 					if (block.NickString != "*")
 					{

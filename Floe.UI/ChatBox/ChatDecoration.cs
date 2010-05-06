@@ -6,7 +6,7 @@ using System.Text;
 namespace Floe.UI
 {
 	[Flags]
-	public enum ChatDecoration
+	public enum ChatMarker
 	{
 		None = 0,
 		NewMarker = 1,
