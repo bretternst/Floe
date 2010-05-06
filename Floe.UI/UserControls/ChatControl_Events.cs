@@ -345,6 +345,44 @@ namespace Floe.UI
 
 		private void txtInput_KeyDown(object sender, KeyEventArgs e)
 		{
+			if ((Keyboard.Modifiers & ModifierKeys.Control) > 0)
+			{
+				int c = 0;
+				switch (e.Key)
+				{
+					case Key.B:
+						c = 2;
+						break;
+					case Key.K:
+						c = 3;
+						break;
+					case Key.R:
+						c = 22;
+						break;
+					case Key.O:
+						c = 15;
+						break;
+					case Key.U:
+						c = 31;
+						break;
+				}
+				if ((int)c != 0)
+				{
+					if (!string.IsNullOrEmpty(txtInput.SelectedText))
+					{
+						int pos = txtInput.CaretIndex;
+						txtInput.SelectedText = new string((char)(c+0x2500), 1);
+						txtInput.CaretIndex = pos;
+					}
+					else
+					{
+						int pos = txtInput.CaretIndex;
+						txtInput.Text = txtInput.Text.Insert(txtInput.CaretIndex, new string((char)(c+0x2500), 1));
+						txtInput.CaretIndex = pos + 1;
+					}
+				}
+			}
+
 			switch (e.Key)
 			{
 				case Key.Enter:

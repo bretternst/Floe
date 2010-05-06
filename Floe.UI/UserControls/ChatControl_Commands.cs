@@ -23,6 +23,16 @@ namespace Floe.UI
 
 		private void Execute(string text)
 		{
+			var chars = text.ToCharArray();
+			for (int i = 0; i < chars.Length; i++)
+			{
+				if (chars[i] >= 0x2500 && chars[i] <= 0x2520)
+				{
+					chars[i] = (char)((int)chars[i] - 0x2500);
+				}
+			}
+			text = new string(chars);
+
 			string command = text.Trim();
 
 			if (command.Length > 0 && command[0] == CommandChar && !Keyboard.IsKeyToggled(Key.Scroll))
