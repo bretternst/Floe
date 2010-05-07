@@ -81,5 +81,13 @@ namespace Floe.UI
 			get { return (Color)this.GetValue(OldMarkerColorProperty); }
 			set { this.SetValue(OldMarkerColorProperty, value); }
 		}
+
+		public static readonly DependencyProperty SelectedLinkProperty = DependencyProperty.Register("SelectedLink",
+			typeof(string), typeof(ChatBoxBase));
+		public string SelectedLink
+		{
+			get { return (string)this.GetValue(SelectedLinkProperty); }
+			set { this.SetValue(SelectedLinkProperty, value); }
+		}
 	}
 }

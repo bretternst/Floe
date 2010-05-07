@@ -17,5 +17,13 @@ namespace Floe.UI
 		{
 			obj.Dispatcher.BeginInvoke(action);
 		}
+
+		public static void ForEach<T>(this IEnumerable<T> obj, Action<T> action)
+		{
+			foreach (T item in obj)
+			{
+				action(item);
+			}
+		}
 	}
 }

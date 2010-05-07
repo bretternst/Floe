@@ -47,6 +47,11 @@ namespace Floe.UI
 			settings.ShowDialog();
 		}
 
+		public static void BrowseTo(string url)
+		{
+			System.Diagnostics.Process.Start(url);
+		}
+
 		public App()
 		{
 			this.Startup += new StartupEventHandler(App_Startup);

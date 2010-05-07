@@ -1,0 +1,77 @@
+﻿<Window x:Class="Floe.UI.ChatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding ElementName=tabsChat, Path=SelectedContent.Title}" Height="399" Width="722" 
+		MinWidth="300"  MinHeight="250" WindowStyle="SingleBorderWindow" ResizeMode="CanResize">
+	<Window.Resources>
+		<BooleanToVisibilityConverter x:Key="b2vConverter"/>
+	</Window.Resources>
+	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
+		<TabControl Name="tabsChat" ItemsSource="{Binding Items}" TabStripPlacement="Bottom"
+					SelectionChanged="tabsChat_SelectionChanged" FontFamily="Segoe UI" FontSize="14">
+			<TabControl.Template>
+				<ControlTemplate TargetType="TabControl">
+					<DockPanel>
+						<ScrollViewer DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+							<TabPanel IsItemsHost="True" Height="25" Background="#293955"/>
+						</ScrollViewer>
+						<ContentPresenter ContentSource="SelectedContent" Margin="0"/>
+					</DockPanel>
+				</ControlTemplate>
+			</TabControl.Template>
+			<TabControl.ItemContainerStyle>
+				<Style TargetType="TabItem">
+					<Setter Property="Header" Value="{Binding Path=Content.Header}"/>
+					<Setter Property="Content" Value="{Binding Content}"/>
+					<Setter Property="Foreground" Value="White"/>
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="TabItem">
+								<Border Background="#293955">
+									<Border x:Name="border1">
+										<Border x:Name="border2" BorderThickness="0,0,1,0">
+											<Border.BorderBrush>
+												<LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+													<GradientStop Offset="0" Color="#00FFFFFF"/>
+													<GradientStop Offset="0.5" Color="White"/>
+													<GradientStop Offset="1" Color="#00FFFFFF"/>
+												</LinearGradientBrush>
+											</Border.BorderBrush>
+											<Grid Height="25" HorizontalAlignment="Center">
+												<Polygon x:Name="arrow" Grid.ColumnSpan="2" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Points="0,0 12,8, 24,0"
+														 Stroke="White" Fill="White" Visibility="Hidden"/>
+												<ContentPresenter Grid.Column="0" Grid.Row="1" Margin="5,0,18,0" x:Name="ContentSite" VerticalAlignment="Bottom" HorizontalAlignment="Center"
+																  ContentSource="Header" RecognizesAccessKey="True"/>
+											</Grid>
+										</Border>
+									</Border>
+								</Border>
+								<ControlTemplate.Triggers>
+									<Trigger Property="IsSelected" Value="True">
+										<Setter Property="Visibility" TargetName="arrow" Value="Visible"/>
+									</Trigger>
+									<MultiTrigger>
+										<MultiTrigger.Conditions>
+											<Condition Property="Border.IsMouseOver" Value="True"/>
+											<Condition Property="IsSelected" Value="False"/>
+										</MultiTrigger.Conditions>
+										<Setter Property="Background" TargetName="border1">
+											<Setter.Value>
+												<LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+													<GradientStop Color="#10FFA335" Offset="0" />
+													<GradientStop Color="#90FFA335" Offset="0.20" />
+													<GradientStop Color="#90FFA335" Offset="0.80" />
+													<GradientStop Color="#10FFA335" Offset="0.98" />
+												</LinearGradientBrush>
+											</Setter.Value>
+										</Setter>
+									</MultiTrigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+				</Style>
+			</TabControl.ItemContainerStyle>
+		</TabControl>
+	</DockPanel>
+</Window>

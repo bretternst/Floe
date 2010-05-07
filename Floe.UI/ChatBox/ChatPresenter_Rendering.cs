@@ -13,16 +13,15 @@ namespace Floe.UI
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
 		private const double SeparatorPadding = 6.0;
-		private const double DefaultColumnWidth = 100.0;
+		private const double DefaultColumnWidth = 125.0;
 
-		private class FormattedLine
+		private class Block
 		{
 			public ChatLine Source { get; set; }
 			public Brush Foreground { get; set; }
 
 			public string TimeString { get; set; }
 			public string NickString { get; set; }
-			public string TextString { get; set; }
 
 			public TextLine Time { get; set; }
 			public TextLine Nick { get; set; }
@@ -36,9 +35,9 @@ namespace Floe.UI
 			public double Height { get; set; }
 		}
 
-		private List<FormattedLine> _blocks = new List<FormattedLine>();
+		private LinkedList<Block> _blocks = new LinkedList<Block>();
 		private double _lineHeight, _columnWidth = DefaultColumnWidth;
-		private int _bottomBlock;
+		private LinkedListNode<Block> _bottomBlock;
 
 		private Typeface Typeface
 		{
@@ -60,106 +59,25 @@ namespace Floe.UI
 			}
 		}
 
-		private void FormatText()
+		private string FormatNick(string nick)
 		{
-			_blocks.Clear();
-			_extentHeight = 0.0;
-			if (_lines.Count < 1 || this.ActualWidth < 1.0)
+			if (!this.UseTabularView)
 			{
-				return;
-			}
-
-			foreach (var srcLine in _lines)
-			{
-				var nick = srcLine.Nick;
-				if (!this.UseTabularView)
+				if (nick == null)
 				{
-					if (nick == "*")
-					{
-						nick = "* ";
-					}
-					else
-					{
-						nick = string.Format("<{0}> ", nick);
-					}
+					nick = "* ";
 				}
-
-				_blocks.Add(new FormattedLine()
+				else
 				{
-					Source = srcLine,
-					Foreground = this.Palette[srcLine.ColorKey],
-					TimeString = (srcLine.Nick != "*" && this.ShowTimestamp) ?
-						srcLine.Time.ToString(this.TimestampFormat+" ") : "",
-					NickString = nick,
-					TextString = srcLine.Text,
-				});
-			}
-
-			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground);
-			_blocks.ForEach((l) =>
-				{
-					if (l.TimeString.Length > 0)
-					{
-						l.Time = formatter.Format(l.TimeString, null, this.ActualWidth, l.Foreground, this.Background,
-							TextWrapping.NoWrap).First();
-						l.NickX = l.Time.WidthIncludingTrailingWhitespace;
-					}
-				});
-
-			if (this.UseTabularView)
-			{
-				double nickX = _blocks.Max((b) => b.NickX);
-				_blocks.ForEach((b) => b.NickX = nickX);
-			}
-
-			_blocks.ForEach((l) =>
-				{
-					var nickBrush = l.Foreground;
-					if (this.ColorizeNicknames && l.Source.NickHashCode != 0)
-					{
-						nickBrush = this.GetNickColor(l.Source.NickHashCode);
-					}
-					l.Nick = formatter.Format(l.NickString, null, this.ActualWidth - l.NickX, nickBrush, this.Background,
-						TextWrapping.NoWrap).First();
-					l.TextX = l.NickX + l.Nick.WidthIncludingTrailingWhitespace;
-					_columnWidth = Math.Max(_columnWidth, l.TextX);
-				});
-
-			if (this.UseTabularView)
-			{
-				double textX = _columnWidth + SeparatorPadding * 2.0 + 1.0;
-				_blocks.ForEach((b) =>
-					{
-						b.TextX = textX;
-						b.NickX = _columnWidth - b.Nick.WidthIncludingTrailingWhitespace;
-					});
-			}
-
-			var offset = 0;
-			_blocks.ForEach((l) =>
-				{
-					l.Text = formatter.Format(l.TextString, l.Source, this.ActualWidth - l.TextX, l.Foreground,
-						this.Background, TextWrapping.Wrap).ToArray();
-					l.Height = l.Text.Sum((t) => t.Height);
-					_extentHeight += l.Height;
-					_lineHeight = l.Text[0].Height;
-					l.CharStart = offset;
-					offset += l.TimeString.Length + l.NickString.Length + l.TextString.Length;
-					l.CharEnd = offset;
-				});
-
-			_extentHeight += _lineHeight;
-
-			this.InvalidateVisual();
-			if (_viewer != null)
-			{
-				_viewer.InvalidateScrollInfo();
-
-				if (_isAutoScrolling)
-				{
-					this.ScrollToEnd();
+					nick = string.Format("<{0}> ", nick);
 				}
 			}
+			return nick ?? "*";
+		}
+
+		private string FormatTime(DateTime time)
+		{
+			return this.ShowTimestamp ? time.ToString(this.TimestampFormat + " ") : "";
 		}
 
 		private Brush GetNickColor(int hashCode)
@@ -177,6 +95,154 @@ namespace Floe.UI
 			return new SolidColorBrush(c);
 		}
 
+		private void FormatSingle(ChatLine source)
+		{
+			var b = new Block();
+			b.Source = source;
+			b.Foreground = this.Palette[b.Source.ColorKey];
+			b.TimeString = b.Source.Nick != null ? this.FormatTime(b.Source.Time) : "";
+			b.NickString = this.FormatNick(b.Source.Nick);
+
+			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground);
+			if (b.TimeString.Length > 0)
+			{
+				b.Time = formatter.Format(b.TimeString, null, this.ActualWidth, b.Foreground, this.Background,
+					TextWrapping.NoWrap).First();
+				b.NickX = b.Time.WidthIncludingTrailingWhitespace;
+			}
+
+			var nickBrush = b.Foreground;
+			if (this.ColorizeNicknames && b.Source.NickHashCode != 0)
+			{
+				nickBrush = this.GetNickColor(b.Source.NickHashCode);
+			}
+			b.Nick = formatter.Format(b.NickString, null, this.ActualWidth - b.NickX, nickBrush, this.Background,
+				TextWrapping.NoWrap).First();
+			b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
+
+			if (this.UseTabularView)
+			{
+				if (b.TextX > _columnWidth)
+				{
+					_columnWidth = b.TextX;
+					b.TextX = _columnWidth + SeparatorPadding * 2.0 + 1.0;
+					_blocks.ForEach((x) =>
+					{
+						x.TextX = b.TextX;
+						x.NickX = _columnWidth - x.Nick.WidthIncludingTrailingWhitespace;
+					});
+				}
+				else
+				{
+					b.TextX = _columnWidth + SeparatorPadding * 2.0 + 1.0;
+				}
+				b.NickX = _columnWidth - b.Nick.WidthIncludingTrailingWhitespace;
+			}
+
+			var offset = _blocks.Last != null ? _blocks.Last.Value.CharEnd : 0;
+			b.Text = formatter.Format(b.Source.Text, b.Source, this.ActualWidth - b.TextX, b.Foreground,
+				this.Background, TextWrapping.Wrap).ToArray();
+			b.Height = b.Text.Sum((t) => t.Height);
+			_extentHeight += b.Height;
+			_lineHeight = b.Text[0].Height;
+			b.CharStart = offset;
+			offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
+			b.CharEnd = offset;
+
+			_blocks.AddLast(b);
+
+			this.InvalidateVisual();
+			if (_viewer != null)
+			{
+				_viewer.InvalidateScrollInfo();
+
+				if (_isAutoScrolling)
+				{
+					this.ScrollToEnd();
+				}
+			}
+		}
+
+		private void FormatAll()
+		{
+			_extentHeight = 0.0;
+			if (_blocks.Count < 1 || this.ActualWidth < 1.0)
+			{
+				return;
+			}
+
+			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground);
+
+			_blocks.ForEach((b) =>
+				{
+					b.Foreground = this.Palette[b.Source.ColorKey];
+					b.TimeString = b.Source.Nick != null ? this.FormatTime(b.Source.Time) : "";
+					b.NickString = this.FormatNick(b.Source.Nick);
+					b.NickX = b.TextX = 0.0;
+
+					if (b.TimeString.Length > 0)
+					{
+						b.Time = formatter.Format(b.TimeString, null, this.ActualWidth, b.Foreground, this.Background,
+							TextWrapping.NoWrap).First();
+						b.NickX = b.Time.WidthIncludingTrailingWhitespace;
+					}
+				});
+
+			if (this.UseTabularView)
+			{
+				double nickX = _blocks.Max((b) => b.NickX);
+				_blocks.ForEach((b) => b.NickX = nickX);
+			}
+
+			_blocks.ForEach((b) =>
+				{
+					var nickBrush = b.Foreground;
+					if (this.ColorizeNicknames && b.Source.NickHashCode != 0)
+					{
+						nickBrush = this.GetNickColor(b.Source.NickHashCode);
+					}
+					b.Nick = formatter.Format(b.NickString, null, this.ActualWidth - b.NickX, nickBrush, this.Background,
+						TextWrapping.NoWrap).First();
+					b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
+				});
+
+			if (this.UseTabularView)
+			{
+				double textX = _columnWidth + SeparatorPadding * 2.0 + 1.0;
+				_blocks.ForEach((b) =>
+					{
+						b.TextX = textX;
+						b.NickX = _columnWidth - b.Nick.WidthIncludingTrailingWhitespace;
+					});
+			}
+
+			var offset = 0;
+			_blocks.ForEach((b) =>
+				{
+					b.Text = formatter.Format(b.Source.Text, b.Source, this.ActualWidth - b.TextX, b.Foreground,
+						this.Background, TextWrapping.Wrap).ToArray();
+					b.Height = b.Text.Sum((t) => t.Height);
+					_extentHeight += b.Height;
+					_lineHeight = b.Text[0].Height;
+					b.CharStart = offset;
+					offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
+					b.CharEnd = offset;
+				});
+
+			_extentHeight += _lineHeight;
+
+			this.InvalidateVisual();
+			if (_viewer != null)
+			{
+				_viewer.InvalidateScrollInfo();
+
+				if (_isAutoScrolling)
+				{
+					this.ScrollToEnd();
+				}
+			}
+		}
+
 		protected override void OnRender(DrawingContext dc)
 		{
 			base.OnRender(dc);
@@ -186,15 +252,20 @@ namespace Floe.UI
 			double guidelineHeight = scaledPen.Thickness;
 
 			double vPos = this.ActualHeight, height = 0.0, minHeight = this.ExtentHeight - (this.VerticalOffset + this.ActualHeight);
-			_bottomBlock = -1;
+			_bottomBlock = null;
 			var guidelines = new GuidelineSet();
 
 			dc.DrawRectangle(this.Background, null, new Rect(new Size(this.ActualWidth, this.ActualHeight)));
 
-			int i = 0;
-			for (i = _blocks.Count - 1; i >= 0 && vPos >= -_lineHeight * 5.0; --i)
+			if (_blocks.Count < 1)
 			{
-				var block = _blocks[i];
+				return;
+			}
+
+			var node = _blocks.Last;
+			do
+			{
+				var block = node.Value;
 				block.Y = double.NaN;
 
 				bool drawAny = false;
@@ -232,21 +303,21 @@ namespace Floe.UI
 								new Size(this.ActualWidth, _lineHeight * 5)));
 					}
 
-					if (_bottomBlock < 0)
+					if (_bottomBlock == null)
 					{
-						_bottomBlock = i;
+						_bottomBlock = node;
 					}
 					guidelines.GuidelinesY.Add(vPos + guidelineHeight);
 				}
 			}
+			while (node.Previous != null && vPos >= -_lineHeight * 5.0 && (node = node.Previous) != null);
 
 			dc.PushGuidelineSet(guidelines);
 
-			for(int j = i + 1; j < _blocks.Count; j++)
+			do
 			{
-				var block = _blocks[j];
-
-				if(double.IsNaN(block.Y))
+				var block = node.Value;
+				if (double.IsNaN(block.Y))
 				{
 					continue;
 				}
@@ -266,6 +337,7 @@ namespace Floe.UI
 					this.DrawSelectedLine(dc, block);
 				}
 			}
+			while ((node = node.Next) != null);
 
 			if (this.UseTabularView)
 			{
@@ -276,7 +348,7 @@ namespace Floe.UI
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
-			this.FormatText();
+			this.FormatAll();
 		}
 	}
 }

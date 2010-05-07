@@ -10,22 +10,25 @@ namespace Floe.UI
 	public partial class ChatControl : UserControl
 	{
 		private char[] _channelModes = new char[0];
-		private string _topic = "", _prefix;
+		private string _topic = "", _prefix, _contextLink;
 		private bool _hasNames = false, _hasDeactivated = false;
 		private Window _window;
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
+			var state = this.Session.State;
 			this.BeginInvoke(() =>
 				{
-					if (this.Session.State == IrcSessionState.Disconnected)
+					this.IsConnected = state != IrcSessionState.Disconnected;
+
+					if (state == IrcSessionState.Disconnected)
 					{
 						this.Write("Error", "Disconnected");
 					}
 
 					if (this.IsServer)
 					{
-						switch (this.Session.State)
+						switch (state)
 						{
 							case IrcSessionState.Connecting:
 								this.Write("Client", string.Format(
@@ -449,11 +452,205 @@ namespace Floe.UI
 		private void _window_Deactivated(object sender, EventArgs e)
 		{
 			_hasDeactivated = true;
+			_contextLink = null;
 		}
 
 		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)
 		{
 			_hasDeactivated = true;
+			_contextLink = null;
+		}
+
+		private void boxOutput_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+		{
+			var link = boxOutput.SelectedLink;
+			if (!string.IsNullOrEmpty(link))
+			{
+				if (Constants.UrlRegex.IsMatch(link))
+				{
+					App.BrowseTo(link);
+				}
+				else
+				{
+					this.Query(link);
+				}
+			}
+		}
+
+		protected override void OnContextMenuOpening(ContextMenuEventArgs e)
+		{
+			_contextLink = boxOutput.SelectedLink;
+			if (!string.IsNullOrEmpty(_contextLink))
+			{
+				if (Constants.UrlRegex.IsMatch(_contextLink))
+				{
+					boxOutput.ContextMenu = this.Resources["cmHyperlink"] as ContextMenu;
+				}
+				else
+				{
+					boxOutput.ContextMenu = this.Resources["cmNickList"] as ContextMenu;
+				}
+				boxOutput.ContextMenu.IsOpen = true;
+				e.Handled = true;
+			}
+			else
+			{
+				boxOutput.ContextMenu = this.GetDefaultContextMenu();
+				if (this.IsServer && boxOutput.ContextMenu != null)
+				{
+					boxOutput.ContextMenu.Items.Refresh();
+				}
+			}
+
+			base.OnContextMenuOpening(e);
+		}
+
+		private void whois_Click(object sender, RoutedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(_contextLink))
+			{
+				this.Session.WhoIs(_contextLink);
+			}
+			else
+			{
+				var item = lstNicknames.SelectedItem as NicknameItem;
+				if (item != null)
+				{
+					this.Session.WhoIs(item.Nickname);
+				}
+			}
+		}
+
+		private void chat_Click(object sender, RoutedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(_contextLink))
+			{
+				this.Query(_contextLink);
+			}
+			else
+			{
+				var item = lstNicknames.SelectedItem as NicknameItem;
+				if (item != null)
+				{
+					this.Query(item.Nickname);
+				}
+			}
+		}
+
+		private void open_Click(object sender, RoutedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(_contextLink))
+			{
+				App.BrowseTo(_contextLink);
+			}
+		}
+
+		private void copy_Click(object sender, RoutedEventArgs e)
+		{
+			if (!string.IsNullOrEmpty(_contextLink))
+			{
+				Clipboard.SetText(_contextLink);
+			}
+		}
+
+		private void connect_Click(object sender, RoutedEventArgs e)
+		{
+			var item = ((MenuItem)boxOutput.ContextMenu.Items[0]).ItemContainerGenerator.ItemFromContainer((DependencyObject)e.OriginalSource)
+				as Floe.Configuration.ServerElement;
+			if (item != null)
+			{
+				if (this.IsConnected)
+				{
+					this.Session.Quit("Changing servers");
+				}
+				this.Connect(item);
+			}
+		}
+
+		private void quit_Click(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				this.Session.AutoReconnect = false;
+				this.Session.Quit("Leaving");
+			}
+			catch { }
+		}
+
+		protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
+		{
+			_contextLink = null;
+			base.OnPreviewMouseRightButtonDown(e);
+		}
+
+		protected override void OnPreviewKeyDown(KeyEventArgs e)
+		{
+			if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
+			{
+				return;
+			}
+
+			e.Handled = true;
+
+			switch (e.Key)
+			{
+				case Key.PageUp:
+					boxOutput.PageUp();
+					break;
+				case Key.PageDown:
+					boxOutput.PageDown();
+					break;
+				case Key.Up:
+					if (_historyNode != null)
+					{
+						if (_historyNode.Next != null)
+						{
+							_historyNode = _historyNode.Next;
+							this.SetInputText(_historyNode.Value);
+						}
+					}
+					else if (_history.First != null)
+					{
+						_historyNode = _history.First;
+						this.SetInputText(_historyNode.Value);
+					}
+					break;
+				case Key.Down:
+					if (_historyNode != null)
+					{
+						_historyNode = _historyNode.Previous;
+						if (_historyNode != null)
+						{
+							this.SetInputText(_historyNode.Value);
+						}
+						else
+						{
+							txtInput.Clear();
+						}
+					}
+					break;
+				default:
+					Keyboard.Focus(txtInput);
+					e.Handled = false;
+					break;
+			}
+
+			base.OnPreviewKeyDown(e);
+		}
+
+		protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
+		{
+			if (e.Delta > 0)
+			{
+				boxOutput.MouseWheelUp();
+			}
+			else
+			{
+				boxOutput.MouseWheelDown();
+			}
+			e.Handled = true;
+
+			base.OnPreviewMouseWheel(e);
 		}
 
 		private void SubscribeEvents()
@@ -499,6 +696,20 @@ namespace Floe.UI
 			if (_window != null)
 			{
 				_window.Deactivated -= new EventHandler(_window_Deactivated);
+			}
+		}
+
+		private void PrepareContextMenus()
+		{
+			var menu = this.Resources["cmServer"] as ContextMenu;
+			if (menu != null)
+			{
+				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));
+			}
+			menu = this.Resources["cmNickList"] as ContextMenu;
+			if (menu != null)
+			{
+				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));
 			}
 		}
 

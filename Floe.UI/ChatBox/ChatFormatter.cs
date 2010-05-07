@@ -92,6 +92,7 @@ namespace Floe.UI
 			_runProperties = new CustomTextRunProperties(_runProperties.Typeface, _runProperties.FontRenderingEmSize, foreground,
 				Brushes.Transparent, false);
 			_paraProperties = new CustomParagraphProperties(_runProperties);
+			width = Math.Max(0, width);
 
 			int idx = 0;
 			while(idx < _text.Length)
@@ -122,9 +123,9 @@ namespace Floe.UI
 							_runProperties.Typeface.Stretch),
 							_runProperties.FontRenderingEmSize,
 							(span.Flags & ChatSpanFlags.Reverse) > 0 ? _background : 
-							((span.Flags & ChatSpanFlags.Foreground) > 0 ? IrcColors.Brushes[span.Foreground] : _runProperties.ForegroundBrush),
+							((span.Flags & ChatSpanFlags.Foreground) > 0 ? Constants.Brushes[span.Foreground] : _runProperties.ForegroundBrush),
 							(span.Flags & ChatSpanFlags.Reverse) > 0 ? _runProperties.ForegroundBrush :
-							((span.Flags & ChatSpanFlags.Background) > 0 ? IrcColors.Brushes[span.Background] : _runProperties.BackgroundBrush),
+							((span.Flags & ChatSpanFlags.Background) > 0 ? Constants.Brushes[span.Background] : _runProperties.BackgroundBrush),
 							(span.Flags & ChatSpanFlags.Underline) > 0);
 				}
 				end = span.End;

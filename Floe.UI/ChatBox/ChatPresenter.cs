@@ -11,7 +11,6 @@ namespace Floe.UI
 {
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
-		private Queue<ChatLine> _lines = new Queue<ChatLine>();
 		private ScrollViewer _viewer;
 
 		public ChatPresenter()
@@ -23,24 +22,27 @@ namespace Floe.UI
 						this.ScrollToEnd();
 					}
 				};
+			this.Unloaded += (sender, e) =>
+				{
+					_isSelecting = false;
+					_isDragging = false;
+				};
 		}
 
 		public void AppendLine(ChatLine line)
 		{
-			_lines.Enqueue(line);
+			this.FormatSingle(line);
 
-			while (_lines.Count > this.BufferLines)
+			while (_blocks.Count > this.BufferLines)
 			{
-				_lines.Dequeue();
+				_blocks.RemoveFirst();
 			}
-
-			this.FormatText();
 		}
 
 		public void Clear()
 		{
-			_lines.Clear();
-			this.FormatText();
+			_blocks.Clear();
+			this.InvalidateVisual();
 		}
 
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
@@ -56,7 +58,7 @@ namespace Floe.UI
 				e.Property == ChatBoxBase.ColorizeNicknamesProperty ||
 				e.Property == ChatBoxBase.NewMarkerColorProperty)
 			{
-				this.FormatText();
+				this.FormatAll();
 			}
 			
 			base.OnPropertyChanged(e);

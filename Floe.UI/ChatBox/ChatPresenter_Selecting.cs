@@ -8,6 +8,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.TextFormatting;
+using System.Linq;
 
 namespace Floe.UI
 {
@@ -55,7 +56,6 @@ namespace Floe.UI
 				if (idx >= 0 && idx < int.MaxValue)
 				{
 					_isSelecting = true;
-					Mouse.OverrideCursor = Cursors.IBeam;
 					this.CaptureMouse();
 					_selStart = idx;
 				}
@@ -66,28 +66,31 @@ namespace Floe.UI
 
 		protected override void OnMouseMove(MouseEventArgs e)
 		{
+			var p = e.GetPosition(this);
+
 			if (_isSelecting)
 			{
+				Mouse.OverrideCursor = Cursors.IBeam;
 				_selEnd = this.GetCharIndexAt(e.GetPosition(this));
 				this.InvalidateVisual();
 				e.Handled = true;
 			}
 			else if (_isDragging)
 			{
-				var p = e.GetPosition(this);
 				_columnWidth = Math.Max(DefaultColumnWidth, Math.Min(this.ActualWidth / 2.0, p.X));
-				this.FormatText();
+				this.FormatAll();
 			}
-			else if (this.UseTabularView)
+			else if (this.UseTabularView && Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
 			{
-				var p = e.GetPosition(this);
-				if (Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
+				Mouse.OverrideCursor = Cursors.SizeWE;
+			}
+			else
+			{
+				Mouse.OverrideCursor = null;
+				this.SelectedLink = this.HitTest(p);
+				if (this.SelectedLink != null)
 				{
-					Mouse.OverrideCursor = Cursors.SizeWE;
-				}
-				else
-				{
-					Mouse.OverrideCursor = null;
+					Mouse.OverrideCursor = Cursors.Hand;
 				}
 			}
 
@@ -111,7 +114,10 @@ namespace Floe.UI
 				}
 
 				this.ReleaseMouseCapture();
-				Mouse.OverrideCursor = null;
+				if (Mouse.OverrideCursor == Cursors.IBeam)
+				{
+					Mouse.OverrideCursor = null;
+				}
 				_isSelecting = false;
 				_selStart = -1;
 				_selEnd = -1;
@@ -121,29 +127,88 @@ namespace Floe.UI
 			base.OnMouseMove(e);
 		}
 
+		protected override void OnMouseLeave(MouseEventArgs e)
+		{
+			if (!_isSelecting && !_isDragging)
+			{
+				Mouse.OverrideCursor = null;
+			}
+			base.OnMouseLeave(e);
+		}
+
+		protected override void OnLostMouseCapture(MouseEventArgs e)
+		{
+			_isSelecting = false;
+			_isDragging = false;
+			this.InvalidateVisual();
+			base.OnLostMouseCapture(e);
+		}
+
+		public string HitTest(Point p)
+		{
+			var block = this.GetBlockAt(p.Y);
+			if (block != null)
+			{
+				if (p.Y >= block.Y && p.Y < block.Y + block.Nick.Height &&
+					p.X >= block.NickX && p.X < block.NickX + block.Nick.Width &&
+					block.Source.Nick != null)
+				{
+					return block.Source.Nick;
+				}
+				int line = (int)(p.Y - block.Y) / (int)_lineHeight;
+				if (line >= 0 && line < block.Text.Length && p.X >= block.TextX && p.X < block.TextX + block.Text[line].Width)
+				{
+					var ch = block.Text[line].GetCharacterHitFromDistance(p.X);
+					foreach (var l in block.Source.Links)
+					{
+						if (ch.FirstCharacterIndex >= l.Start && ch.FirstCharacterIndex < l.End)
+						{
+							return block.Source.Text.Substring(l.Start, l.End - l.Start);
+						}
+					}
+				}
+			}
+			return null;
+		}
+
+		private Block GetBlockAt(double y)
+		{
+			if (_bottomBlock == null)
+			{
+				return null;
+			}
+			var node = _bottomBlock;
+			do
+			{
+				if (y >= node.Value.Y && y < node.Value.Y + node.Value.Height)
+				{
+					return node.Value;
+				}
+			}
+			while ((node = node.Previous) != null && y >= 0.0);
+			return null;
+		}
+
 		private int GetCharIndexAt(Point p)
 		{
-			if (p.Y > this.ActualHeight)
-			{
-				return int.MaxValue;
-			}
-			if (_blocks.Count < 1)
+			if (_blocks.Count < 1 || _bottomBlock == null)
 			{
 				return -1;
 			}
-			FormattedLine block = null;
-			for (int j = _bottomBlock; j >= 0; --j)
+
+			p.Y = Math.Min(this.ActualHeight - 1, p.Y);
+			Block block = null;
+			var node = _bottomBlock;
+			do
 			{
-				if (p.Y >= _blocks[j].Y && p.Y < _blocks[j].Y + _blocks[j].Height)
+				if (p.Y >= node.Value.Y && p.Y < node.Value.Y + node.Value.Height)
 				{
-					block = _blocks[j];
 					break;
 				}
 			}
-			if (block == null)
-			{
-				return -1;
-			}
+			while (node.Previous != null && p.Y >= 0.0 && (node = node.Previous) != null);
+			block = node.Value;
+			p.Y = Math.Max(block.Y, p.Y);
 
 			int line = (int)(p.Y - block.Y) / (int)_lineHeight;
 			int idx = 0;
@@ -151,7 +216,7 @@ namespace Floe.UI
 			{
 				idx += block.TimeString.Length + block.NickString.Length;
 				var ch = block.Text[line].GetCharacterHitFromDistance(p.X - block.TextX);
-				idx += Math.Min(ch.FirstCharacterIndex, block.TextString.Length - 1);
+				idx += Math.Min(ch.FirstCharacterIndex, block.Source.Text.Length - 1);
 			}
 			else if (p.X >= block.NickX || block.Time == null)
 			{
@@ -185,7 +250,7 @@ namespace Floe.UI
 				return new SolidColorBrush(c);
 			}, true);
 
-		private void DrawSelectedLine(DrawingContext dc, FormattedLine block)
+		private void DrawSelectedLine(DrawingContext dc, Block block)
 		{
 			if (this.SelectionEnd < block.CharStart || this.SelectionStart >= block.CharEnd ||
 				this.SelectionStart >= this.SelectionEnd)
@@ -235,21 +300,21 @@ namespace Floe.UI
 				output.Append(this.GetSelectedText(idx, block.TimeString, output, out start, out end));
 				idx += block.TimeString.Length;
 				string nick = this.GetSelectedText(idx, block.NickString, output, out start, out end);
-				if (start && this.UseTabularView && block.NickString != "*")
+				if (start && this.UseTabularView && block.Source.Nick != null)
 				{
 					output.Append('<');
 				}
 				output.Append(nick);
 				if (nick.Length > 0 && end && this.UseTabularView)
 				{
-					if (block.NickString != "*")
+					if (block.Source.Nick != null)
 					{
 						output.Append('>');
 					}
 					output.Append(' ');
 				}
 				idx += block.NickString.Length;
-				output.Append(this.GetSelectedText(idx, block.TextString, output, out start, out end));
+				output.Append(this.GetSelectedText(idx, block.Source.Text, output, out start, out end));
 				if (this.SelectionEnd >= block.CharEnd)
 				{
 					output.AppendLine();

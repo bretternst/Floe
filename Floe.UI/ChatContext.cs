@@ -13,9 +13,6 @@ namespace Floe.UI
 
 		public IrcTarget Target { get; private set; }
 
-		public bool IsConnected { get { return this.Session.State == IrcSessionState.Connecting ||
-			this.Session.State == IrcSessionState.Connected; } }
-
 		public ChatContext(IrcSession ircSession, IrcTarget target)
 		{
 			this.Session = ircSession;

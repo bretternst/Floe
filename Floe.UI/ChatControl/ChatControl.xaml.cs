@@ -55,6 +55,8 @@ namespace Floe.UI
 
 			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
 			this.Unloaded += new RoutedEventHandler(ChatControl_Unloaded);
+			this.PrepareContextMenus();
+			boxOutput.ContextMenu = this.GetDefaultContextMenu();
 		}
 
 		public ChatContext Context { get; private set; }
@@ -89,8 +91,17 @@ namespace Floe.UI
 			set { this.SetValue(IsDefaultProperty, value); }
 		}
 
+		public static readonly DependencyProperty IsConnectedProperty =
+			DependencyProperty.Register("IsConnected", typeof(bool), typeof(ChatControl));
+		public bool IsConnected
+		{
+			get { return (bool)this.GetValue(IsConnectedProperty); }
+			set { this.SetValue(IsConnectedProperty, value); }
+		}
+
 		public void Connect(Floe.Configuration.ServerElement server)
 		{
+			this.Session.AutoReconnect = false;
 			this.Perform = server.OnConnect;
 			this.Connect(server.Hostname, server.Port, server.AutoReconnect);
 		}
@@ -104,76 +115,6 @@ namespace Floe.UI
 				App.Settings.Current.User.Hostname,
 				App.Settings.Current.User.FullName,
 				autoReconnect);
-		}
-
-		protected override void OnPreviewKeyDown(KeyEventArgs e)
-		{
-			if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
-			{
-				return;
-			}
-
-			e.Handled = true;
-
-			switch (e.Key)
-			{
-				case Key.PageUp:
-					boxOutput.PageUp();
-					break;
-				case Key.PageDown:
-					boxOutput.PageDown();
-					break;
-				case Key.Up:
-					if (_historyNode != null)
-					{
-						if (_historyNode.Next != null)
-						{
-							_historyNode = _historyNode.Next;
-							this.SetInputText(_historyNode.Value);
-						}
-					}
-					else if (_history.First != null)
-					{
-						_historyNode = _history.First;
-						this.SetInputText(_historyNode.Value);
-					}
-					break;
-				case Key.Down:
-					if (_historyNode != null)
-					{
-						_historyNode = _historyNode.Previous;
-						if (_historyNode != null)
-						{
-							this.SetInputText(_historyNode.Value);
-						}
-						else
-						{
-							txtInput.Clear();
-						}
-					}
-					break;
-				default:
-					Keyboard.Focus(txtInput);
-					e.Handled = false;
-					break;
-			}
-
-			base.OnPreviewKeyDown(e);
-		}
-
-		protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
-		{
-			if (e.Delta > 0)
-			{
-				boxOutput.MouseWheelUp();
-			}
-			else
-			{
-				boxOutput.MouseWheelDown();
-			}
-			e.Handled = true;
-
-			base.OnPreviewMouseWheel(e);
 		}
 
 		private void ParseInput(string text)
@@ -217,7 +158,7 @@ namespace Floe.UI
 
 		private void Write(string styleKey, string text)
 		{
-			this.Write(styleKey, 0, "*", text);
+			this.Write(styleKey, 0, null, text);
 		}
 
 		private void SetInputText(string text)
@@ -271,6 +212,18 @@ namespace Floe.UI
 			}
 			_historyNode = null;
 			this.ParseInput(text);
+		}
+
+		private ContextMenu GetDefaultContextMenu()
+		{
+			if (this.IsServer)
+			{
+				return this.Resources["cmServer"] as ContextMenu;
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		public void Dispose()

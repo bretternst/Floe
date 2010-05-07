@@ -193,7 +193,7 @@ namespace Floe.UI
 					{
 						port = 6667;
 					}
-					if (this.Context.IsConnected)
+					if (this.IsConnected)
 					{
 						this.Session.AutoReconnect = false;
 						this.Session.Quit("Changing servers");

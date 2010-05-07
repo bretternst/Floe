@@ -143,7 +143,7 @@ namespace Floe.Configuration
 			set { this["newMarker"] = value; OnPropertyChanged("NewMarker"); }
 		}
 
-		[ConfigurationProperty("oldMarker", DefaultValue = "#FF002B00")]
+		[ConfigurationProperty("oldMarker", DefaultValue = "#FF3C0000")]
 		public string OldMarker
 		{
 			get { return (string)this["oldMarker"]; }

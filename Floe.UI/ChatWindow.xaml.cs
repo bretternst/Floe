@@ -135,7 +135,7 @@ namespace Floe.UI
 
 			foreach (var page in this.Items.Where((i) => i.Content.Context.Target == null).Select((i) => i.Content))
 			{
-				if (page.Context.IsConnected)
+				if (page.IsConnected)
 				{
 					page.Context.Session.AutoReconnect = false;
 					page.Context.Session.Quit("Leaving");

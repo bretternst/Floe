@@ -74,16 +74,16 @@
     <Compile Include="ChatBox\ChatPresenter_Rendering.cs" />
     <Compile Include="ChatBox\ChatPresenter_Scrolling.cs" />
     <Compile Include="ChatBox\ChatPresenter_Selecting.cs" />
-    <Compile Include="ChatBox\IrcColors.cs" />
-    <Compile Include="UserControls\ChatControl.xaml.cs">
+    <Compile Include="ChatBox\Constants.cs" />
+    <Compile Include="ChatControl\ChatControl.xaml.cs">
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChatContext.cs" />
-    <Compile Include="UserControls\ChatControl_Commands.cs" />
-    <Compile Include="UserControls\ChatControl_Events.cs" />
-    <Compile Include="UserControls\ChatControl_NickList.cs" />
-    <Compile Include="UserControls\ChatWindow_Events.cs" />
-    <Compile Include="UserControls\ChatWindow.xaml.cs">
+    <Compile Include="ChatControl\ChatControl_Commands.cs" />
+    <Compile Include="ChatControl\ChatControl_Events.cs" />
+    <Compile Include="ChatControl\ChatControl_NickList.cs" />
+    <Compile Include="ChatWindow_Events.cs" />
+    <Compile Include="ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Extensions.cs" />
@@ -119,11 +119,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="UserControls\ChatControl.xaml">
+    <Page Include="ChatControl\ChatControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserControls\ChatWindow.xaml">
+    <Page Include="ChatWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

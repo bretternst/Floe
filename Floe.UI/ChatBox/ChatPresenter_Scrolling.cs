@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Linq;
 
 namespace Floe.UI
 {
@@ -65,6 +66,7 @@ namespace Floe.UI
 		public void SetVerticalOffset(double offset)
 		{
 			var delta = offset - _offset;
+
 			_blocks.ForEach((b) =>
 				{
 					if (b.Y >= 0.0)

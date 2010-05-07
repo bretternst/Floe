@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Floe.UI
 {
@@ -15,6 +16,7 @@ namespace Floe.UI
 		public string Text { get; private set; }
 		public ChatMarker Marker { get; set; }
 		public ChatSpan[] Spans { get; private set; }
+		public ChatLink[] Links { get; private set; }
 
 		public ChatLine(string colorKey, DateTime time, int nickHashCode, string nick, string text, ChatMarker decoration)
 		{
@@ -113,6 +115,8 @@ namespace Floe.UI
 			spans.Add(span);
 			this.Text = text.ToString();
 			this.Spans = spans.Where((s) => s.End > s.Start).ToArray();
+			this.Links = (from Match m in Constants.UrlRegex.Matches(this.Text)
+						 select new ChatLink { Start = m.Index, End = m.Index + m.Length }).ToArray();
 		}
 	}
 
@@ -139,5 +143,11 @@ namespace Floe.UI
 		public ChatSpanFlags Flags;
 		public byte Foreground;
 		public byte Background;
+	}
+
+	public struct ChatLink
+	{
+		public int Start;
+		public int End;
 	}
 }
