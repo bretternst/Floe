@@ -106,7 +106,7 @@ namespace Floe.UI
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground);
 			if (b.TimeString.Length > 0)
 			{
-				b.Time = formatter.Format(b.TimeString, null, this.ActualWidth, b.Foreground, this.Background,
+				b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
 					TextWrapping.NoWrap).First();
 				b.NickX = b.Time.WidthIncludingTrailingWhitespace;
 			}
@@ -116,7 +116,7 @@ namespace Floe.UI
 			{
 				nickBrush = this.GetNickColor(b.Source.NickHashCode);
 			}
-			b.Nick = formatter.Format(b.NickString, null, this.ActualWidth - b.NickX, nickBrush, this.Background,
+			b.Nick = formatter.Format(b.NickString, null, this.ViewportWidth - b.NickX, nickBrush, this.Background,
 				TextWrapping.NoWrap).First();
 			b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
 
@@ -140,7 +140,7 @@ namespace Floe.UI
 			}
 
 			var offset = _blocks.Last != null ? _blocks.Last.Value.CharEnd : 0;
-			b.Text = formatter.Format(b.Source.Text, b.Source, this.ActualWidth - b.TextX, b.Foreground,
+			b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
 				this.Background, TextWrapping.Wrap).ToArray();
 			b.Height = b.Text.Sum((t) => t.Height);
 			_extentHeight += b.Height;
@@ -166,7 +166,7 @@ namespace Floe.UI
 		private void FormatAll()
 		{
 			_extentHeight = 0.0;
-			if (_blocks.Count < 1 || this.ActualWidth < 1.0)
+			if (_blocks.Count < 1 || this.ViewportWidth < 1.0)
 			{
 				return;
 			}
@@ -182,7 +182,7 @@ namespace Floe.UI
 
 					if (b.TimeString.Length > 0)
 					{
-						b.Time = formatter.Format(b.TimeString, null, this.ActualWidth, b.Foreground, this.Background,
+						b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
 							TextWrapping.NoWrap).First();
 						b.NickX = b.Time.WidthIncludingTrailingWhitespace;
 					}
@@ -201,7 +201,7 @@ namespace Floe.UI
 					{
 						nickBrush = this.GetNickColor(b.Source.NickHashCode);
 					}
-					b.Nick = formatter.Format(b.NickString, null, this.ActualWidth - b.NickX, nickBrush, this.Background,
+					b.Nick = formatter.Format(b.NickString, null, this.ViewportWidth - b.NickX, nickBrush, this.Background,
 						TextWrapping.NoWrap).First();
 					b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
 				});
@@ -219,7 +219,7 @@ namespace Floe.UI
 			var offset = 0;
 			_blocks.ForEach((b) =>
 				{
-					b.Text = formatter.Format(b.Source.Text, b.Source, this.ActualWidth - b.TextX, b.Foreground,
+					b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
 						this.Background, TextWrapping.Wrap).ToArray();
 					b.Height = b.Text.Sum((t) => t.Height);
 					_extentHeight += b.Height;
@@ -255,7 +255,7 @@ namespace Floe.UI
 			_bottomBlock = null;
 			var guidelines = new GuidelineSet();
 
-			dc.DrawRectangle(this.Background, null, new Rect(new Size(this.ActualWidth, this.ActualHeight)));
+			dc.DrawRectangle(this.Background, null, new Rect(new Size(this.ViewportWidth, this.ActualHeight)));
 
 			if (_blocks.Count < 1)
 			{
@@ -292,7 +292,7 @@ namespace Floe.UI
 						var markerBrush = new LinearGradientBrush(this.NewMarkerColor,
 							this.BackgroundColor, 90.0);
 						dc.DrawRectangle(markerBrush, null,
-							new Rect(new Point(0.0, block.Y), new Size(this.ActualWidth, _lineHeight * 5)));
+							new Rect(new Point(0.0, block.Y), new Size(this.ViewportWidth, _lineHeight * 5)));
 					}
 					if ((block.Source.Marker & ChatMarker.OldMarker) > 0)
 					{
@@ -300,7 +300,7 @@ namespace Floe.UI
 							this.OldMarkerColor, 90.0);
 						dc.DrawRectangle(markerBrush, null,
 							new Rect(new Point(0.0, (block.Y + block.Height) - _lineHeight * 5),
-								new Size(this.ActualWidth, _lineHeight * 5)));
+								new Size(this.ViewportWidth, _lineHeight * 5)));
 					}
 
 					if (_bottomBlock == null)

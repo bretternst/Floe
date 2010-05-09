@@ -150,6 +150,20 @@ namespace Floe.Configuration
 			set { this["oldMarker"] = value; OnPropertyChanged("OldMarker"); }
 		}
 
+		[ConfigurationProperty("windowBackground", DefaultValue = "#293955")]
+		public string WindowBackground
+		{
+			get { return (string)this["windowBackground"]; }
+			set { this["windowBackground"] = value; OnPropertyChanged("WindowBackground"); }
+		}
+
+		[ConfigurationProperty("windowForeground", DefaultValue = "White")]
+		public string WindowForeground
+		{
+			get { return (string)this["windowForeground"]; }
+			set { this["windowForeground"] = value; OnPropertyChanged("WindowForeground"); }
+		}
+
 		public ChatPalette Palette
 		{
 			get

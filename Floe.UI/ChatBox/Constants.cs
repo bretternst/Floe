@@ -10,9 +10,7 @@ namespace Floe.UI
 {
 	public static class Constants
 	{
-		private static Regex urlRegex = new Regex(
-@"((www\.|(http|https|ftp|news|file)+\:\/\/)[&#95;.a-z0-9-]+\.[a-z0-9\/&#95;:@=.+?,##%&~-]*[^.|\'|\# |!|\(|?|,| |>|<|;|\)])",
-		RegexOptions.IgnoreCase);
+		private static Regex urlRegex = new Regex(@"(www\.|(http|https|ftp)+\:\/\/)[^\s]+", RegexOptions.IgnoreCase);
 
 		public static Regex UrlRegex { get { return urlRegex; } }
 

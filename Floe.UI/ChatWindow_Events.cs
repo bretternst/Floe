@@ -68,8 +68,8 @@ namespace Floe.UI
 				this.BeginInvoke(() =>
 					{
 						foreach (var p in (from i in this.Items
-										   where i.Content.Context.Session == sender && i.Content.Context.Target != null
-										   select i.Content).ToArray())
+										   where i.Control.Context.Session == sender && i.Control.Context.Target != null
+										   select i.Control).ToArray())
 						{
 							this.RemovePage(p.Context);
 						}
@@ -145,19 +145,19 @@ namespace Floe.UI
 		{
 			if (tabsChat.SelectedItem != null)
 			{
-				var context = ((ChatTabItem)tabsChat.SelectedItem).Content.Context;
+				var context = ((ChatTabItem)tabsChat.SelectedItem).Control.Context;
 				foreach (var item in this.Items)
 				{
 					bool isDefault = false;
 					if (item == tabsChat.SelectedItem ||
-						item.Content.Context.Session != context.Session && item.Content.IsServer)
+						item.Control.Context.Session != context.Session && item.Control.IsServer)
 					{
 						isDefault = true;
 					}
 
-					if (item.Content.IsDefault != isDefault)
+					if (item.Control.IsDefault != isDefault)
 					{
-						item.Content.IsDefault = isDefault;
+						item.Control.IsDefault = isDefault;
 					}
 				}
 			}

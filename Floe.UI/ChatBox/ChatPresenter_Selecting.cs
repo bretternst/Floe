@@ -77,7 +77,7 @@ namespace Floe.UI
 			}
 			else if (_isDragging)
 			{
-				_columnWidth = Math.Max(DefaultColumnWidth, Math.Min(this.ActualWidth / 2.0, p.X));
+				_columnWidth = Math.Max(DefaultColumnWidth, Math.Min(this.ViewportWidth / 2.0, p.X));
 				this.FormatAll();
 			}
 			else if (this.UseTabularView && Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)

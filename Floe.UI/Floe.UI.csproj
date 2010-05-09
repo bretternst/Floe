@@ -86,6 +86,7 @@
     <Compile Include="ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />

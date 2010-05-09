@@ -19,9 +19,9 @@ namespace Floe.UI
 {
 	public partial class ChatWindow : Window
 	{
-		public class ChatTabItem
+		public class ChatTabItem : TabItem
 		{
-			public ChatControl Content { get; private set; }
+			public ChatControl Control { get { return this.Content as ChatControl; } }
 
 			public ChatTabItem(ChatControl content)
 			{
@@ -55,7 +55,7 @@ namespace Floe.UI
 			{
 				for (int i = this.Items.Count - 1; i >= 0; --i)
 				{
-					if (this.Items[i].Content.Context.Session == context.Session)
+					if (this.Items[i].Control.Context.Session == context.Session)
 					{
 						this.Items.Insert(i + 1, item);
 						break;
@@ -70,21 +70,21 @@ namespace Floe.UI
 
 		public void RemovePage(ChatContext context)
 		{
-			var item = (from p in this.Items where p.Content.Context == context select p).FirstOrDefault();
+			var item = (from p in this.Items where p.Control.Context == context select p).FirstOrDefault();
 			if (item != null)
 			{
 				if (context.Target == null)
 				{
 					this.UnsubscribeEvents(context.Session);
 				}
-				item.Content.Dispose();
+				item.Control.Dispose();
 				this.Items.Remove(item);
 			}
 		}
 
 		public void SwitchToPage(ChatContext context)
 		{
-			var item = (from p in this.Items where p.Content.Context == context select p).FirstOrDefault();
+			var item = (from p in this.Items where p.Control.Context == context select p).FirstOrDefault();
 			if (item != null)
 			{
 				tabsChat.SelectedIndex = this.Items.IndexOf(item);
@@ -93,8 +93,8 @@ namespace Floe.UI
 
 		public ChatContext FindPage(IrcSession session, IrcTarget target)
 		{
-			return this.Items.Where((i) => i.Content.Context.Session == session && i.Content.Context.Target != null &&
-				i.Content.Context.Target.Equals(target)).Select((p) => p.Content.Context).FirstOrDefault();
+			return this.Items.Where((i) => i.Control.Context.Session == session && i.Control.Context.Target != null &&
+				i.Control.Context.Target.Equals(target)).Select((p) => p.Control.Context).FirstOrDefault();
 		}
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
@@ -117,7 +117,7 @@ namespace Floe.UI
 					{
 						this.AddPage(new ChatContext(new IrcSession(), null), false);
 					}
-					this.Items[this.Items.Count - 1].Content.Connect(server);
+					this.Items[this.Items.Count - 1].Control.Connect(server);
 				}
 			}
 		}
@@ -133,7 +133,7 @@ namespace Floe.UI
 		{
 			base.OnClosing(e);
 
-			foreach (var page in this.Items.Where((i) => i.Content.Context.Target == null).Select((i) => i.Content))
+			foreach (var page in this.Items.Where((i) => i.Control.Context.Target == null).Select((i) => i.Control))
 			{
 				if (page.IsConnected)
 				{
@@ -144,7 +144,7 @@ namespace Floe.UI
 
 			foreach (var page in this.Items)
 			{
-				page.Content.Dispose();
+				page.Control.Dispose();
 			}
 
 			Interop.WindowPlacementHelper.Save(this);

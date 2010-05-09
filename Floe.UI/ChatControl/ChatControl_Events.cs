@@ -675,6 +675,8 @@ namespace Floe.UI
 				Keyboard.Focus(txtInput);
 				this.SetTitle();
 			};
+
+			this.IsConnected = !(this.Session.State == IrcSessionState.Disconnected);
 		}
 
 		private void UnsubscribeEvents()
