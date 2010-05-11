@@ -17,6 +17,7 @@ namespace Floe.UI.Settings
 			grdSettings.Children.Add(new FormattingSettingsControl());
 			grdSettings.Children.Add(new ColorsSettingsControl());
 			grdSettings.Children.Add(new BufferSettingsControl());
+			grdSettings.Children.Add(new WindowSettingsControl());
 
 			if (lstCategories.SelectedIndex < 0)
 			{

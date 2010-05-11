@@ -20,5 +20,10 @@ namespace Floe.UI.Settings
 		{
 			InitializeComponent();
 		}
+
+		private void button1_Click(object sender, RoutedEventArgs e)
+		{
+			App.BrowseTo(App.LoggingPathBase);
+		}
 	}
 }

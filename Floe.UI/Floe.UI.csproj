@@ -82,13 +82,16 @@
     <Compile Include="ChatControl\ChatControl_Commands.cs" />
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
+    <Compile Include="ChatWindow_Commands.cs" />
     <Compile Include="ChatWindow_Events.cs" />
     <Compile Include="ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ChatWindow_WndProc.cs" />
     <Compile Include="Converters.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
+    <Compile Include="Interop\WindowConstants.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />
     <Compile Include="Settings\Configuration\BufferElement.cs" />
     <Compile Include="Settings\BufferSettingsControl.xaml.cs">
@@ -99,6 +102,9 @@
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\Configuration\WindowsElement.cs" />
+    <Compile Include="Settings\WindowSettingsControl.xaml.cs">
+      <DependentUpon>WindowSettingsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\FormattingSettingsControl.xaml.cs">
       <DependentUpon>FormattingSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -133,6 +139,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\ColorsSettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\WindowSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -121,11 +121,6 @@ namespace Floe.Net
 
 		public void Send(string command, params string[] parameters)
 		{
-			if (this.State != IrcSessionState.Connecting &&
-				this.State != IrcSessionState.Connected)
-			{
-				throw new IrcException("Not connected to a server.");
-			}
 			_conn.QueueMessage(new IrcMessage(command, parameters));
 		}
 
@@ -163,6 +158,7 @@ namespace Floe.Net
 
 		public void Quit(string text)
 		{
+			this.AutoReconnect = false;
 			if (this.State != IrcSessionState.Disconnected)
 			{
 				this.Send("QUIT", text);

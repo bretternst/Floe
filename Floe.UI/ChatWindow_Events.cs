@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Collections.ObjectModel;
 
 using Floe.Net;
 
@@ -120,27 +111,6 @@ namespace Floe.UI
 			}
 		}
 
-		private void chatControl_Query(object sender, QueryEventArgs e)
-		{
-			var control = e.OriginalSource as ChatControl;
-			if (control != null)
-			{
-				var target = new IrcTarget(e.Nickname);
-				var context = this.FindPage(control.Session, target);
-				this.BeginInvoke(() =>
-					{
-						if (context != null)
-						{
-							this.SwitchToPage(context);
-						}
-						else
-						{
-							this.AddPage(new ChatContext(control.Session, target), true);
-						}
-					});
-			}
-		}
-
 		private void tabsChat_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (tabsChat.SelectedItem != null)
@@ -171,7 +141,6 @@ namespace Floe.UI
 			session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived += new EventHandler<IrcEventArgs>(session_RawMessageReceived);
-			this.AddHandler(ChatControl.QueryEvent, new QueryEventHandler(chatControl_Query));
 		}
 
 		public void UnsubscribeEvents(IrcSession session)

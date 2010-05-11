@@ -41,6 +41,13 @@ namespace Floe.Configuration
 			set { this["maximumPasteLines"] = value; this.OnPropertyChanged("MaximumPasteLines"); }
 		}
 
+		[ConfigurationProperty("isLoggingEnabled", DefaultValue = true)]
+		public bool IsLoggingEnabled
+		{
+			get { return (bool)this["isLoggingEnabled"]; }
+			set { this["isLoggingEnabled"] = value; this.OnPropertyChanged("IsLoggingEnabled"); }
+		}
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string name)

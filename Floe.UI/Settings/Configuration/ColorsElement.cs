@@ -164,6 +164,118 @@ namespace Floe.Configuration
 			set { this["windowForeground"] = value; OnPropertyChanged("WindowForeground"); }
 		}
 
+		[ConfigurationProperty("color0", DefaultValue = "#FFFFFF")]
+		public string Color0
+		{
+			get { return (string)this["color0"]; }
+			set { this["color0"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color1", DefaultValue = "#000000")]
+		public string Color1
+		{
+			get { return (string)this["color1"]; }
+			set { this["color1"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color2", DefaultValue = "#00007F")]
+		public string Color2
+		{
+			get { return (string)this["color2"]; }
+			set { this["color2"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color3", DefaultValue = "#009300")]
+		public string Color3
+		{
+			get { return (string)this["color3"]; }
+			set { this["color3"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color4", DefaultValue = "#FF0000")]
+		public string Color4
+		{
+			get { return (string)this["color4"]; }
+			set { this["color4"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color5", DefaultValue = "#7F0000")]
+		public string Color5
+		{
+			get { return (string)this["color5"]; }
+			set { this["color5"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color6", DefaultValue = "#9C009C")]
+		public string Color6
+		{
+			get { return (string)this["color6"]; }
+			set { this["color6"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color7", DefaultValue = "#FC7F00")]
+		public string Color7
+		{
+			get { return (string)this["color7"]; }
+			set { this["color7"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color8", DefaultValue = "#FFFF00")]
+		public string Color8
+		{
+			get { return (string)this["color8"]; }
+			set { this["color8"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color9", DefaultValue = "#00FC00")]
+		public string Color9
+		{
+			get { return (string)this["color9"]; }
+			set { this["color9"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color10", DefaultValue = "#009393")]
+		public string Color10
+		{
+			get { return (string)this["color10"]; }
+			set { this["color10"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color11", DefaultValue = "#00FFFF")]
+		public string Color11
+		{
+			get { return (string)this["color11"]; }
+			set { this["color11"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color12", DefaultValue = "#0000FC")]
+		public string Color12
+		{
+			get { return (string)this["color12"]; }
+			set { this["color12"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color13", DefaultValue = "#FF00FF")]
+		public string Color13
+		{
+			get { return (string)this["color13"]; }
+			set { this["color13"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color14", DefaultValue = "#7F7F7F")]
+		public string Color14
+		{
+			get { return (string)this["color14"]; }
+			set { this["color14"] = value; OnPropertyChanged("Palette"); }
+		}
+
+		[ConfigurationProperty("color15", DefaultValue = "#D2D2D2")]
+		public string Color15
+		{
+			get { return (string)this["color15"]; }
+			set { this["color15"] = value; OnPropertyChanged("Palette"); }
+		}
+		
 		public ChatPalette Palette
 		{
 			get
@@ -186,6 +298,23 @@ namespace Floe.Configuration
 				palette.Add("Quit", converter.ConvertFromString(this.Quit) as SolidColorBrush);
 				palette.Add("Topic", converter.ConvertFromString(this.Topic) as SolidColorBrush);
 				palette.Add("Error", converter.ConvertFromString(this.Error) as SolidColorBrush);
+
+				palette.Add("Color0", converter.ConvertFromString(this.Color0) as SolidColorBrush);
+				palette.Add("Color1", converter.ConvertFromString(this.Color1) as SolidColorBrush);
+				palette.Add("Color2", converter.ConvertFromString(this.Color2) as SolidColorBrush);
+				palette.Add("Color3", converter.ConvertFromString(this.Color3) as SolidColorBrush);
+				palette.Add("Color4", converter.ConvertFromString(this.Color4) as SolidColorBrush);
+				palette.Add("Color5", converter.ConvertFromString(this.Color5) as SolidColorBrush);
+				palette.Add("Color6", converter.ConvertFromString(this.Color6) as SolidColorBrush);
+				palette.Add("Color7", converter.ConvertFromString(this.Color7) as SolidColorBrush);
+				palette.Add("Color8", converter.ConvertFromString(this.Color8) as SolidColorBrush);
+				palette.Add("Color9", converter.ConvertFromString(this.Color9) as SolidColorBrush);
+				palette.Add("Color10", converter.ConvertFromString(this.Color10) as SolidColorBrush);
+				palette.Add("Color11", converter.ConvertFromString(this.Color11) as SolidColorBrush);
+				palette.Add("Color12", converter.ConvertFromString(this.Color12) as SolidColorBrush);
+				palette.Add("Color13", converter.ConvertFromString(this.Color13) as SolidColorBrush);
+				palette.Add("Color14", converter.ConvertFromString(this.Color14) as SolidColorBrush);
+				palette.Add("Color15", converter.ConvertFromString(this.Color15) as SolidColorBrush);
 
 				return palette;
 			}

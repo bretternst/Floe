@@ -13,12 +13,51 @@ namespace Floe.UI
 	{
 		private const char CommandChar = '/';
 
-		public static readonly RoutedEvent QueryEvent = EventManager.RegisterRoutedEvent("Query", RoutingStrategy.Bubble,
-			typeof(QueryEventHandler), typeof(ChatControl));
+		public readonly static RoutedUICommand WhoisCommand = new RoutedUICommand("Whois", "Whois", typeof(ChatControl));
+		public readonly static RoutedUICommand OpenLinkCommand = new RoutedUICommand("Open", "OpenLink", typeof(ChatControl));
+		public readonly static RoutedUICommand CopyLinkCommand = new RoutedUICommand("Copy", "CopyLink", typeof(ChatControl));
+		public readonly static RoutedUICommand QuitCommand = new RoutedUICommand("Quit", "Quit", typeof(ChatControl));
 
-		private void Query(string nickname)
+		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
-			this.RaiseEvent(new QueryEventArgs(QueryEvent, nickname));
+			e.CanExecute = this.IsConnected;
+		}
+
+		private void ExecuteWhois(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				this.Session.WhoIs(s);
+			}
+		}
+
+		private void ExecuteOpenLink(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				App.BrowseTo(s);
+			}
+		}
+
+		private void ExecuteCopyLink(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				Clipboard.SetText(s);
+			}
+		}
+
+		private void ExecuteQuit(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				this.Session.AutoReconnect = false;
+				this.Session.Quit("Leaving");
+			}
+			catch { }
 		}
 
 		private void Execute(string text)

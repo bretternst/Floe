@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Interop;
 using System.Collections.ObjectModel;
 
 using Floe.Net;
@@ -99,6 +100,9 @@ namespace Floe.UI
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
+			var hwndSrc = PresentationSource.FromVisual(this) as HwndSource;
+			hwndSrc.AddHook(new HwndSourceHook(WndProc));
+
 			this.AddPage(new ChatContext(new IrcSession(), null), true);
 
 			if (Application.Current.MainWindow == this)
@@ -132,6 +136,15 @@ namespace Floe.UI
 		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
 		{
 			base.OnClosing(e);
+
+			if (this.Items.Any((i) => i.Control.IsConnected))
+			{
+				if (MessageBox.Show("Are you sure you want to exit?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.No)
+				{
+					e.Cancel = true;
+					return;
+				}
+			}
 
 			foreach (var page in this.Items.Where((i) => i.Control.Context.Target == null).Select((i) => i.Control))
 			{

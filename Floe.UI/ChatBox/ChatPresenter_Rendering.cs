@@ -103,7 +103,7 @@ namespace Floe.UI
 			b.TimeString = b.Source.Nick != null ? this.FormatTime(b.Source.Time) : "";
 			b.NickString = this.FormatNick(b.Source.Nick);
 
-			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground);
+			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
 			if (b.TimeString.Length > 0)
 			{
 				b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
@@ -171,7 +171,7 @@ namespace Floe.UI
 				return;
 			}
 
-			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground);
+			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
 
 			_blocks.ForEach((b) =>
 				{
@@ -257,14 +257,14 @@ namespace Floe.UI
 
 			dc.DrawRectangle(this.Background, null, new Rect(new Size(this.ViewportWidth, this.ActualHeight)));
 
-			if (_blocks.Count < 1)
-			{
-				return;
-			}
-
 			var node = _blocks.Last;
 			do
 			{
+				if (node == null)
+				{
+					break;
+				}
+
 				var block = node.Value;
 				block.Y = double.NaN;
 
@@ -314,6 +314,17 @@ namespace Floe.UI
 
 			dc.PushGuidelineSet(guidelines);
 
+			if (this.UseTabularView)
+			{
+				double lineX = _columnWidth + SeparatorPadding;
+				dc.DrawLine(scaledPen, new Point(lineX, 0.0), new Point(lineX, this.ActualHeight));
+			}
+
+			if (_blocks.Count < 1)
+			{
+				return;
+			}
+
 			do
 			{
 				var block = node.Value;
@@ -338,12 +349,6 @@ namespace Floe.UI
 				}
 			}
 			while ((node = node.Next) != null);
-
-			if (this.UseTabularView)
-			{
-				double lineX = _columnWidth + SeparatorPadding;
-				dc.DrawLine(scaledPen, new Point(lineX, 0.0), new Point(lineX, this.ActualHeight));
-			}
 		}
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)

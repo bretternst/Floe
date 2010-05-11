@@ -6,28 +6,38 @@
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="699" Focusable="True" Name="chatControl">
+	<UserControl.CommandBindings>
+		<CommandBinding Command="local:ChatControl.WhoisCommand" Executed="ExecuteWhois" CanExecute="CanExecuteConnectedCommand"/>
+		<CommandBinding Command="local:ChatControl.OpenLinkCommand" Executed="ExecuteOpenLink"/>
+		<CommandBinding Command="local:ChatControl.CopyLinkCommand" Executed="ExecuteCopyLink"/>
+		<CommandBinding Command="local:ChatControl.QuitCommand" Executed="ExecuteQuit" CanExecute="CanExecuteConnectedCommand"/>
+	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<Style TargetType="ListBoxItem">
 			<Style.Resources>
 				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{Binding Source={x:Static SystemColors.HighlightBrush}, Path=Color}"/>
-				<SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default}"/>
+				<SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
 			</Style.Resources>
 		</Style>
+		<ContextMenu x:Key="cmNickname">
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+		</ContextMenu>
 		<ContextMenu x:Key="cmNickList">
-			<MenuItem Header="Whois" Click="whois_Click" IsEnabled="{Binding ElementName=chatControl, Path=IsConnected}"/>
-			<MenuItem Header="Chat" Click="chat_Click"/>
+			<MenuItem Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			<MenuItem Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmHyperlink">
-			<MenuItem Header="Open" Click="open_Click"/>
-			<MenuItem Header="Copy" Click="copy_Click"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpenLinkCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.CopyLinkCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmServer">
 			<MenuItem Header="Connect" Click="connect_Click" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name"/>
-			<MenuItem Header="Quit" Click="quit_Click" IsEnabled="{Binding ElementName=chatControl, Path=IsConnected}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
 		</ContextMenu>
 	</UserControl.Resources>
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
-		<Border DockPanel.Dock="Bottom" BorderBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"
+		<Border DockPanel.Dock="Bottom" BorderBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 				BorderThickness="0,1,0,1">
 			<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown"
 				 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=OneWay}"

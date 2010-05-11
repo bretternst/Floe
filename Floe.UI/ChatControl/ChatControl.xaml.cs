@@ -99,6 +99,14 @@ namespace Floe.UI
 			set { this.SetValue(IsConnectedProperty, value); }
 		}
 
+		public static readonly DependencyProperty SelectedLinkProperty =
+			DependencyProperty.Register("SelectedLink", typeof(string), typeof(ChatControl));
+		public string SelectedLink
+		{
+			get { return (string)this.GetValue(SelectedLinkProperty); }
+			set { this.SetValue(SelectedLinkProperty, value); }
+		}
+
 		public void Connect(Floe.Configuration.ServerElement server)
 		{
 			this.Session.AutoReconnect = false;

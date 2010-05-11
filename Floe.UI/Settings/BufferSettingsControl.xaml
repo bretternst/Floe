@@ -49,5 +49,12 @@
 				</TextBox>
 			</Canvas>
 		</GroupBox>
+		<GroupBox Canvas.Left="12" Canvas.Top="92" Header="Logging" Height="58" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
+			<Canvas>
+				<CheckBox Canvas.Left="6" Canvas.Top="6" Content="Enable Logging" Height="16" Name="chkIsLoggingEnabled"
+						  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.IsLoggingEnabled}"/>
+				<Button Canvas.Left="201" Canvas.Top="6" Content="Open Log Location" Height="23" Name="button1" Width="141" Click="button1_Click" />
+			</Canvas>
+		</GroupBox>
 	</Canvas>
 </UserControl>

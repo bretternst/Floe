@@ -75,12 +75,14 @@ namespace Floe.UI
 		private TextFormatter _formatter;
 		private IChatSpanProvider _spans;
 		private Brush _background;
+		private ChatPalette _palette;
 
-		public ChatFormatter(Typeface typeface, double fontSize, Brush foreground)
+		public ChatFormatter(Typeface typeface, double fontSize, Brush foreground, ChatPalette palette)
 		{
 			_runProperties = new CustomTextRunProperties(typeface, fontSize, foreground, Brushes.Transparent, false);
 			_paraProperties = new CustomParagraphProperties(_runProperties);
 			_formatter = TextFormatter.Create(TextFormattingMode.Display);
+			_palette = palette;
 		}
 
 		public IEnumerable<TextLine> Format(string text, IChatSpanProvider spans, double width, Brush foreground, Brush background,
@@ -123,9 +125,9 @@ namespace Floe.UI
 							_runProperties.Typeface.Stretch),
 							_runProperties.FontRenderingEmSize,
 							(span.Flags & ChatSpanFlags.Reverse) > 0 ? _background : 
-							((span.Flags & ChatSpanFlags.Foreground) > 0 ? Constants.Brushes[span.Foreground] : _runProperties.ForegroundBrush),
+							((span.Flags & ChatSpanFlags.Foreground) > 0 ? _palette["Color"+span.Foreground] : _runProperties.ForegroundBrush),
 							(span.Flags & ChatSpanFlags.Reverse) > 0 ? _runProperties.ForegroundBrush :
-							((span.Flags & ChatSpanFlags.Background) > 0 ? Constants.Brushes[span.Background] : _runProperties.BackgroundBrush),
+							((span.Flags & ChatSpanFlags.Background) > 0 ? _palette["Color"+span.Background] : _runProperties.BackgroundBrush),
 							(span.Flags & ChatSpanFlags.Underline) > 0);
 				}
 				end = span.End;

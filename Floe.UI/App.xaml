@@ -4,5 +4,6 @@
 			 xmlns:global="clr-namespace:Floe.UI">
     <Application.Resources>
 		<global:App x:Key="App"/>
-    </Application.Resources>
+		<SolidColorBrush x:Key="winFG" Color="{Binding Source={x:Static global:App.Settings}, Path=Current.Colors.WindowForeground}"/>
+	</Application.Resources>
 </Application>

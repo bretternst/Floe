@@ -10,7 +10,7 @@ namespace Floe.UI
 	public partial class ChatControl : UserControl
 	{
 		private char[] _channelModes = new char[0];
-		private string _topic = "", _prefix, _contextLink;
+		private string _topic = "", _prefix;
 		private bool _hasNames = false, _hasDeactivated = false;
 		private Window _window;
 
@@ -31,6 +31,7 @@ namespace Floe.UI
 						switch (state)
 						{
 							case IrcSessionState.Connecting:
+								this.Header = this.Session.NetworkName;
 								this.Write("Client", string.Format(
 									"Connecting to {0}:{1}", this.Session.Server, this.Session.Port));
 								break;
@@ -431,7 +432,7 @@ namespace Floe.UI
 			var nickItem = e.Source as NicknameItem;
 			if (nickItem != null)
 			{
-				this.BeginInvoke(() => this.Query(nickItem.Nickname));
+				ChatWindow.ChatCommand.Execute(nickItem.Nickname, this);
 			}
 		}
 
@@ -452,13 +453,13 @@ namespace Floe.UI
 		private void _window_Deactivated(object sender, EventArgs e)
 		{
 			_hasDeactivated = true;
-			_contextLink = null;
+			this.SelectedLink = null;
 		}
 
 		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)
 		{
 			_hasDeactivated = true;
-			_contextLink = null;
+			this.SelectedLink = null;
 		}
 
 		private void boxOutput_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -472,23 +473,23 @@ namespace Floe.UI
 				}
 				else
 				{
-					this.Query(link);
+					ChatWindow.ChatCommand.Execute(link, this);
 				}
 			}
 		}
 
 		protected override void OnContextMenuOpening(ContextMenuEventArgs e)
 		{
-			_contextLink = boxOutput.SelectedLink;
-			if (!string.IsNullOrEmpty(_contextLink))
+			this.SelectedLink = boxOutput.SelectedLink;
+			if (!string.IsNullOrEmpty(this.SelectedLink))
 			{
-				if (Constants.UrlRegex.IsMatch(_contextLink))
+				if (Constants.UrlRegex.IsMatch(this.SelectedLink))
 				{
 					boxOutput.ContextMenu = this.Resources["cmHyperlink"] as ContextMenu;
 				}
 				else
 				{
-					boxOutput.ContextMenu = this.Resources["cmNickList"] as ContextMenu;
+					boxOutput.ContextMenu = this.Resources["cmNickname"] as ContextMenu;
 				}
 				boxOutput.ContextMenu.IsOpen = true;
 				e.Handled = true;
@@ -505,54 +506,6 @@ namespace Floe.UI
 			base.OnContextMenuOpening(e);
 		}
 
-		private void whois_Click(object sender, RoutedEventArgs e)
-		{
-			if (!string.IsNullOrEmpty(_contextLink))
-			{
-				this.Session.WhoIs(_contextLink);
-			}
-			else
-			{
-				var item = lstNicknames.SelectedItem as NicknameItem;
-				if (item != null)
-				{
-					this.Session.WhoIs(item.Nickname);
-				}
-			}
-		}
-
-		private void chat_Click(object sender, RoutedEventArgs e)
-		{
-			if (!string.IsNullOrEmpty(_contextLink))
-			{
-				this.Query(_contextLink);
-			}
-			else
-			{
-				var item = lstNicknames.SelectedItem as NicknameItem;
-				if (item != null)
-				{
-					this.Query(item.Nickname);
-				}
-			}
-		}
-
-		private void open_Click(object sender, RoutedEventArgs e)
-		{
-			if (!string.IsNullOrEmpty(_contextLink))
-			{
-				App.BrowseTo(_contextLink);
-			}
-		}
-
-		private void copy_Click(object sender, RoutedEventArgs e)
-		{
-			if (!string.IsNullOrEmpty(_contextLink))
-			{
-				Clipboard.SetText(_contextLink);
-			}
-		}
-
 		private void connect_Click(object sender, RoutedEventArgs e)
 		{
 			var item = ((MenuItem)boxOutput.ContextMenu.Items[0]).ItemContainerGenerator.ItemFromContainer((DependencyObject)e.OriginalSource)
@@ -567,19 +520,9 @@ namespace Floe.UI
 			}
 		}
 
-		private void quit_Click(object sender, RoutedEventArgs e)
-		{
-			try
-			{
-				this.Session.AutoReconnect = false;
-				this.Session.Quit("Leaving");
-			}
-			catch { }
-		}
-
 		protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
 		{
-			_contextLink = null;
+			this.SelectedLink = null;
 			base.OnPreviewMouseRightButtonDown(e);
 		}
 
@@ -709,6 +652,16 @@ namespace Floe.UI
 				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));
 			}
 			menu = this.Resources["cmNickList"] as ContextMenu;
+			if (menu != null)
+			{
+				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));
+			}
+			menu = this.Resources["cmNickname"] as ContextMenu;
+			if (menu != null)
+			{
+				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));
+			}
+			menu = this.Resources["cmHyperlink"] as ContextMenu;
 			if (menu != null)
 			{
 				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));

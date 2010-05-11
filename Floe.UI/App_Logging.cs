@@ -36,6 +36,13 @@ namespace Floe.UI
 		public LogFileHandle(string folderPath, string fileName, int linesToRead)
 		{
 			this.Buffer = new Queue<ChatLine>();
+
+			if (!App.Settings.Current.Buffer.IsLoggingEnabled)
+			{
+				_logFile = null;
+				return;
+			}
+
 			try
 			{
 				if (!Directory.Exists(folderPath))
