@@ -56,7 +56,8 @@ namespace Floe.UI
 				e.Property == ChatBoxBase.TimestampFormatProperty ||
 				e.Property == ChatBoxBase.UseTabularViewProperty ||
 				e.Property == ChatBoxBase.ColorizeNicknamesProperty ||
-				e.Property == ChatBoxBase.NewMarkerColorProperty)
+				e.Property == ChatBoxBase.NewMarkerColorProperty ||
+				e.Property == ChatBoxBase.NicknameColorSeedProperty)
 			{
 				this.FormatAll();
 			}

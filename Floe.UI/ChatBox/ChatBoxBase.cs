@@ -66,6 +66,14 @@ namespace Floe.UI
 			set { this.SetValue(ColorizeNicknamesProperty, value); }
 		}
 
+		public static readonly DependencyProperty NicknameColorSeedProperty = DependencyProperty.Register("NicknameColorSeed",
+			typeof(int), typeof(ChatBoxBase));
+		public int NicknameColorSeed
+		{
+			get { return (int)this.GetValue(NicknameColorSeedProperty); }
+			set { this.SetValue(NicknameColorSeedProperty, value); }
+		}
+
 		public static readonly DependencyProperty NewMarkerColorProperty = DependencyProperty.Register("NewMarkerColor",
 			typeof(Color), typeof(ChatBoxBase));
 		public Color NewMarkerColor

@@ -84,6 +84,10 @@ namespace Floe.UI
 		{
 			var rand = new Random(hashCode);
 			int rgb = rand.Next();
+			for (int i = 0; i < this.NicknameColorSeed; i++)
+			{
+				rgb = rand.Next();
+			}
 			Color c;
 			do
 			{

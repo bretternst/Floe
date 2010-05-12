@@ -146,8 +146,17 @@ namespace Floe.Net
 									if (input.Length > 0)
 									{
 										message = IrcMessage.Parse(input.ToString());
-										this.OnMessageReceived(message);
-										input.Clear();
+										try
+										{
+											this.OnMessageReceived(message);
+										}
+										catch (IrcException ex)
+										{
+#if DEBUG
+											System.Diagnostics.Debug.WriteLine("Unhandled IrcException: {0}", ex.Message);
+#endif
+										}
+										input.Length = 0;
 									}
 								}
 								else if (c != 0xd && c != 0xa)
@@ -176,8 +185,17 @@ namespace Floe.Net
 								}
 								output += Environment.NewLine;
 								count = Encoding.ASCII.GetBytes(output, 0, output.Length, buffer, 0);
-								stream.Write(buffer, 0, count);
-								stream.Flush();
+								try
+								{
+									stream.Write(buffer, 0, count);
+									stream.Flush();
+								}
+								catch (Exception ex)
+								{
+									this.OnConnectionError(ex);
+									_tcpClient.Close();
+									break;
+								}
 
 								this.OnMessageSent(message);
 							}

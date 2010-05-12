@@ -48,6 +48,9 @@
 			</TextBox.Text>
 		</TextBox>
 		<CheckBox Canvas.Left="18" Canvas.Top="169" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
-		<CheckBox Canvas.Left="18" Canvas.Top="191" Content="Colorize Nicknames" Height="16" Name="chkColorizeNicknames" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}"/>
+		<CheckBox Canvas.Left="221" Canvas.Top="147" Content="Colorize Nicknames" Height="16" Name="chkColorizeNicknames" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}"/>
+		<Slider Canvas.Left="225" Canvas.Top="184" Height="23" Name="sldNicknameColorScheme" Width="100" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}"
+				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=TwoWay}" SmallChange="1" LargeChange="1" IsSnapToTickEnabled="True" />
+		<Label Canvas.Left="220" Canvas.Top="164" Content="Scheme" Height="28" Name="label1" />
 	</Canvas>
 </UserControl>

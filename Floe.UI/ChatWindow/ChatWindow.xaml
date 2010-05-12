@@ -5,7 +5,7 @@
 		xmlns:local="clr-namespace:Floe.UI"
         xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 		MinWidth="300"  MinHeight="250" WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True"
-		Background="Transparent">
+		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}">
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose" CanExecute="CanExecuteClose"/>
@@ -92,28 +92,26 @@
 		</Style>
 
 		<Style x:Key="uiMenuButtonStyle" TargetType="MenuItem">
-			<Setter Property="Background" Value="{StaticResource winBG}"/>
-			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
-			<Setter Property="BorderBrush" Value="Transparent"/>
+			<Setter Property="OverridesDefaultStyle" Value="True"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="MenuItem">
-						<Border Background="{TemplateBinding Background}" BorderThickness="1"
-								BorderBrush="{TemplateBinding BorderBrush}"
-								Padding="{TemplateBinding Padding}">
+						<Border Background="Transparent" BorderThickness="1"
+								BorderBrush="Transparent" x:Name="border1">
 							<Grid>
-								<ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
+								<ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}" VerticalAlignment="Center"/>
 								<Popup Name="Popup" Placement="Bottom"
 									   IsOpen="{TemplateBinding IsSubmenuOpen}"
 									   AllowsTransparency="True"
 									   Focusable="False"
 									   PopupAnimation="Fade">
-									<Border Name="border"
-												Background="{StaticResource winBG}">
-										<StackPanel 
-											  IsItemsHost="True" 
-											  KeyboardNavigation.DirectionalNavigation="Cycle" />
-									</Border>
+									<mwt:SystemDropShadowChrome Color="#00FFFFFF" Name="Shdw">
+										<ContentControl IsTabStop="False" Template="{DynamicResource {ComponentResourceKey TypeInTargetAssembly=FrameworkElement, ResourceId=SubmenuContent}}" Name="SubMenuBorder">
+											<ScrollViewer CanContentScroll="True" Style="{DynamicResource {ComponentResourceKey TypeInTargetAssembly=FrameworkElement, ResourceId=MenuScrollViewer}}">
+												<ItemsPresenter Margin="2,2,2,2" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.DirectionalNavigation="Cycle" Grid.IsSharedSizeScope="True" />
+											</ScrollViewer>
+										</ContentControl>
+									</mwt:SystemDropShadowChrome>
 								</Popup>
 							</Grid>
 						</Border>
@@ -123,14 +121,14 @@
 									<Condition Property="IsMouseOver" Value="True"/>
 									<Condition Property="IsEnabled" Value="True"/>
 								</MultiTrigger.Conditions>
-								<Setter Property="BorderBrush" Value="{StaticResource winFG}"/>
-								<Setter Property="Background" Value="{StaticResource winFGx40}"/>
+								<Setter Property="BorderBrush" TargetName="border1" Value="{StaticResource winFG}"/>
+								<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGx40}"/>
 							</MultiTrigger>
 							<Trigger Property="IsEnabled" Value="False">
 								<Setter Property="Opacity" Value="0.4"/>
 							</Trigger>
 							<Trigger Property="IsPressed" Value="True">
-								<Setter Property="Background" Value="{StaticResource winFGx80}"/>
+								<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGx80}"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -142,6 +140,7 @@
 		<Geometry x:Key="minimizeButtonGeometry">M0,8 L8,8</Geometry>
 		<Geometry x:Key="maximizeButtonGeometry">M0,0 L8,0 L8,8 L0,8 L0,0 M0,1 L8,1</Geometry>
 		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
+		<Geometry x:Key="settingsButtonGeometry">M3,4 L6,8 L10,0</Geometry>
 
 		<Style x:Key="tabCloseButtonStyle" TargetType="Button">
 			<Setter Property="OverridesDefaultStyle" Value="True"/>
@@ -183,15 +182,15 @@
 
 		<local:CanScrollLeftConverter x:Key="canScrollLeft"/>
 		<local:CanScrollRightConverter x:Key="canScrollRight"/>
-		<Geometry x:Key="leftArrowGeometry">M0,3 L6,6 6,0Z</Geometry>
-		<Geometry x:Key="rightArrowGeometry">M0,0 L5.5,3 L0,6Z</Geometry>
-		<Geometry x:Key="downArrowGeometry">M0,0 L6,0 M0,2 L3,7 L6,2</Geometry>
+		<Geometry x:Key="leftArrowGeometry">M0,4 L8,8 8,0Z</Geometry>
+		<Geometry x:Key="rightArrowGeometry">M0,0 L8,4 L0,8Z</Geometry>
+		<Geometry x:Key="downArrowGeometry">M0,0 L8,0 M0,2 L4,8 L8,2</Geometry>
 		<Path x:Key="leftArrowPath" Data="{StaticResource leftArrowGeometry}"
 			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 		<Path x:Key="rightArrowPath" Data="{StaticResource rightArrowGeometry}"
 			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 		<Path x:Key="downArrowPath" Data="{StaticResource downArrowGeometry}"
-			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+			  Stroke="{StaticResource winFG}" Margin="2,0,2,0" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 	</Window.Resources>
 
 	<Border Background="{StaticResource winBG}" CornerRadius="8" Padding="5, 0, 5, 5">
@@ -206,17 +205,31 @@
 			</Grid.ColumnDefinitions>
 			<Label Grid.Row="0" Grid.Column="0" Content="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
 			<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-				<Button x:Name="btnMinimize" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Padding="0,8,0,0" Click="btnMinimize_Click">
-					<Path Margin="2"
+				<Button x:Name="btnSettings" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Padding="0" Click="btnSettings_Click">
+					<Path Margin="2" 
+						Data="{StaticResource settingsButtonGeometry}"
+						Stroke="{StaticResource winFG}"
+						StrokeThickness="2"
+						StrokeStartLineCap="Round"
+						StrokeEndLineCap="Round"
+						Stretch="Uniform"
+						HorizontalAlignment="Center">
+					</Path>
+					<Button.ToolTip>
+						<ToolTip Content="Settings"/>
+					</Button.ToolTip>
+				</Button>
+				<Button x:Name="btnMinimize" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Padding="0" Click="btnMinimize_Click">
+					<Path Margin="2,10,2,2"
 						Data="{StaticResource minimizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						HorizontalAlignment="Center"/>
+						HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
 				</Button>
-				<Button x:Name="btnMaximize" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnMaximize_Click">
+				<Button x:Name="btnMaximize" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnMaximize_Click">
 					<Path Margin="2"
 						Data="{StaticResource maximizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -227,7 +240,7 @@
 						VerticalAlignment="Center"
 						HorizontalAlignment="Center"/>
 				</Button>
-				<Button x:Name="btnClose" Style="{StaticResource uiButtonStyle}" Margin="0,0,6,0" Click="btnClose_Click">
+				<Button x:Name="btnClose" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,6,0" Click="btnClose_Click">
 					<Path Margin="2"
 						Data="{StaticResource closeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -241,11 +254,6 @@
 			</StackPanel>
 			<TabControl Grid.Row="1" Grid.ColumnSpan="2" Name="tabsChat" ItemsSource="{Binding Items}" TabStripPlacement="Bottom"
 					SelectionChanged="tabsChat_SelectionChanged" FontFamily="Segoe UI" FontSize="14" SnapsToDevicePixels="True">
-				<TabControl.ContextMenu>
-					<ContextMenu>
-						<MenuItem Command="local:ChatWindow.NewTabCommand"/>
-					</ContextMenu>
-				</TabControl.ContextMenu>
 				<TabControl.Template>
 					<ControlTemplate TargetType="TabControl">
 						<DockPanel Background="{StaticResource winBG}">
@@ -261,14 +269,20 @@
 											<ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
 															Grid.Column="0"
 															VirtualizingStackPanel.IsVirtualizing="False"
-															Content="{TemplateBinding ScrollViewer.Content}"/>
+															Content="{TemplateBinding ScrollViewer.Content}">
+												<ScrollContentPresenter.ContextMenu>
+													<ContextMenu>
+														<MenuItem Command="local:ChatWindow.NewTabCommand"/>
+													</ContextMenu>
+												</ScrollContentPresenter.ContextMenu>
+											</ScrollContentPresenter>
 											<StackPanel Grid.Column="1"
 												Orientation="Horizontal">
-												<RepeatButton Command="ScrollBar.LineLeftCommand" Style="{StaticResource uiRepeatButtonStyle}"
+												<RepeatButton Focusable="False" Command="ScrollBar.LineLeftCommand" Style="{StaticResource uiRepeatButtonStyle}"
 													  Padding="2,5,2,5" Margin="5,0,0,0" VerticalAlignment="Center"
 													  IsEnabled="{Binding ElementName=scrollViewer, Path=HorizontalOffset, Converter={StaticResource canScrollLeft}}"
 													  Content="{StaticResource leftArrowPath}"/>
-												<RepeatButton Command="ScrollBar.LineRightCommand" Style="{StaticResource uiRepeatButtonStyle}"
+												<RepeatButton Focusable="False" Command="ScrollBar.LineRightCommand" Style="{StaticResource uiRepeatButtonStyle}"
 													  Padding="2,5,2,5" VerticalAlignment="Center"
 													  Content="{StaticResource rightArrowPath}">
 													<RepeatButton.IsEnabled>
@@ -279,15 +293,16 @@
 														</MultiBinding>
 													</RepeatButton.IsEnabled>
 												</RepeatButton>
-												<Menu VerticalAlignment="Center" Background="Transparent">
+												<Menu VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" Focusable="False">
 													<MenuItem Padding="2,5,2,5" Background="{StaticResource winBG}" BorderThickness="0" Margin="0,0,5,0"
-													  Header="{StaticResource downArrowPath}"
+													  Header="{StaticResource downArrowPath}" Style="{StaticResource uiMenuButtonStyle}"
 													  ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=TabControl}, Path=Items}">
 														<MenuItem.ItemContainerStyle>
 															<Style TargetType="MenuItem">
 																<Setter Property="Header" Value="{Binding Path=Content.Header}"/>
 																<Setter Property="IsCheckable" Value="True" />
 																<Setter Property="IsChecked" Value="{Binding Path=IsSelected, Mode=TwoWay}" />
+																<Setter Property="Template" Value="{StaticResource {x:Static MenuItem.SubmenuItemTemplateKey}}"/>
 															</Style>
 														</MenuItem.ItemContainerStyle>
 													</MenuItem>
@@ -345,6 +360,38 @@
 											</MultiTrigger.Conditions>
 											<Setter Property="Opacity" TargetName="arrow" Value="0.4"/>
 										</MultiTrigger>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NewActivity">
+											<DataTrigger.EnterActions>
+												<BeginStoryboard x:Name="animNewActivity">
+													<BeginStoryboard.Storyboard>
+														<Storyboard RepeatBehavior="Forever">
+															<DoubleAnimation Storyboard.TargetName="arrow"
+																			 Storyboard.TargetProperty="Opacity"
+																			 From="0" To="0.5" Duration="0:0:1" AutoReverse="True"/>
+														</Storyboard>
+													</BeginStoryboard.Storyboard>
+												</BeginStoryboard>
+											</DataTrigger.EnterActions>
+											<DataTrigger.ExitActions>
+												<StopStoryboard BeginStoryboardName="animNewActivity"/>
+											</DataTrigger.ExitActions>
+										</DataTrigger>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NewMessage">
+											<DataTrigger.EnterActions>
+												<BeginStoryboard x:Name="animNewMessage">
+													<BeginStoryboard.Storyboard>
+														<Storyboard RepeatBehavior="Forever">
+															<DoubleAnimation Storyboard.TargetName="arrow"
+																			 Storyboard.TargetProperty="Opacity"
+																			 From="0" To="0.8" Duration="0:0:1" AutoReverse="True"/>
+														</Storyboard>
+													</BeginStoryboard.Storyboard>
+												</BeginStoryboard>
+											</DataTrigger.EnterActions>
+											<DataTrigger.ExitActions>
+												<StopStoryboard BeginStoryboardName="animNewMessage"/>
+											</DataTrigger.ExitActions>
+										</DataTrigger>
 									</ControlTemplate.Triggers>
 								</ControlTemplate>
 							</Setter.Value>

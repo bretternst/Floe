@@ -273,6 +273,32 @@ namespace Floe.UI
 						this.Session.List(args[0]);
 					}
 					break;
+				case "OP":
+				case "DEOP":
+				case "VOICE":
+				case "DEVOICE":
+					if (!this.IsChannel)
+					{
+						this.Write("Error", "Cannot perform that action in this window.");
+					}
+					else
+					{
+						char mode = command == "OP" || command == "DEOP" ? 'o' : 'v';
+						args = Split(command, arguments, 1, int.MaxValue);
+						var modes = from s in args
+									select new IrcChannelMode(command == "OP", mode, s);
+						this.Session.Mode(this.Target.Name, modes);
+					}
+					break;
+				case "HELP":
+					foreach (var s in App.HelpText.Split(Environment.NewLine.ToCharArray()))
+					{
+						if (s.Length > 0)
+						{
+							this.Write("Client", s);
+						}
+					}
+					break;
 				default:
 					this.Write("Error", string.Format("Unrecognized command: {0}", command));
 					break;
@@ -317,7 +343,7 @@ namespace Floe.UI
 					if (part.Length > 0)
 					{
 						parts.Add(part.ToString());
-						part.Clear();
+						part.Length = 0;
 						--maxParts;
 					}
 				}

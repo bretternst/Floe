@@ -27,7 +27,7 @@ namespace Floe.Configuration
 			set { this["activeOpacity"] = value; this.OnPropertyChanged("ActiveOpacity"); }
 		}
 
-		[ConfigurationProperty("inactiveOpacity", DefaultValue = 0.5)]
+		[ConfigurationProperty("inactiveOpacity", DefaultValue = 0.8)]
 		public double InactiveOpacity
 		{
 			get { return (double)this["inactiveOpacity"]; }

@@ -65,18 +65,25 @@ namespace Floe.Configuration
 			}
 		}
 
-		[ConfigurationProperty("useTabularView", DefaultValue=false)]
+		[ConfigurationProperty("useTabularView", DefaultValue=true)]
 		public bool UseTabularView
 		{
 			get { return (bool)this["useTabularView"]; }
 			set { this["useTabularView"] = value; this.OnPropertyChanged("UseTabularView"); }
 		}
 
-		[ConfigurationProperty("colorizeNicknames", DefaultValue = false)]
+		[ConfigurationProperty("colorizeNicknames", DefaultValue = true)]
 		public bool ColorizeNicknames
 		{
 			get { return (bool)this["colorizeNicknames"]; }
 			set { this["colorizeNicknames"] = value; this.OnPropertyChanged("ColorizeNicknames"); }
+		}
+
+		[ConfigurationProperty("nicknameColorSeed", DefaultValue = 0)]
+		public int NicknameColorSeed
+		{
+			get { return (int)this["nicknameColorSeed"]; }
+			set { this["nicknameColorSeed"] = value; this.OnPropertyChanged("NicknameColorSeed"); }
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

@@ -1,0 +1,28 @@
+﻿Available commands:
+/AWAY [message]                         - Set your away message, or remove it if empty
+/CLEAR                                  - Clear the current screen
+/DEOP <nick>                            - De-op user in the current channel
+/DEVOICE <nick>                         - Remove a user's voice in the current channel
+/HELP                                   - Display this message
+/INVITE <nick> #<channel>               - Invite a user to a channel
+/JOIN or /J #<channel>                  - Join a channel
+/KICK #<channel> <nick>                 - Kick a user from a channel
+/LIST #<channel> [target]               - List channel information
+/ME or /ACTION <message>                - Send an action message
+/MODE <+/-><modes>                      - Set or unset modes for yourself
+/MODE #<channel> <+/-><modes> <params>  - Set or unset channel modes
+/MOTD                                   - Display the server's MOTD
+/MSG <nick> <message>                   - Send a private message to a user
+/NICK <newNick>                         - Change your nickname
+/NOTICE <nick> <message>                - Send a notice to a user
+/OP <nick>                              - Op user in the current channel
+/PART or /LEAVE #<channel>              - Leave a channel
+/QUIT                                   - Disconnect from IRC
+/SERVER hostname [port]                 - Change servers
+/SETUP                                  - Display the settings window
+/TOPIC #<chnanel> <topic>               - Change the topic on a channel
+/USERHOST <nick>[,<nick>...]            - Get the user@host of one or more users
+/VOICE <nick>                           - Give a user voice in the current channel
+/WHO <mask>                             - Get info on one or more users
+/WHOIS [target] <nick>                  - Get extended info on a user
+/WHOWAS <nick>                          - See if/when a user was logged on

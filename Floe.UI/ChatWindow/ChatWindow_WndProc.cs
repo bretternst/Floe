@@ -22,6 +22,17 @@ namespace Floe.UI
 		private const double ResizeTopHeight = 4.0;
 		private const double ResizeBottomHeight = 8.0;
 		private const double ResizeWidth = 8.0;
+		private bool _isInModalDialog = false;
+		private NotifyIcon _notifyIcon;
+		private WindowState _oldWindowState = WindowState.Normal;
+
+		public bool Confirm(string text, string caption)
+		{
+			_isInModalDialog = true;
+			bool result = MessageBox.Show(this, text, caption, MessageBoxButton.YesNo) == MessageBoxResult.No;
+			_isInModalDialog = false;
+			return result;
+		}
 
 		private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
 		{
@@ -92,13 +103,42 @@ namespace Floe.UI
 
 		protected override void OnDeactivated(EventArgs e)
 		{
-			this.Opacity = App.Settings.Current.Windows.InactiveOpacity;
+			if (this.OwnedWindows.Count == 0 && !_isInModalDialog)
+			{
+				this.Opacity = App.Settings.Current.Windows.InactiveOpacity;
+			}
 
 			base.OnDeactivated(e);
 		}
 
+		protected override void OnStateChanged(EventArgs e)
+		{
+			if (this.WindowState == System.Windows.WindowState.Minimized && App.Settings.Current.Windows.MinimizeToSysTray)
+			{
+				if (_notifyIcon == null)
+				{
+					_notifyIcon = new NotifyIcon(this, App.ApplicationIcon);
+					_notifyIcon.DoubleClicked += (sender, args) =>
+						{
+							_notifyIcon.Hide();
+							this.BeginInvoke(() =>
+								{
+									this.Show();
+									this.WindowState = _oldWindowState;
+									this.Activate();
+								});
+						};
+				}
+				this.Hide();
+				_notifyIcon.Show();
+			}
+
+			base.OnStateChanged(e);
+		}
+
 		private void btnMinimize_Click(object sender, RoutedEventArgs e)
 		{
+			var _oldWindowState = this.WindowState;
 			this.WindowState = WindowState.Minimized;
 		}
 
@@ -117,6 +157,11 @@ namespace Floe.UI
 		private void btnClose_Click(object sender, RoutedEventArgs e)
 		{
 			this.Close();
+		}
+
+		private void btnSettings_Click(object sender, RoutedEventArgs e)
+		{
+			App.ShowSettings();
 		}
 	}
 }

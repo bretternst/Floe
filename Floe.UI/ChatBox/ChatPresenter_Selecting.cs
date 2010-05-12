@@ -211,6 +211,10 @@ namespace Floe.UI
 			p.Y = Math.Max(block.Y, p.Y);
 
 			int line = (int)(p.Y - block.Y) / (int)_lineHeight;
+			if (line >= block.Text.Length)
+			{
+				line = block.Text.Length - 1;
+			}
 			int idx = 0;
 			if (line > 0 || p.X >= block.TextX)
 			{
@@ -248,7 +252,7 @@ namespace Floe.UI
 				var c = SystemColors.HighlightColor;
 				c.A = 102;
 				return new SolidColorBrush(c);
-			}, true);
+			});
 
 		private void DrawSelectedLine(DrawingContext dc, Block block)
 		{

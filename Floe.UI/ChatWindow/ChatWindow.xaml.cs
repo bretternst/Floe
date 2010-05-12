@@ -139,7 +139,7 @@ namespace Floe.UI
 
 			if (this.Items.Any((i) => i.Control.IsConnected))
 			{
-				if (MessageBox.Show("Are you sure you want to exit?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.No)
+				if (this.Confirm("Are you sure you want to exit?", "Confirm Exit"))
 				{
 					e.Cancel = true;
 					return;
@@ -161,6 +161,11 @@ namespace Floe.UI
 			}
 
 			Interop.WindowPlacementHelper.Save(this);
+
+			if (_notifyIcon != null)
+			{
+				_notifyIcon.Dispose();
+			}
 		}
 	}
 }

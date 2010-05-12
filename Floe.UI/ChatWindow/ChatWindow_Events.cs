@@ -15,7 +15,7 @@ namespace Floe.UI
 		{
 			if (e.IsSelf)
 			{
-				this.BeginInvoke(() =>
+				this.Invoke(() =>
 				{
 					this.AddPage(new ChatContext((IrcSession)sender, e.Channel), true);
 				});
@@ -26,7 +26,7 @@ namespace Floe.UI
 		{
 			if (e.IsSelf)
 			{
-				this.BeginInvoke(() =>
+				this.Invoke(() =>
 				{
 					var context = this.FindPage((IrcSession)sender, e.Channel);
 					if (context != null)
@@ -41,7 +41,7 @@ namespace Floe.UI
 		{
 			if (e.IsSelfKicked)
 			{
-				this.BeginInvoke(() =>
+				this.Invoke(() =>
 				{
 					var context = this.FindPage((IrcSession)sender, e.Channel);
 					if (context != null)
@@ -56,7 +56,7 @@ namespace Floe.UI
 		{
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)
 			{
-				this.BeginInvoke(() =>
+				this.Invoke(() =>
 					{
 						foreach (var p in (from i in this.Items
 										   where i.Control.Context.Session == sender && i.Control.Context.Target != null
@@ -100,13 +100,16 @@ namespace Floe.UI
 				var target = new IrcTarget(e.Message.Parameters[0]);
 				if (target.Type == IrcTargetType.Nickname && e.Message.From is IrcPeer)
 				{
-					var session = sender as IrcSession;
-					target = new IrcTarget((IrcPeer)e.Message.From);
-					var control = this.FindPage(session, target);
-					if (control == null)
-					{
-						this.Invoke(() => this.AddPage(new ChatContext(session, target), false));
-					}
+					this.Invoke(() =>
+						{
+							var session = sender as IrcSession;
+							target = new IrcTarget((IrcPeer)e.Message.From);
+							var control = this.FindPage(session, target);
+							if (control == null)
+							{
+								this.AddPage(new ChatContext(session, target), false);
+							}
+						});
 				}
 			}
 		}

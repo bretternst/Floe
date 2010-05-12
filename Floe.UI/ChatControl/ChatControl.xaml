@@ -67,6 +67,7 @@
 					   TimestampFormat="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.TimestampFormat, Mode=OneWay}"
 					   UseTabularView="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=OneWay}"
 					   ColorizeNicknames="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=OneWay}"
+					   NicknameColorSeed="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=OneWay}"
 					   NewMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=OneWay}"
 					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"
 					   MouseDoubleClick="boxOutput_MouseDoubleClick"/>

@@ -81,7 +81,7 @@ namespace Floe.UI
 		{
 			_runProperties = new CustomTextRunProperties(typeface, fontSize, foreground, Brushes.Transparent, false);
 			_paraProperties = new CustomParagraphProperties(_runProperties);
-			_formatter = TextFormatter.Create(TextFormattingMode.Display);
+			_formatter = TextFormatter.Create();
 			_palette = palette;
 		}
 

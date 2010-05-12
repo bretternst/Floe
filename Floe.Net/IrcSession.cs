@@ -67,7 +67,7 @@ namespace Floe.Net
 		}
 
 		public void Open(string server, int port, string nickname,
-			string userName = "none", string hostName = "127.0.0.1", string fullname = "none", bool autoReconnect = false)
+			string userName, string hostName, string fullname, bool autoReconnect)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -116,11 +116,19 @@ namespace Floe.Net
 
 		public void Send(IrcMessage message)
 		{
+			if (this.State == IrcSessionState.Disconnected)
+			{
+				throw new IrcException("Not connected to a server.");
+			}
 			_conn.QueueMessage(message);
 		}
 
 		public void Send(string command, params string[] parameters)
 		{
+			if (this.State == IrcSessionState.Disconnected)
+			{
+				throw new IrcException("Not connected to a server.");
+			}
 			_conn.QueueMessage(new IrcMessage(command, parameters));
 		}
 

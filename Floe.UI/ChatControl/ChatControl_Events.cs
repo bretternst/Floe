@@ -11,8 +11,8 @@ namespace Floe.UI
 	{
 		private char[] _channelModes = new char[0];
 		private string _topic = "", _prefix;
-		private bool _hasNames = false, _hasDeactivated = false;
-		private Window _window;
+		private bool _hasNames = false, _hasDeactivated = false, _usingAlternateNick = false;
+		private ChatWindow _window;
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
@@ -31,6 +31,7 @@ namespace Floe.UI
 						switch (state)
 						{
 							case IrcSessionState.Connecting:
+								_usingAlternateNick = false;
 								this.Header = this.Session.NetworkName;
 								this.Write("Client", string.Format(
 									"Connecting to {0}:{1}", this.Session.Server, this.Session.Port));
@@ -125,7 +126,15 @@ namespace Floe.UI
 						case IrcCode.NicknameInUse:
 							if (this.IsServer && this.Session.State == IrcSessionState.Connecting)
 							{
-								this.SetInputText("/nick ");
+								if (_usingAlternateNick)
+								{
+									this.SetInputText("/nick ");
+								}
+								else
+								{
+									this.Session.Nick(App.Settings.Current.User.AlternateNickname);
+									_usingAlternateNick = true;
+								}
 							}
 							break;
 						case IrcCode.ChannelModes:
@@ -409,9 +418,8 @@ namespace Floe.UI
 						var parts = text.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0).ToArray();
 						if (parts.Length > App.Settings.Current.Buffer.MaximumPasteLines)
 						{
-							if (MessageBox.Show(string.Format("Are you sure you want to paste more than {0} lines?",
-								App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warnings", MessageBoxButton.YesNo,
-								MessageBoxImage.Question) == MessageBoxResult.No)
+							if(!_window.Confirm(string.Format("Are you sure you want to paste more than {0} lines?",
+								App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warning"))
 							{
 								return;
 							}
@@ -440,9 +448,14 @@ namespace Floe.UI
 		{
 			if (_window == null)
 			{
-				_window = Window.GetWindow(this);
+				_window = Window.GetWindow(this) as ChatWindow;
+				if (_window == null)
+				{
+					throw new Exception("ChatControl must be hosted in ChatWindow.");
+				}
 				_window.Deactivated += new EventHandler(_window_Deactivated);
 			}
+			this.NotifyState = NotifyState.None;
 		}
 
 		protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)

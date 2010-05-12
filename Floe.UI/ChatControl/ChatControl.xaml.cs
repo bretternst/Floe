@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Linq;
 using Floe.Net;
 
 namespace Floe.UI
@@ -107,6 +108,14 @@ namespace Floe.UI
 			set { this.SetValue(SelectedLinkProperty, value); }
 		}
 
+		public static readonly DependencyProperty NotifyStateProperty =
+			DependencyProperty.Register("NotifyState", typeof(NotifyState), typeof(ChatControl));
+		public NotifyState NotifyState
+		{
+			get { return (NotifyState)this.GetValue(NotifyStateProperty); }
+			set { this.SetValue(NotifyStateProperty, value); }
+		}
+
 		public void Connect(Floe.Configuration.ServerElement server)
 		{
 			this.Session.AutoReconnect = false;
@@ -152,6 +161,18 @@ namespace Floe.UI
 				cl.Marker = ChatMarker.NewMarker;
 			}
 
+			if (!this.IsVisible)
+			{
+				if (!string.IsNullOrEmpty(nick))
+				{
+					this.NotifyState = NotifyState.NewMessage;
+				}
+				else if (this.NotifyState == NotifyState.None)
+				{
+					this.NotifyState = NotifyState.NewActivity;
+				}
+			}
+
 			boxOutput.AppendLine(cl);
 			if (_logFile != null)
 			{
@@ -178,9 +199,9 @@ namespace Floe.UI
 		private void SetTitle()
 		{
 			string userModes = this.Session.UserModes.Length > 0 ?
-				string.Format("+{0}", string.Join("", this.Session.UserModes)) : "";
+				string.Format("+{0}", string.Join("", (from c in this.Session.UserModes select c.ToString()).ToArray())) : "";
 			string channelModes = _channelModes.Length > 0 ?
-				string.Format("+{0}", string.Join("", _channelModes)) : "";
+				string.Format("+{0}", string.Join("", (from c in _channelModes select c.ToString()).ToArray())) : "";
 
 			if(this.IsServer)
 			{
@@ -226,7 +247,13 @@ namespace Floe.UI
 		{
 			if (this.IsServer)
 			{
-				return this.Resources["cmServer"] as ContextMenu;
+				var menu = this.Resources["cmServer"] as ContextMenu;
+				var item = menu.Items[0] as MenuItem;
+				if (item != null)
+				{
+					item.Items.Refresh();
+				}
+				return menu;
 			}
 			else
 			{

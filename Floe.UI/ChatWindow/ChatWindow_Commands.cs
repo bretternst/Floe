@@ -47,9 +47,9 @@ namespace Floe.UI
 			{
 				if (context.Target == null)
 				{
-					if (context.Session.State == IrcSessionState.Disconnected || MessageBox.Show(
-						string.Format("Are you sure you want to disconnect from {0}?", context.Session.NetworkName), "Close Server Tab",
-						MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+					if (context.Session.State == IrcSessionState.Disconnected || 
+						this.Confirm(string.Format("Are you sure you want to disconnect from {0}?", context.Session.NetworkName),
+						"Close Server Tab"))
 					{
 						if(context.Session.State != IrcSessionState.Disconnected)
 						{

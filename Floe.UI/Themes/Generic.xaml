@@ -18,6 +18,7 @@
 											 TimestampFormat="{TemplateBinding TimestampFormat}"
 											 UseTabularView="{TemplateBinding UseTabularView}"
 											 ColorizeNicknames="{TemplateBinding ColorizeNicknames}"
+											 NicknameColorSeed="{TemplateBinding NicknameColorSeed}"
 											 NewMarkerColor="{TemplateBinding NewMarkerColor}"
 											 OldMarkerColor="{TemplateBinding OldMarkerColor}"
 											 Background="{TemplateBinding Background}"
