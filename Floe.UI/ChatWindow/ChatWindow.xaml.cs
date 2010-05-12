@@ -144,7 +144,7 @@ namespace Floe.UI
 
 			if (this.Items.Any((i) => i.Control.IsConnected))
 			{
-				if (this.Confirm("Are you sure you want to exit?", "Confirm Exit"))
+				if (!this.Confirm("Are you sure you want to exit?", "Confirm Exit"))
 				{
 					e.Cancel = true;
 					return;

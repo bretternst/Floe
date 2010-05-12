@@ -28,7 +28,7 @@ namespace Floe.UI
 		public bool Confirm(string text, string caption)
 		{
 			_isInModalDialog = true;
-			bool result = MessageBox.Show(this, text, caption, MessageBoxButton.YesNo) == MessageBoxResult.No;
+			bool result = MessageBox.Show(this, text, caption, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
 			_isInModalDialog = false;
 			return result;
 		}

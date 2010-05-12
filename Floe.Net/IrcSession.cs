@@ -189,6 +189,11 @@ namespace Floe.Net
 			this.Send("TOPIC", channel, topic);
 		}
 
+		public void Topic(string channel)
+		{
+			this.Send("TOPIC", channel);
+		}
+
 		public void Invite(string channel, string nickname)
 		{
 			this.Send("INVITE", nickname, channel);

@@ -136,8 +136,15 @@ namespace Floe.UI
 					this.Session.Part(args[0]);
 					break;
 				case "TOPIC":
-					args = Split(command, arguments, 2, 2);
-					this.Session.Topic(args[0], args[1]);
+					args = Split(command, arguments, 1, 2);
+					if (args.Length > 1)
+					{
+						this.Session.Topic(args[0], args[1]);
+					}
+					else
+					{
+						this.Session.Topic(args[0]);
+					}
 					break;
 				case "INVITE":
 					args = Split(command, arguments, 2, 2);
