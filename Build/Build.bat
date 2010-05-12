@@ -5,4 +5,3 @@ copy ..\Floe.UI\bin\Release\*.exe .
 copy ..\Floe.UI\bin\Release\*.dll .
 candle setup.wxs -ext WiXNetFxExtension
 light setup.wixobj -ext WiXNetFxExtension
-REM installerlinker /o:floe_setup.exe /t:dotnetinstaller.exe /c:bootstrap.xml
