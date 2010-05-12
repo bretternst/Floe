@@ -75,13 +75,13 @@ namespace Floe.UI
 		private TextFormatter _formatter;
 		private IChatSpanProvider _spans;
 		private Brush _background;
-		private ChatPalette _palette;
+		private IDictionary<string,Brush> _palette;
 
-		public ChatFormatter(Typeface typeface, double fontSize, Brush foreground, ChatPalette palette)
+		public ChatFormatter(Typeface typeface, double fontSize, Brush foreground, IDictionary<string,Brush> palette)
 		{
 			_runProperties = new CustomTextRunProperties(typeface, fontSize, foreground, Brushes.Transparent, false);
 			_paraProperties = new CustomParagraphProperties(_runProperties);
-			_formatter = TextFormatter.Create();
+			_formatter = TextFormatter.Create(TextFormattingMode.Display);
 			_palette = palette;
 		}
 

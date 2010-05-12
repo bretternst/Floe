@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Configuration;
 
-using Floe.UI.Interop;
-
 namespace Floe.Configuration
 {
 	public sealed class SettingsSection : ConfigurationSection

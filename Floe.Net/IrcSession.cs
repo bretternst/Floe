@@ -338,7 +338,7 @@ namespace Floe.Net
 #if DEBUG
 			if (System.Diagnostics.Debugger.IsAttached)
 			{
-				System.Diagnostics.Debug.WriteLine(e.Message.ToString());
+				System.Diagnostics.Debug.WriteLine(string.Format("RECV: {0}", e.Message.ToString()));
 			}
 #endif
 		}
@@ -354,7 +354,7 @@ namespace Floe.Net
 #if DEBUG
 			if (System.Diagnostics.Debugger.IsAttached)
 			{
-				System.Diagnostics.Debug.WriteLine(e.Message.ToString());
+				System.Diagnostics.Debug.WriteLine(string.Format("SEND: {0}", e.Message.ToString()));
 			}
 #endif
 		}

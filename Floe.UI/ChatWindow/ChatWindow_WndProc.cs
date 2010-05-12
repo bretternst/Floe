@@ -19,9 +19,8 @@ namespace Floe.UI
 {
 	public partial class ChatWindow : Window
 	{
-		private const double ResizeTopHeight = 4.0;
-		private const double ResizeBottomHeight = 8.0;
-		private const double ResizeWidth = 8.0;
+		private const double ResizeHeight = 4.0;
+		private const double ResizeWidth = 6.0;
 		private bool _isInModalDialog = false;
 		private NotifyIcon _notifyIcon;
 		private WindowState _oldWindowState = WindowState.Normal;
@@ -43,13 +42,18 @@ namespace Floe.UI
 
 				var htResult = WindowConstants.HitTestValues.HTCLIENT;
 
-				if (p.X <= ResizeWidth)
+				if ((this.ActualWidth - p.X <= ResizeWidth * 2.0 && this.ActualHeight - p.Y <= ResizeHeight) ||
+					(this.ActualWidth - p.X <= ResizeWidth && this.ActualHeight - p.Y <= ResizeHeight * 2))
 				{
-					if (p.Y <= ResizeTopHeight)
+					htResult = WindowConstants.HitTestValues.HTBOTTOMRIGHT;
+				}
+				else if (p.X <= ResizeWidth)
+				{
+					if (p.Y <= ResizeHeight)
 					{
 						htResult = WindowConstants.HitTestValues.HTTOPLEFT;
 					}
-					else if (this.ActualHeight - p.Y <= ResizeBottomHeight)
+					else if (this.ActualHeight - p.Y <= ResizeHeight)
 					{
 						htResult = WindowConstants.HitTestValues.HTBOTTOMLEFT;
 					}
@@ -60,11 +64,11 @@ namespace Floe.UI
 				}
 				else if (this.ActualWidth - p.X <= ResizeWidth)
 				{
-					if (p.Y <= ResizeTopHeight)
+					if (p.Y <= ResizeHeight)
 					{
 						htResult = WindowConstants.HitTestValues.HTTOPRIGHT;
 					}
-					else if (this.ActualHeight - p.Y <= ResizeBottomHeight)
+					else if (this.ActualHeight - p.Y <= ResizeHeight)
 					{
 						htResult = WindowConstants.HitTestValues.HTBOTTOMRIGHT;
 					}
@@ -73,11 +77,11 @@ namespace Floe.UI
 						htResult = WindowConstants.HitTestValues.HTRIGHT;
 					}
 				}
-				else if (p.Y <= ResizeTopHeight)
+				else if (p.Y <= ResizeHeight)
 				{
 					htResult = WindowConstants.HitTestValues.HTTOP;
 				}
-				else if (this.ActualHeight - p.Y <= ResizeBottomHeight)
+				else if (this.ActualHeight - p.Y <= ResizeHeight)
 				{
 					htResult = WindowConstants.HitTestValues.HTBOTTOM;
 				}

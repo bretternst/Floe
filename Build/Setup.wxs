@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="windows-1252"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+	xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
 
 	<Product Name="Floe IRC Client" Id="*" UpgradeCode="391a73ab-b474-407b-92c6-cac926b0e8bd"
-    	Language="1033" Codepage="1252" Version="0.9.1005" Manufacturer="Brett Ernst">
+    	Language="1033" Codepage="1252" Version="0.9.1005.0" Manufacturer="Floe">
 
 		<Package Id="*" Keywords="Installer" Description="Floe Installer"
 		Comments="Floe IRC Installer Package" Manufacturer="Floe"
       		InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" InstallScope="perMachine"/>
+
+		<PropertyRef Id="NETFRAMEWORK40CLIENT"/>
+
+		<Condition Message="This application requires .NET Framework 4.0. Please install the .NET Framework and run this installer again.">
+		    <![CDATA[Installed OR NETFRAMEWORK40CLIENT]]>
+		</Condition>
+
+		<Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes"/>
+		<Upgrade Id="391a73ab-b474-407b-92c6-cac926b0e8bd">
+			<UpgradeVersion Minimum="0.9.0.0" Maximum="99.0.0.0" Property="PREVIOUSVERSIONSINSTALLED"
+			IncludeMinimum="yes" IncludeMaximum="no"/>
+		</Upgrade>
 
 		<Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
 		<Directory Id="TARGETDIR" Name="SourceDir">
@@ -22,6 +35,7 @@
 			<Component Id="Binaries" Guid="e76082f8-14f3-438c-a88c-178ba6122e91">
 				<File Id="Floe.exe" Name="Floe.exe" DiskId="1" Source="Floe.exe"/>
 				<File Id="Floe.Net.dll" Name="Floe.Net.dll" DiskId="1" Source="Floe.Net.dll"/>
+				<File Id="Floe.Configuration.dll" Name="Floe.Configuration.dll" DiskId="1" Source="Floe.Configuration.dll"/>
 			</Component>
 		</DirectoryRef>
 
@@ -39,5 +53,11 @@
 			<ComponentRef Id="Binaries"/>
 			<ComponentRef Id="AppShortcut"/>
 		</Feature>
+
+	<InstallExecuteSequence> 
+		<RemoveExistingProducts After="InstallInitialize" /> 
+	</InstallExecuteSequence> 
+
 	</Product>
+
 </Wix>

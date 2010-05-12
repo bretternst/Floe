@@ -63,17 +63,20 @@ namespace Floe.UI
 
 		private void Session_Noticed(object sender, IrcDialogEventArgs e)
 		{
-			this.BeginInvoke(() =>
-				{
-					if (e.From is IrcPeer)
+			if (this.IsServer)
+			{
+				this.BeginInvoke(() =>
 					{
-						this.Write("Notice", (IrcPeer)e.From, e.Text);
-					}
-					else if (this.IsServer)
-					{
-						this.Write("Notice", e.Text);
-					}
-				});
+						if (e.From is IrcPeer)
+						{
+							this.Write("Notice", (IrcPeer)e.From, e.Text);
+						}
+						else if (this.IsServer)
+						{
+							this.Write("Notice", e.Text);
+						}
+					});
+			}
 		}
 
 		private void Session_PrivateMessaged(object sender, IrcDialogEventArgs e)

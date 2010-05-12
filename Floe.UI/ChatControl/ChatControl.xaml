@@ -70,8 +70,9 @@
 					   NicknameColorSeed="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=OneWay}"
 					   NewMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=OneWay}"
 					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"
+					   DividerBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 					   MouseDoubleClick="boxOutput_MouseDoubleClick"/>
-			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0" Padding="2,0,0,0"
+			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0"
 					 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"
 					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
 					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
@@ -82,6 +83,7 @@
 				<ListBox.ItemContainerStyle>
 					<Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
 						<Setter Property="ContextMenu" Value="{StaticResource cmNickList}"/>
+						<Setter Property="Padding" Value="5,1,5,1"/>
 						<EventSetter Event="MouseDoubleClick" Handler="lstNicknames_MouseDoubleClick"/>
 					</Style>
 				</ListBox.ItemContainerStyle>

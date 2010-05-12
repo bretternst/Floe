@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Floe.UI</RootNamespace>
     <AssemblyName>Floe</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -42,7 +42,7 @@
     <AssemblyOriginatorKeyFile>..\Floe.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>App.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\App.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework.Aero" />
@@ -50,6 +50,7 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -69,7 +70,6 @@
     <Compile Include="ChatBox\ChatDecoration.cs" />
     <Compile Include="ChatBox\ChatFormatter.cs" />
     <Compile Include="ChatBox\ChatLine.cs" />
-    <Compile Include="ChatBox\ChatPalette.cs" />
     <Compile Include="ChatBox\ChatPresenter.cs" />
     <Compile Include="ChatBox\ChatPresenter_Rendering.cs" />
     <Compile Include="ChatBox\ChatPresenter_Scrolling.cs" />
@@ -95,33 +95,24 @@
     <Compile Include="Interop\NotifyIcon.cs" />
     <Compile Include="Interop\WindowConstants.cs" />
     <Compile Include="Interop\WindowPlacementHelper.cs" />
-    <Compile Include="Lazy.cs" />
-    <Compile Include="Settings\Configuration\BufferElement.cs" />
     <Compile Include="Settings\BufferSettingsControl.xaml.cs">
       <DependentUpon>BufferSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\Configuration\ColorsElement.cs" />
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\Configuration\WindowsElement.cs" />
     <Compile Include="Settings\WindowSettingsControl.xaml.cs">
       <DependentUpon>WindowSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\FormattingSettingsControl.xaml.cs">
       <DependentUpon>FormattingSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\Configuration\FormattingElement.cs" />
-    <Compile Include="Settings\Configuration\PersistentSettings.cs" />
-    <Compile Include="Settings\Configuration\SettingsSection.cs" />
-    <Compile Include="Settings\Configuration\ServerElement.cs" />
     <Compile Include="Settings\ServerSettingsControl.xaml.cs">
       <DependentUpon>ServerSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\Configuration\UserElement.cs" />
     <Compile Include="Settings\UserSettingsControl.xaml.cs">
       <DependentUpon>UserSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -196,6 +187,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Floe.Configuration\Floe.Configuration.csproj">
+      <Project>{75037294-D6D4-42B0-AF4B-FE2F438D0670}</Project>
+      <Name>Floe.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Floe.Net\Floe.Net.csproj">
       <Project>{1D4AD463-4355-4DA6-B8E6-0E8BB75B50D9}</Project>
       <Name>Floe.Net</Name>
@@ -206,9 +201,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\App.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="App.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

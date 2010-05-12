@@ -155,15 +155,18 @@ namespace Floe.UI
 				{
 					return block.Source.Nick;
 				}
-				int line = (int)(p.Y - block.Y) / (int)_lineHeight;
-				if (line >= 0 && line < block.Text.Length && p.X >= block.TextX && p.X < block.TextX + block.Text[line].Width)
+				if (block.Source.Links.Length > 0)
 				{
-					var ch = block.Text[line].GetCharacterHitFromDistance(p.X);
-					foreach (var l in block.Source.Links)
+					int line = (int)(p.Y - block.Y) / (int)_lineHeight;
+					if (line >= 0 && line < block.Text.Length && p.X >= block.TextX && p.X < block.TextX + block.Text[line].Width)
 					{
-						if (ch.FirstCharacterIndex >= l.Start && ch.FirstCharacterIndex < l.End)
+						var ch = block.Text[line].GetCharacterHitFromDistance(p.X - block.TextX);
+						foreach (var l in block.Source.Links)
 						{
-							return block.Source.Text.Substring(l.Start, l.End - l.Start);
+							if (ch.FirstCharacterIndex >= l.Start && ch.FirstCharacterIndex < l.End)
+							{
+								return block.Source.Text.Substring(l.Start, l.End - l.Start);
+							}
 						}
 					}
 				}

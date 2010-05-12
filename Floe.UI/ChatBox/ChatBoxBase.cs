@@ -27,8 +27,8 @@ namespace Floe.UI
 		}
 
 		public static readonly DependencyProperty PaletteProperty = DependencyProperty.Register("Palette",
-			typeof(ChatPalette), typeof(ChatBoxBase));
-		public ChatPalette Palette
+			typeof(IDictionary<string,Brush>), typeof(ChatBoxBase));
+		public IDictionary<string,Brush> Palette
 		{
 			get { return (ChatPalette)this.GetValue(PaletteProperty); }
 			set { this.SetValue(PaletteProperty, value); }
@@ -88,6 +88,14 @@ namespace Floe.UI
 		{
 			get { return (Color)this.GetValue(OldMarkerColorProperty); }
 			set { this.SetValue(OldMarkerColorProperty, value); }
+		}
+
+		public static readonly DependencyProperty DividerBrushProperty = DependencyProperty.Register("DividerBrush",
+			typeof(Brush), typeof(ChatBoxBase));
+		public Brush DividerBrush
+		{
+			get { return (Brush)this.GetValue(DividerBrushProperty); }
+			set { this.SetValue(DividerBrushProperty, value); }
 		}
 
 		public static readonly DependencyProperty SelectedLinkProperty = DependencyProperty.Register("SelectedLink",

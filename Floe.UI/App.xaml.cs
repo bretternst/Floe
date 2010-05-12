@@ -15,8 +15,20 @@ namespace Floe.UI
     public partial class App : Application
     {
 		private static Lazy<PersistentSettings> _config =
-			new Lazy<PersistentSettings>(() => new PersistentSettings());
-
+			new Lazy<PersistentSettings>(() =>
+				{
+					try
+					{
+						return new PersistentSettings(App.Product);
+					}
+					catch (Exception ex)
+					{
+						System.Windows.MessageBox.Show(string.Format("Unable to load user configuration. You may want to delete the configuration file and try again.",
+							ex.Message));
+						Environment.Exit(-1);
+						return null;
+					}
+				});
 		public static PersistentSettings Settings
 		{
 			get

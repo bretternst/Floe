@@ -10,8 +10,6 @@ namespace Floe.Net
 {
 	internal sealed class IrcConnection : IDisposable
 	{
-		private static Regex _sendFilter = new Regex("[\u000a\u000d]", RegexOptions.Compiled);
-
 		private string _server;
 		private int _port;
 
@@ -111,7 +109,7 @@ namespace Floe.Net
 
 			this.OnConnected();
 
-			byte[] buffer = new byte[512];
+			byte[] readBuffer = new byte[512], writeBuffer = new byte[Encoding.UTF8.GetMaxByteCount(512)];
 			int count = 0, handleIdx = 0;
 			var input = new StringBuilder();
 			IrcMessage message;
@@ -122,7 +120,7 @@ namespace Floe.Net
 			{
 				if (handleIdx == 0)
 				{
-					ar = stream.BeginRead(buffer, 0, 512, null, null);
+					ar = stream.BeginRead(readBuffer, 0, 512, null, null);
 				}
 				handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle });
 				if (!_tcpClient.Connected)
@@ -139,7 +137,7 @@ namespace Floe.Net
 						}
 						else
 						{
-							foreach (char c in Encoding.ASCII.GetChars(buffer, 0, count))
+							foreach (char c in Encoding.UTF8.GetChars(readBuffer, 0, count))
 							{
 								if (c == 0xa && last == 0xd)
 								{
@@ -156,7 +154,7 @@ namespace Floe.Net
 											System.Diagnostics.Debug.WriteLine("Unhandled IrcException: {0}", ex.Message);
 #endif
 										}
-										input.Length = 0;
+										input.Clear();
 									}
 								}
 								else if (c != 0xd && c != 0xa)
@@ -178,17 +176,14 @@ namespace Floe.Net
 									_tcpClient.Close();
 									break;
 								}
-								string output = _sendFilter.Replace(message.ToString(), "\uffff");
-								if (output.Length > 510)
-								{
-									output = output.Substring(0, 510);
-								}
-								output += Environment.NewLine;
-								count = Encoding.ASCII.GetBytes(output, 0, output.Length, buffer, 0);
+								string output = message.ToString();
+								count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
+								count = Math.Min(510, count);
+								writeBuffer[count] = 0xd;
+								writeBuffer[count + 1] = 0xa;
 								try
 								{
-									stream.Write(buffer, 0, count);
-									stream.Flush();
+									stream.Write(writeBuffer, 0, count + 2);
 								}
 								catch (Exception ex)
 								{

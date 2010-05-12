@@ -21,6 +21,7 @@
 											 NicknameColorSeed="{TemplateBinding NicknameColorSeed}"
 											 NewMarkerColor="{TemplateBinding NewMarkerColor}"
 											 OldMarkerColor="{TemplateBinding OldMarkerColor}"
+											 DividerBrush="{TemplateBinding DividerBrush}"
 											 Background="{TemplateBinding Background}"
 											 SelectedLink="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedLink, Mode=OneWayToSource}"
 											 SnapsToDevicePixels="True"/>

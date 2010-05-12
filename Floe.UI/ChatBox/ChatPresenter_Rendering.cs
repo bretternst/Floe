@@ -83,19 +83,21 @@ namespace Floe.UI
 		private Brush GetNickColor(int hashCode)
 		{
 			var rand = new Random(hashCode);
-			int rgb = rand.Next();
-			for (int i = 0; i < this.NicknameColorSeed; i++)
-			{
-				rgb = rand.Next();
-			}
-			Color c;
+			int rgb = 0;
+			Color c = Colors.Black;
 			do
 			{
+				rgb = rand.Next();
+				for (int i = 0; i < this.NicknameColorSeed; i++)
+				{
+					rgb = rand.Next();
+				}
+
 				var bg = this.BackgroundColor;
 				c = Color.FromRgb((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
 				rgb = (int)Math.Abs(bg.R - c.R) + (int)Math.Abs(bg.G - c.G) + (int)Math.Abs(bg.B - c.B);
 			}
-			while (rgb < 50);
+			while (rgb < 125);
 			return new SolidColorBrush(c);
 		}
 
@@ -252,7 +254,7 @@ namespace Floe.UI
 			base.OnRender(dc);
 
 			var m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
-			var scaledPen = new Pen(this.Palette["Default"], 1 / m.M11);
+			var scaledPen = new Pen(this.DividerBrush, 1 / m.M11);
 			double guidelineHeight = scaledPen.Thickness;
 
 			double vPos = this.ActualHeight, height = 0.0, minHeight = this.ExtentHeight - (this.VerticalOffset + this.ActualHeight);
