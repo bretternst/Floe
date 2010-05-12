@@ -65,7 +65,12 @@ namespace Floe.UI
 			}
 			if (switchToPage)
 			{
-				tabsChat.SelectedItem = item;
+				var oldItem = tabsChat.SelectedItem as TabItem;
+				if (oldItem != null)
+				{
+					oldItem.IsSelected = false;
+				}
+				item.IsSelected = true;
 			}
 		}
 

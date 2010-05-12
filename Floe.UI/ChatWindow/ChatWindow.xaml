@@ -373,7 +373,7 @@
 												</BeginStoryboard>
 											</DataTrigger.EnterActions>
 											<DataTrigger.ExitActions>
-												<StopStoryboard BeginStoryboardName="animNewActivity"/>
+												<RemoveStoryboard BeginStoryboardName="animNewActivity"/>
 											</DataTrigger.ExitActions>
 										</DataTrigger>
 										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NewMessage">
@@ -389,7 +389,7 @@
 												</BeginStoryboard>
 											</DataTrigger.EnterActions>
 											<DataTrigger.ExitActions>
-												<StopStoryboard BeginStoryboardName="animNewMessage"/>
+												<RemoveStoryboard BeginStoryboardName="animNewMessage"/>
 											</DataTrigger.ExitActions>
 										</DataTrigger>
 									</ControlTemplate.Triggers>
