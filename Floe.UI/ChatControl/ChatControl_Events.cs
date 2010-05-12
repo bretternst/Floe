@@ -286,14 +286,17 @@ namespace Floe.UI
 		{
 			this.BeginInvoke(() =>
 				{
-					if (!this.IsServer)
+					if (e.IsSelf)
+					{
+						if (this.IsServer || this.IsChannel)
+						{
+							this.Write("Nick", string.Format("You are now known as {0}", e.NewNickname));
+						}
+						this.SetTitle();
+					}
+					else if (this.IsChannel && this.IsPresent(e.OldNickname))
 					{
 						this.Write("Nick", string.Format("{0} is now known as {1}", e.OldNickname, e.NewNickname));
-					}
-					else if (e.IsSelf)
-					{
-						this.Write("Nick", string.Format("You are now known as {0}", e.NewNickname));
-						this.SetTitle();
 					}
 
 					if (this.IsChannel && this.IsPresent(e.OldNickname))
@@ -325,6 +328,17 @@ namespace Floe.UI
 						this.Write("Mode", string.Format("You set mode: {0}", IrcUserMode.RenderModes(e.Modes)));
 					}
 					this.SetTitle();
+				});
+		}
+
+		private void Session_UserQuit(object sender, IrcQuitEventArgs e)
+		{
+			this.BeginInvoke(() =>
+				{
+					if (this.IsChannel && this.IsPresent(e.Who.Nickname))
+					{
+						this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Message));
+					}
 				});
 		}
 
@@ -627,6 +641,7 @@ namespace Floe.UI
 			this.Session.TopicChanged += new EventHandler<IrcChannelEventArgs>(Session_TopicChanged);
 			this.Session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged += new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
+			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
 			this.Loaded += (sender, e) =>
@@ -652,6 +667,7 @@ namespace Floe.UI
 			this.Session.TopicChanged -= new EventHandler<IrcChannelEventArgs>(Session_TopicChanged);
 			this.Session.UserModeChanged -= new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged -= new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
+			this.Session.UserQuit -= new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
 			DataObject.RemovePastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
 			if (_window != null)
