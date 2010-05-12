@@ -337,7 +337,7 @@ namespace Floe.UI
 				{
 					if (this.IsChannel && this.IsPresent(e.Who.Nickname))
 					{
-						this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Message));
+						this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Text));
 					}
 				});
 		}
