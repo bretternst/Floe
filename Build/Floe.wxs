@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+	<Product Name="Floe IRC Client" Id="*" UpgradeCode="391a73ab-b474-407b-92c6-cac926b0e8bd"
+    	Language="1033" Codepage="1252" Version="0.9.1005" Manufacturer="Brett Ernst">
+
+		<Package Id="*" Keywords="Installer" Description="Floe Installer"
+		Comments="Floe IRC Installer Package" Manufacturer="Floe"
+      		InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" InstallScope="perMachine"/>
+
+		<Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder" Name="Pfiles">
+				<Directory Id="APPROOTDIR" Name="Floe"/>
+			</Directory>
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="AppProgFolder" Name="Floe IRC Client"/>
+			</Directory>
+		</Directory>
+
+		<DirectoryRef Id="APPROOTDIR">
+			<Component Id="Binaries" Guid="e76082f8-14f3-438c-a88c-178ba6122e91">
+				<File Id="Floe.exe" Name="Floe.exe" DiskId="1" Source="Floe.exe"/>
+				<File Id="Floe.Net.dll" Name="Floe.Net.dll" DiskId="1" Source="Floe.Net.dll"/>
+			</Component>
+		</DirectoryRef>
+
+		<DirectoryRef Id="AppProgFolder">
+			<Component Id="AppShortcut" Guid="545d0a56-d562-4cc8-830a-67466db8795e">
+				<Shortcut Id="AppStartMenuShortcut" Name="Floe IRC" Description="Floe IRC Client"
+					Target="[APPROOTDIR]Floe.exe" WorkingDirectory="APPROOTDIR"/>
+				<RemoveFolder Id="AppProgFolder" On="uninstall"/>
+				<RegistryValue Root="HKCU" Key="Software\Floe\Floe" Name="installed" Type="integer" Value="1"
+					KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
+
+		<Feature Id="FloeFeature" Level="1" Title="Floe IRC Client">
+			<ComponentRef Id="Binaries"/>
+			<ComponentRef Id="AppShortcut"/>
+		</Feature>
+	</Product>
+</Wix>
