@@ -3,19 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:sys="clr-namespace:System;assembly=mscorlib"
 			 xmlns:local="clr-namespace:Floe.UI"
+			 xmlns:config="clr-namespace:Floe.Configuration;assembly=Floe.Configuration"
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384">
+	<UserControl.Resources>
+		<ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="tabStripPositionValues">
+			<ObjectDataProvider.MethodParameters>
+				<x:Type TypeName="config:TabStripPosition"/>
+			</ObjectDataProvider.MethodParameters>
+		</ObjectDataProvider>
+	</UserControl.Resources>
 	<Canvas>
 		<Slider Canvas.Left="12" Canvas.Top="35" Height="23" Name="sldActiveOpacity" Width="121" TickFrequency="0.1" Maximum="1" TickPlacement="None"
-				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.ActiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" />
+				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.ActiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" Minimum="0.2" LargeChange="0.1" />
 		<Label Canvas.Left="12" Canvas.Top="12" Content="Active Opacity" Height="28" Name="label1" />
 		<Slider Canvas.Left="162" Canvas.Top="35" Height="23" Maximum="1" Name="sldInactiveOpacity" TickFrequency="0.1" TickPlacement="None" Width="121"
-				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.InactiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" />
+				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.InactiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" Minimum="0.2" LargeChange="0.1" />
 		<Label Canvas.Left="162" Canvas.Top="12" Content="Inactive Opacity" Height="28" Name="label2" />
 		<Label Canvas.Left="104" Canvas.Top="12" Content="{Binding ElementName=sldActiveOpacity, Path=Value}" Height="28" Name="label3" />
 		<Label Canvas.Left="262" Canvas.Top="12" Content="{Binding ElementName=sldInactiveOpacity, Path=Value}" Height="28" Name="label4" />
-		<CheckBox Canvas.Left="12" Canvas.Top="77" Content="Minimize to systray" Height="16" Name="chkMinimizeToSystray"
+		<CheckBox Canvas.Left="168" Canvas.Top="85" Content="Minimize to systray" Height="16" Name="chkMinimizeToSystray"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinimizeToSysTray}"/>
+		<ComboBox Canvas.Left="16" Canvas.Top="85" Height="23" Name="comboBox1" Width="120" ItemsSource="{Binding Source={StaticResource tabStripPositionValues}}"
+				  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.TabStripPosition, Mode=TwoWay}"/>
+		<Label Canvas.Left="12" Canvas.Top="64" Content="Tab Strip Position" Height="28" Name="label5" />
 	</Canvas>
 </UserControl>

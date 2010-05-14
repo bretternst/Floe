@@ -18,6 +18,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand ChatCommand = new RoutedUICommand("Chat", "Chat", typeof(ChatWindow));
 		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Close", "Close", typeof(ChatWindow));
 		public readonly static RoutedUICommand NewTabCommand = new RoutedUICommand("New Server Tab", "NewTab", typeof(ChatWindow));
+		public readonly static RoutedUICommand DetachCommand = new RoutedUICommand("Detach", "Detach", typeof(ChatWindow));
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
@@ -78,6 +79,36 @@ namespace Floe.UI
 		private void ExecuteNewTab(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.AddPage(new ChatContext(new IrcSession(), null), true);
+		}
+
+		private void ExecuteDetach(object sender, ExecutedRoutedEventArgs e)
+		{
+			var item = e.Parameter as ChatTabItem;
+			if (item != null && !item.Control.IsServer)
+			{
+				this.Items.Remove(item);
+				var ctrl = item.Control;
+				item.Content = null;
+				var window = new ChannelWindow(ctrl);
+				window.Closed += new System.EventHandler(window_Closed);
+				window.Show();
+			}
+		}
+
+		private void window_Closed(object sender, System.EventArgs e)
+		{
+			var window = sender as ChannelWindow;
+			if (window != null && window.Control.Parent == null)
+			{
+				for (int i = this.Items.Count - 1; i >= 0; --i)
+				{
+					if (this.Items[i].Control.Context.Session == window.Control.Session)
+					{
+						this.Items.Insert(i + 1, new ChatTabItem(window.Control));
+						break;
+					}
+				}
+			}
 		}
 
 		private void CanExecuteClose(object sender, CanExecuteRoutedEventArgs e)

@@ -10,6 +10,7 @@
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose" CanExecute="CanExecuteClose"/>
 		<CommandBinding Command="local:ChatWindow.NewTabCommand" Executed="ExecuteNewTab"/>
+		<CommandBinding Command="local:ChatWindow.DetachCommand" Executed="ExecuteDetach"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<local:BrushToColorConverter x:Key="brushToColor"/>
@@ -252,13 +253,26 @@
 						HorizontalAlignment="Center"/>
 				</Button>
 			</StackPanel>
-			<TabControl Grid.Row="1" Grid.ColumnSpan="2" Name="tabsChat" ItemsSource="{Binding Items}" TabStripPlacement="Bottom"
-					SelectionChanged="tabsChat_SelectionChanged" FontFamily="Segoe UI" FontSize="14" SnapsToDevicePixels="True">
+			<TabControl Grid.Row="2" Grid.ColumnSpan="2" Name="tabsChat" ItemsSource="{Binding Items}" TabStripPlacement="Bottom"
+					FontFamily="Segoe UI" FontSize="14" SnapsToDevicePixels="True">
 				<TabControl.Template>
 					<ControlTemplate TargetType="TabControl">
 						<DockPanel Background="{StaticResource winBG}">
-							<ScrollViewer DockPanel.Dock="Bottom" Name="scrollViewer" Focusable="False"
+							<Border BorderBrush="{StaticResource winFG}">
+								<Border.Style>
+									<Style TargetType="Border">
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.TabStripPosition}" Value="Top">
+												<Setter Property="DockPanel.Dock" Value="Top"/>
+												<Setter Property="BorderThickness" Value="0,0,0,1"/>
+											</DataTrigger>
+										</Style.Triggers>
+										<Setter Property="DockPanel.Dock" Value="Bottom"/>
+									</Style>
+								</Border.Style>
+								<ScrollViewer Name="scrollViewer" Focusable="False"
 								  HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+
 								<ScrollViewer.Template>
 									<ControlTemplate TargetType="ScrollViewer">
 										<Grid>
@@ -313,12 +327,24 @@
 								</ScrollViewer.Template>
 								<StackPanel IsItemsHost="True" Orientation="Horizontal" Height="25" Background="{StaticResource winBG}"/>
 							</ScrollViewer>
+							</Border>
 							<ContentPresenter ContentSource="SelectedContent" Margin="0"/>
 						</DockPanel>
 					</ControlTemplate>
 				</TabControl.Template>
 				<TabControl.ItemContainerStyle>
 					<Style TargetType="TabItem">
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.IsServer}" Value="False">
+								<Setter Property="ContextMenu">
+									<Setter.Value>
+										<ContextMenu>
+											<MenuItem Command="local:ChatWindow.DetachCommand" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}"/>
+										</ContextMenu>
+									</Setter.Value>
+								</Setter>
+							</DataTrigger>
+						</Style.Triggers>
 						<Setter Property="Header" Value="{Binding RelativeSource={RelativeSource Self}, Path=Control.Header}"/>
 						<Setter Property="Content" Value="{Binding Content}"/>
 						<Setter Property="Foreground" Value="{StaticResource winFG}"/>
@@ -330,8 +356,8 @@
 											<Border x:Name="border2" BorderThickness="0,0,1,0" BorderBrush="{StaticResource winTabSep}">
 												<Grid Height="25" HorizontalAlignment="Center">
 													<Grid.RowDefinitions>
-														<RowDefinition Height="7"/>
-														<RowDefinition Height="*"/>
+														<RowDefinition x:Name="row1" Height="7"/>
+														<RowDefinition x:Name="row2" Height="*"/>
 													</Grid.RowDefinitions>
 													<Grid.ColumnDefinitions>
 														<ColumnDefinition/>
@@ -350,6 +376,14 @@
 										</Border>
 									</Border>
 									<ControlTemplate.Triggers>
+										<DataTrigger Binding="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.TabStripPosition}" Value="Top">
+											<Setter Property="Grid.Row" TargetName="arrow" Value="1"/>
+											<Setter Property="Grid.Row" TargetName="ContentSite" Value="0"/>
+											<Setter Property="Grid.Row" TargetName="btnTabClose" Value="0"/>
+											<Setter Property="Height" TargetName="row1" Value="*"/>
+											<Setter Property="Height" TargetName="row2" Value="7"/>
+											<Setter Property="Points" TargetName="arrow" Value="0,6 10,0 20,6"/>
+										</DataTrigger>
 										<Trigger Property="IsSelected" Value="True">
 											<Setter Property="Opacity" TargetName="arrow" Value="1"/>
 										</Trigger>

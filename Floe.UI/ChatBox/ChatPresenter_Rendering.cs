@@ -131,12 +131,9 @@ namespace Floe.UI
 				if (b.TextX > _columnWidth)
 				{
 					_columnWidth = b.TextX;
-					b.TextX = _columnWidth + SeparatorPadding * 2.0 + 1.0;
-					_blocks.ForEach((x) =>
-					{
-						x.TextX = b.TextX;
-						x.NickX = _columnWidth - x.Nick.WidthIncludingTrailingWhitespace;
-					});
+					_blocks.AddLast(b);
+					this.FormatAll();
+					return;
 				}
 				else
 				{
@@ -253,7 +250,12 @@ namespace Floe.UI
 		{
 			base.OnRender(dc);
 
-			var m = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice;
+			var visual = PresentationSource.FromVisual(this);
+			if (visual == null)
+			{
+				return;
+			}
+			var m = visual.CompositionTarget.TransformToDevice;
 			var scaledPen = new Pen(this.DividerBrush, 1 / m.M11);
 			double guidelineHeight = scaledPen.Thickness;
 
@@ -337,6 +339,13 @@ namespace Floe.UI
 				if (double.IsNaN(block.Y))
 				{
 					continue;
+				}
+
+				if ((block.Source.Marker & ChatMarker.Attention) > 0)
+				{
+					var markerBrush = new SolidColorBrush(this.AttentionColor);
+					dc.DrawRectangle(markerBrush, null,
+						new Rect(new Point(block.TextX, block.Y), new Size(this.ViewportWidth - block.TextX, block.Height)));
 				}
 
 				block.Nick.Draw(dc, new Point(block.NickX, block.Y), InvertAxes.None);

@@ -20,10 +20,20 @@ namespace Floe.UI
 			}
 		}
 
-		public static LogFileHandle OpenLogFile(string networkName, string targetName)
+		public static LogFileHandle OpenLogFile(string name)
 		{
-			return new LogFileHandle(LoggingPathBase, string.Format("{0}.{1}.log", networkName, targetName),
+			return new LogFileHandle(LoggingPathBase, string.Format("{0}.log", name),
 				App.Settings.Current.Buffer.BufferLines);
+		}
+
+		public static void LogUnhandledException(object exceptionObject)
+		{
+			string path = Path.Combine(LoggingPathBase, "exception.txt");
+			using (var sw = new StreamWriter(path))
+			{
+				sw.WriteLine(string.Format("-\n{0}\n{1}\n", DateTime.Now.ToString(), exceptionObject.ToString()));
+				sw.Flush();
+			}
 		}
 	}
 

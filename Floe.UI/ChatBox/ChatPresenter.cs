@@ -42,6 +42,11 @@ namespace Floe.UI
 		public void Clear()
 		{
 			_blocks.Clear();
+			_extentHeight = 0.0;
+			if (_viewer != null)
+			{
+				_viewer.InvalidateScrollInfo();
+			}
 			this.InvalidateVisual();
 		}
 

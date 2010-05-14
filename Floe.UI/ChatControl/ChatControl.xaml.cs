@@ -29,7 +29,7 @@ namespace Floe.UI
 
 			if (!this.IsServer)
 			{
-				_logFile = App.OpenLogFile(this.Session.NetworkName, this.Target.Name);
+				_logFile = App.OpenLogFile(context.GetKey());
 				while (_logFile.Buffer.Count > 0)
 				{
 					var cl = _logFile.Buffer.Dequeue();
@@ -48,10 +48,6 @@ namespace Floe.UI
 			else if (this.IsNickname)
 			{
 				_prefix = this.Target.Name;
-			}
-			else if (this.IsServer)
-			{
-				this.IsDefault = true;
 			}
 
 			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
@@ -82,14 +78,6 @@ namespace Floe.UI
 		{
 			get { return (string)this.GetValue(TitleProperty); }
 			set { this.SetValue(TitleProperty, value); }
-		}
-
-		public static readonly DependencyProperty IsDefaultProperty =
-			DependencyProperty.Register("IsDefault", typeof(bool), typeof(ChatControl));
-		public bool IsDefault
-		{
-			get { return (bool)this.GetValue(IsDefaultProperty); }
-			set { this.SetValue(IsDefaultProperty, value); }
 		}
 
 		public static readonly DependencyProperty IsConnectedProperty =
@@ -146,7 +134,7 @@ namespace Floe.UI
 			}
 		}
 
-		private void Write(string styleKey, int nickHashCode, string nick, string text)
+		private void Write(string styleKey, int nickHashCode, string nick, string text, bool attn)
 		{
 			var cl = new ChatLine(styleKey, nickHashCode, nick, text, ChatMarker.None);
 
@@ -155,10 +143,15 @@ namespace Floe.UI
 				_hasDeactivated = false;
 				if (_markerLine != null)
 				{
-					_markerLine.Marker = ChatMarker.None;
+					_markerLine.Marker &= ~ChatMarker.None;
 				}
 				_markerLine = cl;
 				cl.Marker = ChatMarker.NewMarker;
+			}
+
+			if (attn)
+			{
+				cl.Marker |= ChatMarker.Attention;
 			}
 
 			if (!this.IsVisible)
@@ -180,14 +173,14 @@ namespace Floe.UI
 			}
 		}
 
-		private void Write(string styleKey, IrcPeer peer, string text)
+		private void Write(string styleKey, IrcPeer peer, string text, bool attn)
 		{
-			this.Write(styleKey, string.Format("{0}@{1}", peer.Username, peer.Hostname).GetHashCode(), peer.Nickname, text);
+			this.Write(styleKey, string.Format("{0}@{1}", peer.Username, peer.Hostname).GetHashCode(), peer.Nickname, text, attn);
 		}
 
 		private void Write(string styleKey, string text)
 		{
-			this.Write(styleKey, 0, null, text);
+			this.Write(styleKey, 0, null, text, false);
 		}
 
 		private void SetInputText(string text)
@@ -257,7 +250,7 @@ namespace Floe.UI
 			}
 			else
 			{
-				return null;
+				return this.Resources["cmChannel"] as ContextMenu;
 			}
 		}
 

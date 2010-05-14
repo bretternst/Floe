@@ -18,5 +18,17 @@ namespace Floe.UI
 			this.Session = ircSession;
 			this.Target = target;
 		}
+
+		public string GetKey()
+		{
+			if (this.Target == null)
+			{
+				return this.Session.NetworkName;
+			}
+			else
+			{
+				return string.Format("{0}.{1}", this.Session.NetworkName, this.Target.Name.ToLowerInvariant());
+			}
+		}
 	}
 }

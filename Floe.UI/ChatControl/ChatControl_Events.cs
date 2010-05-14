@@ -11,8 +11,8 @@ namespace Floe.UI
 	{
 		private char[] _channelModes = new char[0];
 		private string _topic = "", _prefix;
-		private bool _hasNames = false, _hasDeactivated = false, _usingAlternateNick = false;
-		private ChatWindow _window;
+		private bool _hasNames = false, _hasModes = false, _hasDeactivated = false, _usingAlternateNick = false;
+		private Window _window;
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
@@ -69,7 +69,7 @@ namespace Floe.UI
 					{
 						if (e.From is IrcPeer)
 						{
-							this.Write("Notice", (IrcPeer)e.From, e.Text);
+							this.Write("Notice", (IrcPeer)e.From, e.Text, false);
 						}
 						else if (this.IsServer)
 						{
@@ -88,7 +88,17 @@ namespace Floe.UI
 				{
 					this.BeginInvoke(() =>
 						{
-							this.Write("Default", e.From, e.Text);
+							bool attn = false;
+							if (App.IsAttentionMatch(this.Session.Nickname, e.Text))
+							{
+								attn = true;
+								if (_window != null)
+								{
+									Interop.WindowHelper.FlashWindow(_window);
+								}
+							}
+
+							this.Write("Default", e.From, e.Text, attn);
 							if (this.Target.Type == IrcTargetType.Nickname)
 							{
 								if (e.From.Prefix != _prefix)
@@ -138,15 +148,6 @@ namespace Floe.UI
 									this.Session.Nick(App.Settings.Current.User.AlternateNickname);
 									_usingAlternateNick = true;
 								}
-							}
-							break;
-						case IrcCode.ChannelModes:
-							if (e.Message.Parameters.Count == 3 && !this.IsServer &&
-								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
-							{
-								_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
-								this.SetTitle();
-								return;
 							}
 							break;
 						case IrcCode.Topic:
@@ -208,27 +209,6 @@ namespace Floe.UI
 								return;
 							}
 							break;
-						case IrcCode.NameReply:
-							if (!_hasNames && e.Message.Parameters.Count >= 3 && this.IsChannel)
-							{
-								var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
-								if (this.Target.Equals(target))
-								{
-									foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
-									{
-										this.AddNick(nick);
-									}
-									return;
-								}
-							}
-							break;
-						case IrcCode.EndOfNames:
-							if (this.IsChannel && !_hasNames)
-							{
-								_hasNames = true;
-								return;
-							}
-							break;
 					}
 
 					if ((int)e.Code < 200 && this.IsServer || this.IsDefault)
@@ -238,20 +218,58 @@ namespace Floe.UI
 				});
 		}
 
+		private bool IsDefault
+		{
+			get
+			{
+				if(_window is ChannelWindow && _window.IsActive)
+				{
+					return true;
+				}
+				else if (_window is ChatWindow)
+				{
+					if(this.IsVisible)
+					{
+						return true;
+					}
+
+					if(this.IsServer &&
+						!((ChatWindow)_window).Items.Any((item) => item.IsVisible && item.Control.Session == this.Session))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
 		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
 			this.BeginInvoke(() =>
 				{
 					if ((this.IsChannel && this.Target.Equals(e.To)) ||
-						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From))))
+						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From)))
+						&& e.Command.Command == "ACTION")
 					{
-						this.Write("Action", string.Format("{0} {1}", e.From.Nickname, string.Join(" ", e.Command.Arguments)));
+						string text = string.Join(" ", e.Command.Arguments);
+						bool attn = false;
+						if (App.IsAttentionMatch(this.Session.Nickname, text))
+						{
+							attn = true;
+							if (_window != null)
+							{
+								Interop.WindowHelper.FlashWindow(_window);
+							}
+						}
+
+						this.Write("Action", string.Format("{0} {1}", e.From.Nickname, text, attn));
 					}
 					else if (this.IsServer && e.Command.Command != "ACTION")
 					{
 						this.Write("Ctcp", e.From, string.Format("[CTCP {1}] {2}",
 							e.From.Nickname, e.Command.Command,
-							e.Command.Arguments.Length > 0 ? string.Join(" ", e.Command.Arguments) : ""));
+							e.Command.Arguments.Length > 0 ? string.Join(" ", e.Command.Arguments) : ""), false);
 					}
 				});
 		}
@@ -374,6 +392,54 @@ namespace Floe.UI
 			}
 		}
 
+		private void Session_RawMessageReceived(object sender, IrcEventArgs e)
+		{
+			int code;
+			if(int.TryParse(e.Message.Command, out code))
+			{
+				var ircCode = (IrcCode)code;
+				switch(ircCode)
+				{
+					case IrcCode.NameReply:
+						if (!_hasNames && e.Message.Parameters.Count >= 3 && this.IsChannel)
+						{
+							var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
+							if (this.Target.Equals(target))
+							{
+								this.Invoke(() =>
+									{
+										foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
+										{
+											this.AddNick(nick);
+										}
+									});
+								e.Handled = true;
+							}
+						}
+						break;
+					case IrcCode.EndOfNames:
+						if (!_hasNames && this.IsChannel)
+						{
+							_hasNames = true;
+							e.Handled = true;
+						}
+						break;
+					case IrcCode.ChannelModes:
+						if (!_hasModes && e.Message.Parameters.Count == 3 && this.IsChannel &&
+							this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
+						{
+							this.Invoke(() =>
+								{
+									_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
+									this.SetTitle();
+								});
+							e.Handled = true;
+						}
+						break;
+				}
+			}
+		}
+
 		private void txtInput_KeyDown(object sender, KeyEventArgs e)
 		{
 			if ((Keyboard.Modifiers & ModifierKeys.Control) > 0)
@@ -436,7 +502,7 @@ namespace Floe.UI
 						var parts = text.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0).ToArray();
 						if (parts.Length > App.Settings.Current.Buffer.MaximumPasteLines)
 						{
-							if(!_window.Confirm(string.Format("Are you sure you want to paste more than {0} lines?",
+							if(!App.Confirm(_window, string.Format("Are you sure you want to paste more than {0} lines?",
 								App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warning"))
 							{
 								return;
@@ -466,19 +532,24 @@ namespace Floe.UI
 		{
 			if (_window == null)
 			{
-				_window = Window.GetWindow(this) as ChatWindow;
-				if (_window == null)
+				_window = Window.GetWindow(this);
+				if (_window != null)
 				{
-					throw new Exception("ChatControl must be hosted in ChatWindow.");
+					_window.Deactivated += new EventHandler(_window_Deactivated);
 				}
-				_window.Deactivated += new EventHandler(_window_Deactivated);
 			}
 			this.NotifyState = NotifyState.None;
 		}
 
-		protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
+		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)
 		{
-			_hasDeactivated = false;
+			_hasDeactivated = true;
+			this.SelectedLink = null;
+			if (_window != null)
+			{
+				_window.Deactivated -= new EventHandler(_window_Deactivated);
+			}
+			_window = null;
 		}
 
 		private void _window_Deactivated(object sender, EventArgs e)
@@ -487,10 +558,9 @@ namespace Floe.UI
 			this.SelectedLink = null;
 		}
 
-		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)
+		protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
 		{
-			_hasDeactivated = true;
-			this.SelectedLink = null;
+			_hasDeactivated = false;
 		}
 
 		private void boxOutput_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -643,6 +713,7 @@ namespace Floe.UI
 			this.Session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged += new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
+			this.Session.RawMessageReceived += new EventHandler<IrcEventArgs>(Session_RawMessageReceived);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
 			this.Loaded += (sender, e) =>
@@ -695,6 +766,11 @@ namespace Floe.UI
 				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));
 			}
 			menu = this.Resources["cmHyperlink"] as ContextMenu;
+			if (menu != null)
+			{
+				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));
+			}
+			menu = this.Resources["cmChannel"] as ContextMenu;
 			if (menu != null)
 			{
 				NameScope.SetNameScope(menu, NameScope.GetNameScope(this));

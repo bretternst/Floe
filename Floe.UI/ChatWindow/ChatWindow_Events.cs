@@ -17,7 +17,16 @@ namespace Floe.UI
 			{
 				this.Invoke(() =>
 				{
-					this.AddPage(new ChatContext((IrcSession)sender, e.Channel), true);
+					var context = new ChatContext((IrcSession)sender, e.Channel);
+					var el = App.Settings.Current.Windows.States.Get(context.GetKey());
+					if (el != null)
+					{
+						this.OpenWindow(context);
+					}
+					else
+					{
+						this.AddPage(context, true);
+					}
 				});
 			}
 		}
@@ -72,30 +81,35 @@ namespace Floe.UI
 		{
 			var session = sender as IrcSession;
 
-			switch (e.Command.Command)
+			if (!e.IsResponse)
 			{
-				case "VERSION":
-					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
-						"VERSION",
-						App.Product,
-						App.Version), true);
-					break;
-				case "PING":
-					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
-						"PONG",
-						e.Command.Arguments.Length > 0 ? e.Command.Arguments[0] : null), true);
-					break;
-				case "CLIENTINFO":
-					session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
-						"CLIENTINFO",
-						"VERSION", "PING", "CLIENTINFO", "ACTION"), true);
-					break;
+				switch (e.Command.Command)
+				{
+					case "VERSION":
+						session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
+							"VERSION",
+							App.Product,
+							App.Version), true);
+						break;
+					case "PING":
+						session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
+							"PONG",
+							e.Command.Arguments.Length > 0 ? e.Command.Arguments[0] : null), true);
+						break;
+					case "CLIENTINFO":
+						session.SendCtcp(new IrcTarget(e.From), new CtcpCommand(
+							"CLIENTINFO",
+							"VERSION", "PING", "CLIENTINFO", "ACTION"), true);
+						break;
+				}
 			}
 		}
 
 		private void session_RawMessageReceived(object sender, IrcEventArgs e)
 		{
-			if (e.Message.Command == "PRIVMSG" && e.Message.Parameters.Count == 2)
+			if (e.Message.Command == "PRIVMSG" && e.Message.Parameters.Count == 2
+				&& (!CtcpCommand.IsCtcpCommand(e.Message.Parameters[1]) ||
+				CtcpCommand.Parse(e.Message.Parameters[1]).Command == "ACTION"))
 			{
 				var target = new IrcTarget(e.Message.Parameters[0]);
 				if (target.Type == IrcTargetType.Nickname && e.Message.From is IrcPeer)
@@ -104,34 +118,21 @@ namespace Floe.UI
 						{
 							var session = sender as IrcSession;
 							target = new IrcTarget((IrcPeer)e.Message.From);
-							var control = this.FindPage(session, target);
-							if (control == null)
+							var context = new ChatContext(session, target);
+							var el = App.Settings.Current.Windows.States.Get(context.GetKey());
+							if (el != null)
 							{
-								this.AddPage(new ChatContext(session, target), false);
+								this.OpenWindow(context);
+							}
+							else
+							{
+								var control = this.FindPage(session, target);
+								if (control == null)
+								{
+									this.AddPage(new ChatContext(session, target), false);
+								}
 							}
 						});
-				}
-			}
-		}
-
-		private void tabsChat_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			if (tabsChat.SelectedItem != null)
-			{
-				var context = ((ChatTabItem)tabsChat.SelectedItem).Control.Context;
-				foreach (var item in this.Items)
-				{
-					bool isDefault = false;
-					if (item == tabsChat.SelectedItem ||
-						item.Control.Context.Session != context.Session && item.Control.IsServer)
-					{
-						isDefault = true;
-					}
-
-					if (item.Control.IsDefault != isDefault)
-					{
-						item.Control.IsDefault = isDefault;
-					}
 				}
 			}
 		}

@@ -78,7 +78,12 @@ namespace Floe.UI
 			else if (_isDragging)
 			{
 				_columnWidth = Math.Max(DefaultColumnWidth, Math.Min(this.ViewportWidth / 2.0, p.X));
-				this.FormatAll();
+				_blocks.ForEach((b) =>
+					{
+						b.TextX = _columnWidth + SeparatorPadding;
+						b.NickX = _columnWidth - SeparatorPadding - b.Nick.WidthIncludingTrailingWhitespace;
+					});
+				this.InvalidateVisual();
 			}
 			else if (this.UseTabularView && Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
 			{
@@ -104,6 +109,7 @@ namespace Floe.UI
 				_isDragging = false;
 				this.ReleaseMouseCapture();
 				Mouse.OverrideCursor = null;
+				this.FormatAll();
 			}
 			else if (_isSelecting)
 			{

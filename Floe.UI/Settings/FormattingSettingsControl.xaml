@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384" x:Name="TextSettings">
 	<Canvas>
-		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="138" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
+		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="126" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
 			<Canvas Canvas.Left="42" Canvas.Top="130" Width="348">
 				<Label Canvas.Left="6" Canvas.Top="6" Content="Font Family" Height="28" Name="label4" />
 				<ComboBox Canvas.Left="83" Canvas.Top="6" Height="28" Name="lstFontFamily" Width="219" SelectedValuePath="FontFamilyName"
@@ -27,7 +27,7 @@
 				<ComboBox Canvas.Left="214" Canvas.Top="40" Height="23" Name="txtFontWeight" Width="88"
 						  ItemsSource="{Binding ElementName=TextSettings, Path=FontWeightItems}"
 						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=TwoWay}"/>
-				<TextBlock Canvas.Left="6" Canvas.Top="69" Height="47" Name="txtPreview" TextAlignment="Center" VerticalAlignment="Center" Width="336"
+				<TextBlock Canvas.Left="6" Canvas.Top="69" Height="40" Name="txtPreview" TextAlignment="Center" VerticalAlignment="Center" Width="336"
 						   FontFamily="{Binding ElementName=lstFontFamily, Path=SelectedValue}"
 						   FontSize="{Binding ElementName=txtFontSize, Path=Text}"
 						   FontWeight="{Binding ElementName=txtFontWeight, Path=SelectedValue}">
@@ -37,8 +37,8 @@
 			</Canvas>
 		</GroupBox>
 		<Grid Width="324" Canvas.Left="18" Canvas.Top="103" />
-		<CheckBox Canvas.Left="18" Canvas.Top="147" Content="Show Timestamp" Height="16" Name="chkShowTimestamp" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ShowTimestamp}"/>
-		<TextBox Canvas.Left="132" Canvas.Top="144" Height="23" Name="txtTimestampFormat" Width="64" IsEnabled="{Binding ElementName=chkShowTimestamp, Path=IsChecked}">
+		<CheckBox Canvas.Left="18" Canvas.Top="132" Content="Show Timestamp" Height="16" Name="chkShowTimestamp" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ShowTimestamp}"/>
+		<TextBox Canvas.Left="132" Canvas.Top="129" Height="23" Name="txtTimestampFormat" Width="64" IsEnabled="{Binding ElementName=chkShowTimestamp, Path=IsChecked}">
 			<TextBox.Text>
 				<Binding Source="{x:Static local:App.Settings}" Path="Current.Formatting.TimestampFormat" Mode="TwoWay">
 					<Binding.ValidationRules>
@@ -47,10 +47,15 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<CheckBox Canvas.Left="18" Canvas.Top="169" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
-		<CheckBox Canvas.Left="221" Canvas.Top="147" Content="Colorize Nicknames" Height="16" Name="chkColorizeNicknames" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}"/>
-		<Slider Canvas.Left="225" Canvas.Top="184" Height="23" Name="sldNicknameColorScheme" Width="100" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}"
+		<CheckBox Canvas.Left="18" Canvas.Top="154" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
+		<CheckBox Canvas.Left="18" Canvas.Top="197" Content="Colorize Nicknames" Height="16" Name="chkColorizeNicknames" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}"/>
+		<Slider Canvas.Left="88" Canvas.Top="214" Height="23" Name="sldNicknameColorScheme" Width="69" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}"
 				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=TwoWay}" SmallChange="1" LargeChange="1" IsSnapToTickEnabled="True" />
-		<Label Canvas.Left="220" Canvas.Top="164" Content="Scheme" Height="28" Name="label1" />
+		<Label Canvas.Left="29" Canvas.Top="214" Content="Scheme" Height="28" Name="label1" />
+		<CheckBox Canvas.Left="18" Canvas.Top="176" Content="Attentionn On Own Nickname" Height="16" Name="checkBox1"
+				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionOnOwnNickname}"/>
+		<TextBox Canvas.Left="202" Canvas.Top="149" Height="89" Name="textBox1" Width="170" AcceptsReturn="True"
+				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionPatterns}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+		<Label Canvas.Left="202" Canvas.Top="127" Content="Attention RegEx Patterns" Height="28" Name="label2" />
 	</Canvas>
 </UserControl>

@@ -14,55 +14,9 @@ namespace Floe.UI
 {
     public partial class App : Application
     {
-		private static Lazy<PersistentSettings> _config =
-			new Lazy<PersistentSettings>(() =>
-				{
-					try
-					{
-						return new PersistentSettings(App.Product);
-					}
-					catch (Exception ex)
-					{
-						System.Windows.MessageBox.Show(string.Format("Unable to load user configuration. You may want to delete the configuration file and try again.",
-							ex.Message));
-						Environment.Exit(-1);
-						return null;
-					}
-				});
-		public static PersistentSettings Settings
-		{
-			get
-			{
-				return _config.Value;
-			}
-		}
-
-		private static Lazy<string> product = new Lazy<string>(() =>
-			typeof(App).Assembly.GetCustomAttributes(
-					typeof(AssemblyProductAttribute), false).OfType<AssemblyProductAttribute>().FirstOrDefault().Product);
-		public static string Product
-		{
-			get
-			{
-				return product.Value;
-			}
-		}
-
-		private static Lazy<string> helpText = new Lazy<string>(() =>
-			{
-				using (var sr = new System.IO.StreamReader(typeof(App).Assembly.GetManifestResourceStream(
-					string.Format("{0}.Resources.Help.txt", typeof(App).Namespace))))
-				{
-					return sr.ReadToEnd();
-				}
-			});
-		public static string HelpText
-		{
-			get
-			{
-				return helpText.Value;
-			}
-		}
+		public static PersistentSettings Settings { get; private set; }
+		public static string Product { get; private set; }
+		public static string HelpText { get; private set; }
 
 		private static Lazy<ImageSource> appImage = new Lazy<ImageSource>(() =>
 		{
@@ -104,11 +58,43 @@ namespace Floe.UI
 			}
 		}
 
+		static App()
+		{
+			App.Product = typeof(App).Assembly.GetCustomAttributes(
+					typeof(AssemblyProductAttribute), false).OfType<AssemblyProductAttribute>().FirstOrDefault().Product;
+
+			try
+			{
+				App.Settings = new PersistentSettings(App.Product);
+			}
+			catch (Exception ex)
+			{
+				System.Windows.MessageBox.Show(string.Format("Unable to load user configuration. You may want to delete the configuration file and try again.",
+					ex.Message));
+				Environment.Exit(-1);
+			}
+
+			App.RefreshAttentionPatterns();
+
+			using (var sr = new System.IO.StreamReader(typeof(App).Assembly.GetManifestResourceStream(
+				string.Format("{0}.Resources.Help.txt", typeof(App).Namespace))))
+			{
+				App.HelpText = sr.ReadToEnd();
+			}
+		}
+
 		public static void ShowSettings()
 		{
 			var settings = new Settings.SettingsWindow();
 			settings.Owner = Application.Current.MainWindow;
 			settings.ShowDialog();
+			App.RefreshAttentionPatterns();
+		}
+
+		public static bool Confirm(Window owner, string text, string caption)
+		{
+			bool result = MessageBox.Show(owner, text, caption, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+			return result;
 		}
 
 		public static void BrowseTo(string url)
@@ -120,6 +106,10 @@ namespace Floe.UI
 		{
 			this.Startup += new StartupEventHandler(App_Startup);
 			this.Exit += new ExitEventHandler(App_Exit);
+			AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+				{
+					LogUnhandledException(e.ExceptionObject);
+				};
 			this.Dispatcher.UnhandledException += (sender, e) =>
 				{
 					if (e.Exception is IrcException)

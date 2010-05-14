@@ -150,6 +150,13 @@ namespace Floe.Configuration
 			set { this["oldMarker"] = value; OnPropertyChanged("OldMarker"); }
 		}
 
+		[ConfigurationProperty("attention", DefaultValue = "#FF00FF")]
+		public string Attention
+		{
+			get { return (string)this["attention"]; }
+			set { this["attention"] = value; OnPropertyChanged("Attention"); }
+		}
+
 		[ConfigurationProperty("windowBackground", DefaultValue = "#293955")]
 		public string WindowBackground
 		{

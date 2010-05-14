@@ -7,6 +7,7 @@ namespace Floe.Net
 	public class IrcEventArgs : EventArgs
 	{
 		public IrcMessage Message { get; private set; }
+		public bool Handled { get; set; }
 
 		internal IrcEventArgs(IrcMessage message)
 		{
@@ -178,6 +179,7 @@ namespace Floe.Net
 		public IrcPeer From { get; private set; }
 		public IrcTarget To { get; private set; }
 		public CtcpCommand Command { get; private set; }
+		public bool IsResponse { get; private set; }
 
 		public CtcpEventArgs(IrcMessage message)
 			: base(message)
@@ -185,6 +187,7 @@ namespace Floe.Net
 			this.From = message.From as IrcPeer;
 			this.To = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
 			this.Command = message.Parameters.Count > 1 ? CtcpCommand.Parse(message.Parameters[1]) : null;
+			this.IsResponse = message.Command == "NOTICE";
 		}
 	}
 }

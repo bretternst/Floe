@@ -86,6 +86,20 @@ namespace Floe.Configuration
 			set { this["nicknameColorSeed"] = value; this.OnPropertyChanged("NicknameColorSeed"); }
 		}
 
+		[ConfigurationProperty("attentionOnOwnNickname", DefaultValue = false)]
+		public bool AttentionOnOwnNickname
+		{
+			get { return (bool)this["attentionOnOwnNickname"]; }
+			set { this["attentionOnOwnNickname"] = value; this.OnPropertyChanged("AttentionOnOwnNickname"); }
+		}
+
+		[ConfigurationProperty("attentionPatterns", DefaultValue = "")]
+		public string AttentionPatterns
+		{
+			get { return (string)this["attentionPatterns"]; }
+			set { this["attentionPatterns"] = value; this.OnPropertyChanged("AttentionPatterns"); }
+		}
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string name)

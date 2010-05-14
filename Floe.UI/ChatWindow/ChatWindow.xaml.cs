@@ -10,7 +10,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Windows.Interop;
 using System.Collections.ObjectModel;
 
 using Floe.Net;
@@ -40,6 +39,13 @@ namespace Floe.UI
 			InitializeComponent();
 
 			this.Loaded += new RoutedEventHandler(ChatWindow_Loaded);
+		}
+
+		public void OpenWindow(ChatContext context)
+		{
+			var window = new ChannelWindow(new ChatControl(context));
+			window.Closed += window_Closed;
+			window.Show();
 		}
 
 		public void AddPage(ChatContext context, bool switchToPage)
@@ -105,9 +111,6 @@ namespace Floe.UI
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			var hwndSrc = PresentationSource.FromVisual(this) as HwndSource;
-			hwndSrc.AddHook(new HwndSourceHook(WndProc));
-
 			this.AddPage(new ChatContext(new IrcSession(), null), true);
 
 			if (Application.Current.MainWindow == this)
@@ -129,13 +132,6 @@ namespace Floe.UI
 					this.Items[this.Items.Count - 1].Control.Connect(server);
 				}
 			}
-		}
-
-		protected override void OnSourceInitialized(EventArgs e)
-		{
-			base.OnSourceInitialized(e);
-
-			Interop.WindowPlacementHelper.Load(this);
 		}
 
 		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -165,7 +161,16 @@ namespace Floe.UI
 				page.Control.Dispose();
 			}
 
-			Interop.WindowPlacementHelper.Save(this);
+			foreach (var win in App.Current.Windows)
+			{
+				var channelWindow = win as ChannelWindow;
+				if (channelWindow != null)
+				{
+					channelWindow.Close();
+				}
+			}
+
+			App.Settings.Current.Windows.Placement = Interop.WindowHelper.Save(this);
 
 			if (_notifyIcon != null)
 			{

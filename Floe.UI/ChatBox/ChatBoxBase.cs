@@ -90,6 +90,14 @@ namespace Floe.UI
 			set { this.SetValue(OldMarkerColorProperty, value); }
 		}
 
+		public static readonly DependencyProperty AttentionColorProperty = DependencyProperty.Register("AttentionColor",
+			typeof(Color), typeof(ChatBoxBase));
+		public Color AttentionColor
+		{
+			get { return (Color)this.GetValue(AttentionColorProperty); }
+			set { this.SetValue(AttentionColorProperty, value); }
+		}
+
 		public static readonly DependencyProperty DividerBrushProperty = DependencyProperty.Register("DividerBrush",
 			typeof(Brush), typeof(ChatBoxBase));
 		public Brush DividerBrush

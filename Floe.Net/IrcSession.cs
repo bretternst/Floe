@@ -204,6 +204,11 @@ namespace Floe.Net
 			this.Send("KICK", channel, nickname);
 		}
 
+		public void Kick(string channel, string nickname, string text)
+		{
+			this.Send("KICK", channel, nickname, text);
+		}
+
 		public void Motd()
 		{
 			this.Send("MOTD");
@@ -540,6 +545,11 @@ namespace Floe.Net
 		private void _conn_MessageReceived(object sender, IrcEventArgs e)
 		{
 			this.OnMessageReceived(e);
+
+			if (e.Handled)
+			{
+				return;
+			}
 
 			switch (e.Message.Command)
 			{

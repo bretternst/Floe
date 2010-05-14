@@ -15,31 +15,27 @@ using System.Collections.ObjectModel;
 
 using Floe.Net;
 using Floe.UI.Interop;
+using Floe.Configuration;
 
 namespace Floe.UI
 {
-	public partial class ChatWindow : Window
+	public partial class ChannelWindow : Window
 	{
 		private const double ResizeHeight = 4.0;
 		private const double ResizeWidth = 6.0;
-		private bool _isInModalDialog = false;
 		private NotifyIcon _notifyIcon;
 		private WindowState _oldWindowState = WindowState.Normal;
 		private IntPtr _hWnd;
-
-		public bool Confirm(string text, string caption)
-		{
-			_isInModalDialog = true;
-			bool result = MessageBox.Show(this, text, caption, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
-			_isInModalDialog = false;
-			return result;
-		}
 
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
 
-			Interop.WindowHelper.Load(this, App.Settings.Current.Windows.Placement);
+			var placementEl = App.Settings.Current.Windows.States.Get(this.Control.Context.GetKey());
+			if (placementEl != null)
+			{
+				Interop.WindowHelper.Load(this, placementEl.Placement);
+			}
 
 			var hwndSrc = PresentationSource.FromVisual(this) as HwndSource;
 			hwndSrc.AddHook(new HwndSourceHook(WndProc));
@@ -125,7 +121,7 @@ namespace Floe.UI
 
 		protected override void OnDeactivated(EventArgs e)
 		{
-			if (this.OwnedWindows.Count == 0 && !_isInModalDialog)
+			if (this.OwnedWindows.Count == 0)
 			{
 				this.Opacity = App.Settings.Current.Windows.InactiveOpacity;
 			}
@@ -141,15 +137,15 @@ namespace Floe.UI
 				{
 					_notifyIcon = new NotifyIcon(this, App.ApplicationIcon);
 					_notifyIcon.DoubleClicked += (sender, args) =>
+					{
+						_notifyIcon.Hide();
+						this.BeginInvoke(() =>
 						{
-							_notifyIcon.Hide();
-							this.BeginInvoke(() =>
-								{
-									this.Show();
-									this.WindowState = _oldWindowState;
-									this.Activate();
-								});
-						};
+							this.Show();
+							this.WindowState = _oldWindowState;
+							this.Activate();
+						});
+					};
 				}
 				this.Hide();
 				_notifyIcon.Show();

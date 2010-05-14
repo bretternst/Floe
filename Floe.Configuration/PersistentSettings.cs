@@ -33,7 +33,11 @@ namespace Floe.Configuration
 			var map = new ExeConfigurationFileMap();
 			map.ExeConfigFilename = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
 			string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), _appName);
+#if DEBUG
+			path = Path.Combine(path, string.Format("{0}.DEBUG.config", _appName));
+#else
 			path = Path.Combine(path, string.Format("{0}.config", _appName));
+#endif
 			this.IsFirstLaunch = !File.Exists(path);
 			map.RoamingUserConfigFilename = path;
 
@@ -45,7 +49,6 @@ namespace Floe.Configuration
 				_prefConfigSection.SectionInformation.AllowExeDefinition = ConfigurationAllowExeDefinition.MachineToLocalUser;
 				_exeConfig.Sections.Add(SettingsConfigSectionName, _prefConfigSection);
 			}
-
 
 			this.OnPropertyChanged("Current");
 		}

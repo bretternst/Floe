@@ -65,6 +65,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="App_Logging.cs" />
+    <Compile Include="App_Patterns.cs" />
+    <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
+      <DependentUpon>ChannelWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ChannelWindow\ChannelWindow_WndProc.cs" />
     <Compile Include="ChatBox\ChatBox.cs" />
     <Compile Include="ChatBox\ChatBoxBase.cs" />
     <Compile Include="ChatBox\ChatDecoration.cs" />
@@ -94,7 +99,7 @@
     <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\NotifyIcon.cs" />
     <Compile Include="Interop\WindowConstants.cs" />
-    <Compile Include="Interop\WindowPlacementHelper.cs" />
+    <Compile Include="Interop\WindowHelper.cs" />
     <Compile Include="Settings\BufferSettingsControl.xaml.cs">
       <DependentUpon>BufferSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -120,6 +125,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="ChannelWindow\ChannelWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ChatControl\ChatControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -202,6 +211,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\App.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -41,6 +41,23 @@ namespace Floe.Configuration
 			set { this["minimizeToSysTray"] = value; this.OnPropertyChanged("MinimizeToSysTray"); }
 		}
 
+		[ConfigurationProperty("tabStripPosition", DefaultValue=TabStripPosition.Bottom)]
+		public TabStripPosition TabStripPosition
+		{
+			get { return (TabStripPosition)this["tabStripPosition"]; }
+			set { this["tabStripPosition"] = value; this.OnPropertyChanged("TabStripPosition"); }
+		}
+
+		[ConfigurationProperty("states")]
+		[ConfigurationCollection(typeof(ChannelStateElement))]
+		public ChannelStateElementCollection States
+		{
+			get
+			{
+				return this["states"] as ChannelStateElementCollection;
+			}
+		}
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string name)

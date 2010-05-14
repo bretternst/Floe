@@ -11,6 +11,7 @@
 		<CommandBinding Command="local:ChatControl.OpenLinkCommand" Executed="ExecuteOpenLink"/>
 		<CommandBinding Command="local:ChatControl.CopyLinkCommand" Executed="ExecuteCopyLink"/>
 		<CommandBinding Command="local:ChatControl.QuitCommand" Executed="ExecuteQuit" CanExecute="CanExecuteConnectedCommand"/>
+		<CommandBinding Command="local:ChatControl.ClearCommand" Executed="ExecuteClear"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<Style TargetType="ListBoxItem">
@@ -34,6 +35,10 @@
 		<ContextMenu x:Key="cmServer">
 			<MenuItem Header="Connect" Click="connect_Click" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand"/>
+		</ContextMenu>
+		<ContextMenu x:Key="cmChannel">
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand"/>
 		</ContextMenu>
 	</UserControl.Resources>
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
@@ -70,6 +75,7 @@
 					   NicknameColorSeed="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=OneWay}"
 					   NewMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=OneWay}"
 					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"
+					AttentionColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=OneWay}"
 					   DividerBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 					   MouseDoubleClick="boxOutput_MouseDoubleClick"/>
 			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0"

@@ -17,6 +17,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand OpenLinkCommand = new RoutedUICommand("Open", "OpenLink", typeof(ChatControl));
 		public readonly static RoutedUICommand CopyLinkCommand = new RoutedUICommand("Copy", "CopyLink", typeof(ChatControl));
 		public readonly static RoutedUICommand QuitCommand = new RoutedUICommand("Quit", "Quit", typeof(ChatControl));
+		public readonly static RoutedUICommand ClearCommand = new RoutedUICommand("Clear", "Clear", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -60,6 +61,11 @@ namespace Floe.UI
 			catch { }
 		}
 
+		private void ExecuteClear(object sender, RoutedEventArgs e)
+		{
+			boxOutput.Clear();
+		}
+
 		private void Execute(string text)
 		{
 			var chars = text.ToCharArray();
@@ -96,7 +102,7 @@ namespace Floe.UI
 					if (!this.IsServer)
 					{
 						this.Session.PrivateMessage(this.Target, text);
-						this.Write("Own", 0, this.Session.Nickname, text);
+						this.Write("Own", 0, this.Session.Nickname, text, false);
 					}
 					else
 					{
@@ -132,11 +138,11 @@ namespace Floe.UI
 					break;
 				case "PART":
 				case "LEAVE":
-					args = Split(command, arguments, 1, 1);
+					args = Split(command, arguments, 1, 1, true);
 					this.Session.Part(args[0]);
 					break;
 				case "TOPIC":
-					args = Split(command, arguments, 1, 2);
+					args = Split(command, arguments, 1, 2, true);
 					if (args.Length > 1)
 					{
 						this.Session.Topic(args[0], args[1]);
@@ -151,8 +157,15 @@ namespace Floe.UI
 					this.Session.Invite(args[1], args[0]);
 					break;
 				case "KICK":
-					args = Split(command, arguments, 2, 2);
-					this.Session.Kick(args[0], args[1]);
+					args = Split(command, arguments, 2, 3, true);
+					if (args.Length > 2)
+					{
+						this.Session.Kick(args[0], args[1], args[2]);
+					}
+					else
+					{
+						this.Session.Kick(args[0], args[1]);
+					}
 					break;
 				case "MOTD":
 					args = Split(command, arguments, 0, 1);
@@ -306,6 +319,11 @@ namespace Floe.UI
 						}
 					}
 					break;
+				case "CTCP":
+					args = Split(command, arguments, 2, int.MaxValue);
+					this.Session.SendCtcp(new IrcTarget(args[0]),
+						new CtcpCommand(args[1], args.Skip(2).ToArray()), false);
+					break;
 				default:
 					this.Write("Error", string.Format("Unrecognized command: {0}", command));
 					break;
@@ -314,7 +332,20 @@ namespace Floe.UI
 
 		private string[] Split(string command, string args, int minArgs, int maxArgs)
 		{
+			return this.Split(command, args, minArgs, maxArgs, false);
+		}
+
+		private string[] Split(string command, string args, int minArgs, int maxArgs, bool isChannelRequired)
+		{
 			string[] parts = ChatControl.Split(args, maxArgs);
+			if (isChannelRequired && (parts.Length < 1 || !IrcTarget.IsChannel(parts[0])))
+			{
+				if (!this.IsChannel)
+				{
+					throw new IrcException("Not on a channel.");
+				}
+				parts = new[] { this.Target.Name }.Union(ChatControl.Split(args, maxArgs - 1)).ToArray();
+			}
 			if (parts.Length < minArgs)
 			{
 				throw new IrcException(string.Format("{0} requires {1} parameters.", command, minArgs));
