@@ -115,91 +115,93 @@ namespace Floe.Net
 			char last = '\u0000';
 			IAsyncResult ar = null;
 
-			while (_tcpClient.Connected)
+			try
 			{
-				if (handleIdx == 0)
+				while (_tcpClient.Connected)
 				{
-					ar = stream.BeginRead(readBuffer, 0, 512, null, null);
-				}
-				handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle });
-				if (!_tcpClient.Connected)
-				{
-					break;
-				}
-				switch (handleIdx)
-				{
-					case 0:
-						count = stream.EndRead(ar);
-						if (count == 0)
-						{
-							_tcpClient.Close();
-						}
-						else
-						{
-							foreach (char c in Encoding.UTF8.GetChars(readBuffer, 0, count))
+					if (handleIdx == 0)
+					{
+						ar = stream.BeginRead(readBuffer, 0, 512, null, null);
+					}
+					handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle });
+					if (!_tcpClient.Connected)
+					{
+						break;
+					}
+					switch (handleIdx)
+					{
+						case 0:
+							count = stream.EndRead(ar);
+							if (count == 0)
 							{
-								if (c == 0xa && last == 0xd)
+								_tcpClient.Close();
+							}
+							else
+							{
+								foreach (char c in Encoding.UTF8.GetChars(readBuffer, 0, count))
 								{
-									if (input.Length > 0)
+									if (c == 0xa && last == 0xd)
 									{
-										message = IrcMessage.Parse(input.ToString());
-										try
+										if (input.Length > 0)
 										{
-											this.OnMessageReceived(message);
-										}
+											message = IrcMessage.Parse(input.ToString());
+											try
+											{
+												this.OnMessageReceived(message);
+											}
 #if DEBUG
-										catch (IrcException ex)
-										{
-											System.Diagnostics.Debug.WriteLine("Unhandled IrcException: {0}", ex.Message);
-										}
+											catch (IrcException ex)
+											{
+												System.Diagnostics.Debug.WriteLine("Unhandled IrcException: {0}", ex.Message);
+											}
 #else
 										catch(IrcException)
 										{
 										}
 #endif
-										input.Clear();
+											input.Clear();
+										}
 									}
+									else if (c != 0xd && c != 0xa)
+									{
+										input.Append(c);
+									}
+									last = c;
 								}
-								else if (c != 0xd && c != 0xa)
-								{
-									input.Append(c);
-								}
-								last = c;
 							}
-						}
-						break;
-					case 1:
-						lock (_writeQueue)
-						{
-							while (_writeQueue.Count > 0)
+							break;
+						case 1:
+							lock (_writeQueue)
 							{
-								message = _writeQueue.Dequeue();
-								if (message.Command == null)
+								while (_writeQueue.Count > 0)
 								{
-									_tcpClient.Close();
-									break;
-								}
-								string output = message.ToString();
-								count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
-								count = Math.Min(510, count);
-								writeBuffer[count] = 0xd;
-								writeBuffer[count + 1] = 0xa;
-								try
-								{
+									message = _writeQueue.Dequeue();
+									if (message.Command == null)
+									{
+										_tcpClient.Close();
+										break;
+									}
+									string output = message.ToString();
+									count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
+									count = Math.Min(510, count);
+									writeBuffer[count] = 0xd;
+									writeBuffer[count + 1] = 0xa;
 									stream.Write(writeBuffer, 0, count + 2);
-								}
-								catch (Exception ex)
-								{
-									this.OnConnectionError(ex);
-									_tcpClient.Close();
-									break;
-								}
 
-								this.OnMessageSent(message);
+									this.OnMessageSent(message);
+								}
 							}
-						}
-						_writeWaitHandle.Reset();
-						break;
+							_writeWaitHandle.Reset();
+							break;
+					}
+				}
+			}
+			catch (System.IO.IOException ex)
+			{
+				this.OnConnectionError(ex);
+				if (_tcpClient.Connected)
+				{
+					_tcpClient.Close();
 				}
 			}
 			this.OnDisconnected();
