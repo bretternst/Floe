@@ -254,8 +254,8 @@ namespace Floe.UI
 		{
 			this.BeginInvoke(() =>
 				{
-					if ((this.IsChannel && this.Target.Equals(e.To)) ||
-						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From)))
+					if (((this.IsChannel && this.Target.Equals(e.To)) ||
+						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From))))
 						&& e.Command.Command == "ACTION")
 					{
 						string text = string.Join(" ", e.Command.Arguments);
@@ -471,18 +471,8 @@ namespace Floe.UI
 				}
 				if ((int)c != 0)
 				{
-					if (!string.IsNullOrEmpty(txtInput.SelectedText))
-					{
-						int pos = txtInput.CaretIndex;
-						txtInput.SelectedText = new string((char)(c+0x2500), 1);
-						txtInput.CaretIndex = pos;
-					}
-					else
-					{
-						int pos = txtInput.CaretIndex;
-						txtInput.Text = txtInput.Text.Insert(txtInput.CaretIndex, new string((char)(c+0x2500), 1));
-						txtInput.CaretIndex = pos + 1;
-					}
+					var s = new string((char)(c + 0x2500), 1);
+					this.Insert(s);
 				}
 			}
 
@@ -677,6 +667,10 @@ namespace Floe.UI
 						{
 							txtInput.Clear();
 						}
+					}
+					else
+					{
+						txtInput.Clear();
 					}
 					break;
 				default:

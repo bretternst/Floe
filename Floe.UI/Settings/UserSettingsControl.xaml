@@ -10,7 +10,7 @@
 		<Label Canvas.Left="64" Canvas.Top="12" Content="Nickname:" Height="28" Name="label1" />
 		<Label Canvas.Left="12" Canvas.Top="46" Content="Alternate Nickname:" Height="28" Name="label2" />
 		<Label Canvas.Left="64" Canvas.Top="161" Content="Username:" Height="28" Name="label3" />
-		<Label Canvas.Left="63" Canvas.Top="195" Content="Hostname:" Height="28" Name="label4" />
+		<Label Canvas.Left="32" Canvas.Top="195" Content="Local Hostname:" Height="28" Name="label4" />
 		<Label Canvas.Left="63" Canvas.Top="127" Content="Full Name:" Height="28" Name="label5" />
 		<TextBox Canvas.Left="136" Canvas.Top="14" Height="23" Name="txtNickname" Width="109">
 			<TextBox.Text>

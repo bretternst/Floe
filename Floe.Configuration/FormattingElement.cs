@@ -100,6 +100,13 @@ namespace Floe.Configuration
 			set { this["attentionPatterns"] = value; this.OnPropertyChanged("AttentionPatterns"); }
 		}
 
+		[ConfigurationProperty("autoSizeColumn", DefaultValue = true)]
+		public bool AutoSizeColumn
+		{
+			get { return (bool)this["autoSizeColumn"]; }
+			set { this["autoSizeColumn"] = value; this.OnPropertyChanged("AutoSizeColumn"); }
+		}
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string name)

@@ -18,6 +18,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand CopyLinkCommand = new RoutedUICommand("Copy", "CopyLink", typeof(ChatControl));
 		public readonly static RoutedUICommand QuitCommand = new RoutedUICommand("Disconnect", "Quit", typeof(ChatControl));
 		public readonly static RoutedUICommand ClearCommand = new RoutedUICommand("Clear", "Clear", typeof(ChatControl));
+		public readonly static RoutedUICommand InsertCommand = new RoutedUICommand("Insert", "Insert", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -64,6 +65,31 @@ namespace Floe.UI
 		private void ExecuteClear(object sender, RoutedEventArgs e)
 		{
 			boxOutput.Clear();
+		}
+
+		private void Insert(string s)
+		{
+			if (!string.IsNullOrEmpty(txtInput.SelectedText))
+			{
+				int pos = txtInput.CaretIndex;
+				txtInput.SelectedText = s;
+				txtInput.CaretIndex = pos;
+			}
+			else
+			{
+				int pos = txtInput.CaretIndex;
+				txtInput.Text = txtInput.Text.Insert(txtInput.CaretIndex, s);
+				txtInput.CaretIndex = pos + s.Length;
+			}
+		}
+
+		private void ExecuteInsert(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				this.Insert(s);
+			}
 		}
 
 		private void Execute(string text, bool literal)

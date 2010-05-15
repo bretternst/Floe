@@ -8,6 +8,7 @@
              mc:Ignorable="d"
              d:DesignHeight="260" d:DesignWidth="384">
 	<UserControl.Resources>
+		<ToolTip x:Key="ttScheme">Modifies the random seed used to generate nickname colors.</ToolTip>
 		<Style x:Key="ColorButton" TargetType="Button">
 			<Setter Property="Margin" Value="5,3,5,3"/>
 			<Setter Property="Template">
@@ -163,5 +164,8 @@
 				Content="UI Background"/>
 		<Button Canvas.Left="134" Canvas.Top="214" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=TwoWay}" Height="23" Width="118" Template="{StaticResource ColorButton2}"
 				Content="UI Foreground"/>
+		<CheckBox Canvas.Left="257" Canvas.Top="190" Content="Colorize Nicknames" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}" Name="chkColorizeNicknames" />
+		<Slider ToolTip="{StaticResource ttScheme}" Canvas.Left="314" Canvas.Top="207" Height="23" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}" IsSnapToTickEnabled="True" LargeChange="1" Name="sldNicknameColorScheme" SmallChange="1" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=TwoWay}" Width="69" />
+		<Label ToolTip="{StaticResource ttScheme}" Canvas.Left="255" Canvas.Top="207" Content="Scheme" Height="28" Name="label1" />
 	</Canvas>
 </UserControl>

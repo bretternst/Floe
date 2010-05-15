@@ -24,6 +24,8 @@
 											 AttentionColor="{TemplateBinding AttentionColor}"
 											 DividerBrush="{TemplateBinding DividerBrush}"
 											 Background="{TemplateBinding Background}"
+											 ColumnWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ColumnWidth, Mode=TwoWay}"
+											 AutoSizeColumn="{TemplateBinding AutoSizeColumn}"
 											 SelectedLink="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedLink, Mode=OneWayToSource}"
 											 SnapsToDevicePixels="True"/>
 					</ScrollViewer>

@@ -11,7 +11,6 @@ namespace Floe.UI
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
 		private const double SeparatorPadding = 6.0;
-		private const double DefaultColumnWidth = 125.0;
 
 		private class Block
 		{
@@ -34,7 +33,7 @@ namespace Floe.UI
 		}
 
 		private LinkedList<Block> _blocks = new LinkedList<Block>();
-		private double _lineHeight, _columnWidth = DefaultColumnWidth;
+		private double _lineHeight;
 		private LinkedListNode<Block> _bottomBlock;
 
 		private Typeface Typeface
@@ -108,12 +107,9 @@ namespace Floe.UI
 			b.NickString = this.FormatNick(b.Source.Nick);
 
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
-			if (b.TimeString.Length > 0)
-			{
-				b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
-					TextWrapping.NoWrap).First();
-				b.NickX = b.Time.WidthIncludingTrailingWhitespace;
-			}
+			b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
+				TextWrapping.NoWrap).FirstOrDefault();
+			b.NickX = b.Time != null ? b.Time.WidthIncludingTrailingWhitespace : 0.0;
 
 			var nickBrush = b.Foreground;
 			if (this.ColorizeNicknames && b.Source.NickHashCode != 0)
@@ -126,18 +122,23 @@ namespace Floe.UI
 
 			if (this.UseTabularView)
 			{
-				if (b.TextX > _columnWidth)
+				if (b.TextX > this.ColumnWidth)
 				{
-					_columnWidth = b.TextX;
-					_blocks.AddLast(b);
-					this.FormatAll();
-					return;
+					if (this.AutoSizeColumn)
+					{
+						this.ColumnWidth = b.TextX;
+						_blocks.AddLast(b);
+						this.FormatAll();
+						return;
+					}
+					else
+					{
+						b.Nick = formatter.Format(b.NickString, null, this.ColumnWidth - (b.Time != null ? b.Time.Width : 0.0),
+							nickBrush, this.Background, TextWrapping.NoWrap).First();
+					}
 				}
-				else
-				{
-					b.TextX = _columnWidth + SeparatorPadding * 2.0 + 1.0;
-				}
-				b.NickX = _columnWidth - b.Nick.WidthIncludingTrailingWhitespace;
+				b.TextX = this.ColumnWidth + SeparatorPadding * 2.0 + 1.0;
+				b.NickX = this.ColumnWidth - b.Nick.WidthIncludingTrailingWhitespace;
 			}
 
 			var offset = _blocks.Last != null ? _blocks.Last.Value.CharEnd : 0;
@@ -181,19 +182,13 @@ namespace Floe.UI
 					b.NickString = this.FormatNick(b.Source.Nick);
 					b.NickX = b.TextX = 0.0;
 
-					if (b.TimeString.Length > 0)
-					{
-						b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
-							TextWrapping.NoWrap).First();
-						b.NickX = b.Time.WidthIncludingTrailingWhitespace;
-					}
+					b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
+						TextWrapping.NoWrap).FirstOrDefault();
+					b.NickX = b.Time != null ? b.Time.WidthIncludingTrailingWhitespace : 0.0;
+					this.ColumnWidth = Math.Max(this.ColumnWidth, b.NickX);
 				});
 
-			if (this.UseTabularView)
-			{
-				double nickX = _blocks.Max((b) => b.NickX);
-				_blocks.ForEach((b) => b.NickX = nickX);
-			}
+			double nickX = _blocks.Max((b) => b.NickX);
 
 			_blocks.ForEach((b) =>
 				{
@@ -202,24 +197,26 @@ namespace Floe.UI
 					{
 						nickBrush = this.GetNickColor(b.Source.NickHashCode);
 					}
-					b.Nick = formatter.Format(b.NickString, null, this.ViewportWidth - b.NickX, nickBrush, this.Background,
-						TextWrapping.NoWrap).First();
+					b.Nick = formatter.Format(b.NickString, null,
+						this.UseTabularView ? this.ColumnWidth - (b.Time != null ? b.Time.Width : 0.0) : this.ViewportWidth,
+						nickBrush, this.Background, TextWrapping.NoWrap).First();
+					if (this.UseTabularView)
+					{
+						b.NickX = nickX;
+					}
 					b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
 				});
 
-			if (this.UseTabularView)
-			{
-				double textX = _columnWidth + SeparatorPadding * 2.0 + 1.0;
-				_blocks.ForEach((b) =>
-					{
-						b.TextX = textX;
-						b.NickX = _columnWidth - b.Nick.WidthIncludingTrailingWhitespace;
-					});
-			}
+			double textX = this.ColumnWidth + SeparatorPadding * 2.0 + 1.0;
 
 			var offset = 0;
 			_blocks.ForEach((b) =>
 				{
+					if (this.UseTabularView)
+					{
+						b.TextX = textX;
+						b.NickX = Math.Max(b.Time != null ? b.Time.Width : 0.0, this.ColumnWidth - b.Nick.Width);
+					}
 					b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
 						this.Background, TextWrapping.Wrap).ToArray();
 					b.Height = b.Text.Sum((t) => t.Height);
@@ -322,7 +319,7 @@ namespace Floe.UI
 
 			if (this.UseTabularView)
 			{
-				double lineX = _columnWidth + SeparatorPadding;
+				double lineX = this.ColumnWidth + SeparatorPadding;
 				dc.DrawLine(scaledPen, new Point(lineX, 0.0), new Point(lineX, this.ActualHeight));
 			}
 

@@ -6,6 +6,13 @@
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384" x:Name="TextSettings">
+	<UserControl.Resources>
+		<ToolTip x:Key="ttUseTabularView">Separate the timestamps and nicknames into a column on the left, and align all text.</ToolTip>
+		<ToolTip x:Key="ttAutoSizeColumn">When a new line contains a nickname too large to fit in the left column, expand the column.</ToolTip>
+		<ToolTip x:Key="ttAttentionOnOwnNick">When your current, primary, or alternate nicknme is typed by another user, highlight the line and flash the taskbar icon if the window is not active.</ToolTip>
+		<ToolTip x:Key="ttAttentionRegex">A list of regular expression patterns (one per line) to highlight the lines for and flash the taskbar icon if the window is not active.</ToolTip>
+		<ToolTip x:Key="ttTimestampFormat">The format of the timestamp, when displayed. This is a .NET date format string.</ToolTip>
+	</UserControl.Resources>
 	<Canvas>
 		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="126" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
 			<Canvas Canvas.Left="42" Canvas.Top="130" Width="348">
@@ -38,7 +45,7 @@
 		</GroupBox>
 		<Grid Width="324" Canvas.Left="18" Canvas.Top="103" />
 		<CheckBox Canvas.Left="18" Canvas.Top="132" Content="Show Timestamp" Height="16" Name="chkShowTimestamp" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ShowTimestamp}"/>
-		<TextBox Canvas.Left="132" Canvas.Top="129" Height="23" Name="txtTimestampFormat" Width="64" IsEnabled="{Binding ElementName=chkShowTimestamp, Path=IsChecked}">
+		<TextBox ToolTip="{StaticResource ttTimestampFormat}" Canvas.Left="132" Canvas.Top="129" Height="23" Name="txtTimestampFormat" Width="64" IsEnabled="{Binding ElementName=chkShowTimestamp, Path=IsChecked}">
 			<TextBox.Text>
 				<Binding Source="{x:Static local:App.Settings}" Path="Current.Formatting.TimestampFormat" Mode="TwoWay">
 					<Binding.ValidationRules>
@@ -47,15 +54,12 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<CheckBox Canvas.Left="18" Canvas.Top="154" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
-		<CheckBox Canvas.Left="18" Canvas.Top="197" Content="Colorize Nicknames" Height="16" Name="chkColorizeNicknames" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}"/>
-		<Slider Canvas.Left="88" Canvas.Top="214" Height="23" Name="sldNicknameColorScheme" Width="69" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}"
-				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=TwoWay}" SmallChange="1" LargeChange="1" IsSnapToTickEnabled="True" />
-		<Label Canvas.Left="29" Canvas.Top="214" Content="Scheme" Height="28" Name="label1" />
-		<CheckBox Canvas.Left="18" Canvas.Top="176" Content="Attention On Own Nickname" Height="16" Name="checkBox1"
+		<CheckBox ToolTip="{StaticResource ttUseTabularView}" Canvas.Left="18" Canvas.Top="154" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
+		<CheckBox ToolTip="{StaticResource ttAttentionOnOwnNick}" Canvas.Left="18" Canvas.Top="207" Content="Attention On Own Nickname" Height="16" Name="checkBox1"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionOnOwnNickname}"/>
-		<TextBox Canvas.Left="202" Canvas.Top="149" Height="89" Name="textBox1" Width="170" AcceptsReturn="True"
+		<TextBox ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="149" Height="89" Name="textBox1" Width="170" AcceptsReturn="True"
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionPatterns}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
-		<Label Canvas.Left="202" Canvas.Top="127" Content="Attention RegEx Patterns" Height="28" Name="label2" />
+		<Label ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="127" Content="Attention RegEx Patterns" Height="28" Name="label2" />
+		<CheckBox ToolTip="{StaticResource ttAutoSizeColumn}" Canvas.Left="37" Canvas.Top="176" IsEnabled="{Binding ElementName=chkUseTabularView, Path=IsChecked}" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn}" Content="Auto Size Column" Height="16" Name="checkBox2" />
 	</Canvas>
 </UserControl>

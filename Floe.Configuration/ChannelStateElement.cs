@@ -121,5 +121,12 @@ namespace Floe.Configuration
 			get { return (double)this["nickListWidth"]; }
 			set { this["nickListWidth"] = value; }
 		}
+
+		[ConfigurationProperty("columnWidth", DefaultValue = 125.0)]
+		public double ColumnWidth
+		{
+			get { return (double)this["columnWidth"]; }
+			set { this["columnWidth"] = value; }
+		}
 	}
 }

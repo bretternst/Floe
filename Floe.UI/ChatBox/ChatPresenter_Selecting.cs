@@ -41,7 +41,7 @@ namespace Floe.UI
 		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
 		{
 			var p = e.GetPosition(this);
-			if (Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0 && this.UseTabularView)
+			if (Math.Abs(p.X - (this.ColumnWidth + SeparatorPadding)) < SeparatorPadding / 2.0 && this.UseTabularView)
 			{
 				_isDragging = true;
 				this.CaptureMouse();
@@ -73,10 +73,10 @@ namespace Floe.UI
 			}
 			else if (_isDragging)
 			{
-				_columnWidth = Math.Max(0.0, Math.Min(this.ViewportWidth / 2.0, p.X));
+				this.ColumnWidth = Math.Max(0.0, Math.Min(this.ViewportWidth / 2.0, p.X));
 				this.FormatAll();
 			}
-			else if (this.UseTabularView && Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
+			else if (this.UseTabularView && Math.Abs(p.X - (this.ColumnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
 			{
 				Mouse.OverrideCursor = Cursors.SizeWE;
 			}

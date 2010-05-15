@@ -90,7 +90,11 @@ namespace Floe.UI
 			_runProperties = new CustomTextRunProperties(_runProperties.Typeface, _runProperties.FontRenderingEmSize, foreground,
 				Brushes.Transparent, false);
 			_paraProperties = new CustomParagraphProperties(_runProperties);
-			width = Math.Max(0, width);
+			if (width < 0)
+			{
+				width = 0;
+				text = "";
+			}
 
 			int idx = 0;
 			while(idx < _text.Length)

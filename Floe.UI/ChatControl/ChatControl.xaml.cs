@@ -37,17 +37,19 @@ namespace Floe.UI
 				}
 			}
 
+			var state = App.Settings.Current.Windows.States[context.Key];
 			if (this.IsChannel)
 			{
 				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
 				this.Session.Mode(this.Target);
 				splitter.IsEnabled = true;
-				colNickList.Width = new GridLength(App.Settings.Current.Windows.States[context.Key].NickListWidth);
+				colNickList.Width = new GridLength(state.NickListWidth);
 			}
 			else if (this.IsNickname)
 			{
 				_prefix = this.Target.Name;
 			}
+			boxOutput.ColumnWidth = state.ColumnWidth;
 
 			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
 			this.Unloaded += new RoutedEventHandler(ChatControl_Unloaded);
@@ -256,7 +258,9 @@ namespace Floe.UI
 
 		public void Dispose()
 		{
-			App.Settings.Current.Windows.States[this.Context.Key].NickListWidth = colNickList.ActualWidth;
+			var state = App.Settings.Current.Windows.States[this.Context.Key];
+			state.NickListWidth = colNickList.ActualWidth;
+			state.ColumnWidth = boxOutput.ColumnWidth;
 			this.UnsubscribeEvents();
 			if (_logFile != null)
 			{

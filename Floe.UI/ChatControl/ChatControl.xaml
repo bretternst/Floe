@@ -12,6 +12,7 @@
 		<CommandBinding Command="local:ChatControl.CopyLinkCommand" Executed="ExecuteCopyLink"/>
 		<CommandBinding Command="local:ChatControl.QuitCommand" Executed="ExecuteQuit" CanExecute="CanExecuteConnectedCommand"/>
 		<CommandBinding Command="local:ChatControl.ClearCommand" Executed="ExecuteClear"/>
+		<CommandBinding Command="local:ChatControl.InsertCommand" Executed="ExecuteInsert"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<Style TargetType="ListBoxItem">
@@ -40,6 +41,37 @@
 		<ContextMenu x:Key="cmChannel">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand"/>
 		</ContextMenu>
+		<Style TargetType="MenuItem" x:Key="colorMenuItem">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="MenuItem">
+						<Border x:Name="border" BorderThickness="1" Margin="1" BorderBrush="Transparent" Width="20" Height="20" Background="{TemplateBinding Background}">
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter Property="BorderBrush" TargetName="border" Value="Black"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style TargetType="MenuItem" x:Key="colorMenuHeader">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="MenuItem">
+						<Border x:Name="border" BorderThickness="1" Margin="1" BorderBrush="Transparent" Background="Transparent">
+							<ContentPresenter HorizontalAlignment="Center" Content="{TemplateBinding Header}"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter Property="BorderBrush" TargetName="border" Value="Black"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 	</UserControl.Resources>
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Bottom" BorderBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
@@ -51,7 +83,44 @@
 				 FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
 				 FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
 				 FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
-				 Padding="1,2,2,2" Margin="0" BorderThickness="0"/>
+				 Padding="1,2,2,2" Margin="0" BorderThickness="0">
+				<TextBox.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="ApplicationCommands.Cut"/>
+						<MenuItem Command="ApplicationCommands.Copy"/>
+						<MenuItem Command="ApplicationCommands.Paste"/>
+						<Separator/>
+						<MenuItem Header="Color">
+							<MenuItem.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel IsItemsHost="True" Width="88" Background="White"/>
+								</ItemsPanelTemplate>
+							</MenuItem.ItemsPanel>
+							<MenuItem Style="{StaticResource colorMenuHeader}" Width="88" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;" Header="None"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;00" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color0}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;01" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color1}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;02" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color2}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;03" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color3}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;04" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color4}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;05" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color5}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;06" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color6}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;07" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color7}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;08" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color8}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;09" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color9}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;10" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color10}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;11" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color11}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;12" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color12}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;13" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color13}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;14" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color14}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;15" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color15}"/>
+						</MenuItem>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2502;" Header="Toggle Bold"/>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x251F;" Header="Toggle Underline"/>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2516;" Header="Toggle Reverse"/>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x250F;" Header="Toggle All Off"/>
+					</ContextMenu>
+				</TextBox.ContextMenu>
+			</TextBox>
 		</Border>
 		<Grid>
 			<Grid.ColumnDefinitions>
@@ -77,6 +146,7 @@
 					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"
 					AttentionColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=OneWay}"
 					   DividerBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
+						   AutoSizeColumn="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn, Mode=OneWay}"
 					   MouseDoubleClick="boxOutput_MouseDoubleClick"/>
 			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0"
 					 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"

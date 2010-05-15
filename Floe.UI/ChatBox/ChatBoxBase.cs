@@ -111,5 +111,21 @@ namespace Floe.UI
 			get { return (string)this.GetValue(SelectedLinkProperty); }
 			set { this.SetValue(SelectedLinkProperty, value); }
 		}
+
+		public static readonly DependencyProperty AutoSizeColumnProperty = DependencyProperty.Register("AutoSizeColumn",
+			typeof(bool), typeof(ChatBoxBase));
+		public bool AutoSizeColumn
+		{
+			get { return (bool)this.GetValue(AutoSizeColumnProperty); }
+			set { this.SetValue(AutoSizeColumnProperty, value); }
+		}
+
+		public static readonly DependencyProperty ColumnWidthProperty = DependencyProperty.Register("ColumnWidth",
+			typeof(double), typeof(ChatBoxBase));
+		public double ColumnWidth
+		{
+			get { return (double)this.GetValue(ColumnWidthProperty); }
+			set { this.SetValue(ColumnWidthProperty, value); }
+		}
 	}
 }

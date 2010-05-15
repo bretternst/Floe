@@ -30,6 +30,19 @@ namespace Floe.UI
 		}
 	}
 
+	public class DoubleToPercentConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return ((double)value).ToString("P0");
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return double.Parse(value.ToString());
+		}
+	}
+
 	[ValueConversion(typeof(double), typeof(bool))]
 	public class CanScrollLeftConverter : IValueConverter
 	{

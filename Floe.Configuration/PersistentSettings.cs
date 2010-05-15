@@ -25,7 +25,19 @@ namespace Floe.Configuration
 
 		public void Save()
 		{
-			_exeConfig.Save();
+			try
+			{
+				_exeConfig.Save();
+			}
+			catch (ConfigurationErrorsException)
+			{
+				var _oldSection = _exeConfig.Sections[SettingsConfigSectionName];
+				_exeConfig.Sections.Remove(SettingsConfigSectionName);
+				this.Load();
+				_exeConfig.Sections.Remove(SettingsConfigSectionName);
+				_exeConfig.Sections.Add(SettingsConfigSectionName, _oldSection);
+				_exeConfig.Save();
+			}
 		}
 
 		public void Load()

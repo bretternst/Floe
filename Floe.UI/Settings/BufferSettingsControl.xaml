@@ -6,12 +6,18 @@
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384">
+	<UserControl.Resources>
+		<ToolTip x:Key="ttOutputLines">The number of lines to keep in the scroll buffer.</ToolTip>
+		<ToolTip x:Key="ttInputHistory">The number of commands or text lines to keep in the input history.</ToolTip>
+		<ToolTip x:Key="ttAutoCopyLength">The minimum number of selected characters to copy to the clipboard.</ToolTip>
+		<ToolTip x:Key="ttMaxPasteLines">The maximum number of lines to paste without generating a warning.</ToolTip>
+	</UserControl.Resources>
 	<Canvas>
 		<GroupBox Canvas.Left="12" Canvas.Top="0" Header="Buffer" Height="86" Name="groupBox1" Width="360" BorderBrush="#FFC3C3C3">
 			<Canvas>
-				<Label Content="Output Lines" Height="24" Name="label1" Canvas.Left="6" Canvas.Top="4" />
-				<Label Canvas.Left="201" Canvas.Top="4" Content="Input History" Height="24" Name="label3" />
-				<TextBox Canvas.Left="118" Canvas.Top="4" Height="23" Name="txtOutputLines" Width="56">
+				<Label ToolTip="{StaticResource ttOutputLines}" Content="Output Lines" Height="24" Target="{Binding ElementName=txtOutputLines}" Name="label1" Canvas.Left="6" Canvas.Top="4"/>
+				<Label ToolTip="{StaticResource ttInputHistory}" Canvas.Left="201" Canvas.Top="4" Content="Input History" Height="24" Name="label3" />
+				<TextBox ToolTip="{StaticResource ttOutputLines}" Canvas.Left="118" Canvas.Top="4" Height="23" Name="txtOutputLines" Width="56">
 					<TextBox.Text>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Buffer.BufferLines" Mode="TwoWay">
 							<Binding.ValidationRules>
@@ -20,7 +26,7 @@
 						</Binding>
 					</TextBox.Text>
 				</TextBox>
-				<TextBox Canvas.Left="286" Canvas.Top="4" Height="23" Name="txtInputHistory" Width="56">
+				<TextBox ToolTip="ttInputHistory" Canvas.Left="286" Canvas.Top="4" Height="23" Name="txtInputHistory" Width="56">
 					<TextBox.Text>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Buffer.InputHistory" Mode="TwoWay">
 							<Binding.ValidationRules>
@@ -29,8 +35,8 @@
 						</Binding>
 					</TextBox.Text>
 				</TextBox>
-				<Label Canvas.Left="6" Canvas.Top="30" Content="Auto Copy Length" Height="27" Name="label2" />
-				<TextBox Canvas.Left="118" Canvas.Top="30" Height="23" Name="txtMinimumCopyLength" Width="56">
+				<Label ToolTip="{StaticResource ttAutoCopyLength}" Canvas.Left="6" Canvas.Top="30" Content="Auto Copy Length" Height="27" Name="label2" />
+				<TextBox ToolTip="{StaticResource ttAutoCopyLength}" Canvas.Left="118" Canvas.Top="30" Height="23" Name="txtMinimumCopyLength" Width="56">
 					<TextBox.Text>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Buffer.MinimumCopyLength" Mode="TwoWay">
 							<Binding.ValidationRules>
@@ -39,8 +45,8 @@
 						</Binding>
 					</TextBox.Text>
 				</TextBox>
-				<Label Canvas.Left="186" Canvas.Top="30" Content="Max Paste Lines" Height="28" Name="label4" />
-				<TextBox Canvas.Left="286" Canvas.Top="32" Height="23" Name="txtMaxPasteLines" Width="56">
+				<Label ToolTip="{StaticResource ttMaxPasteLines}" Canvas.Left="186" Canvas.Top="30" Content="Max Paste Lines" Height="28" Name="label4" />
+				<TextBox ToolTip="{StaticResource ttMaxPasteLines}" Canvas.Left="286" Canvas.Top="32" Height="23" Name="txtMaxPasteLines" Width="56">
 					<Binding Mode="TwoWay" Path="Current.Buffer.MaximumPasteLines" Source="{x:Static local:App.Settings}">
 						<Binding.ValidationRules>
 							<ExceptionValidationRule />
