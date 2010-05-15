@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Text;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.TextFormatting;
-using System.Linq;
 
 namespace Floe.UI
 {
@@ -77,13 +73,8 @@ namespace Floe.UI
 			}
 			else if (_isDragging)
 			{
-				_columnWidth = Math.Max(DefaultColumnWidth, Math.Min(this.ViewportWidth / 2.0, p.X));
-				_blocks.ForEach((b) =>
-					{
-						b.TextX = _columnWidth + SeparatorPadding;
-						b.NickX = _columnWidth - SeparatorPadding - b.Nick.WidthIncludingTrailingWhitespace;
-					});
-				this.InvalidateVisual();
+				_columnWidth = Math.Max(0.0, Math.Min(this.ViewportWidth / 2.0, p.X));
+				this.FormatAll();
 			}
 			else if (this.UseTabularView && Math.Abs(p.X - (_columnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
 			{

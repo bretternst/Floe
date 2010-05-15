@@ -1,21 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Interop;
-using System.Collections.ObjectModel;
 
-using Floe.Net;
 using Floe.UI.Interop;
-using Floe.Configuration;
 
 namespace Floe.UI
 {
@@ -23,18 +10,20 @@ namespace Floe.UI
 	{
 		private const double ResizeHeight = 4.0;
 		private const double ResizeWidth = 6.0;
-		private NotifyIcon _notifyIcon;
-		private WindowState _oldWindowState = WindowState.Normal;
 		private IntPtr _hWnd;
 
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
 
-			var placementEl = App.Settings.Current.Windows.States.Get(this.Control.Context.GetKey());
-			if (placementEl != null)
+			var state = App.Settings.Current.Windows.States[this.Control.Context.Key];
+			if (!string.IsNullOrEmpty(state.Placement))
 			{
-				Interop.WindowHelper.Load(this, placementEl.Placement);
+				Interop.WindowHelper.Load(this, state.Placement);
+			}
+			if (!this.IsActive)
+			{
+				WindowHelper.FlashWindow(this);
 			}
 
 			var hwndSrc = PresentationSource.FromVisual(this) as HwndSource;
@@ -129,34 +118,33 @@ namespace Floe.UI
 			base.OnDeactivated(e);
 		}
 
-		protected override void OnStateChanged(EventArgs e)
-		{
-			if (this.WindowState == System.Windows.WindowState.Minimized && App.Settings.Current.Windows.MinimizeToSysTray)
-			{
-				if (_notifyIcon == null)
-				{
-					_notifyIcon = new NotifyIcon(this, App.ApplicationIcon);
-					_notifyIcon.DoubleClicked += (sender, args) =>
-					{
-						_notifyIcon.Hide();
-						this.BeginInvoke(() =>
-						{
-							this.Show();
-							this.WindowState = _oldWindowState;
-							this.Activate();
-						});
-					};
-				}
-				this.Hide();
-				_notifyIcon.Show();
-			}
+		//protected override void OnStateChanged(EventArgs e)
+		//{
+		//    if (this.WindowState == System.Windows.WindowState.Minimized && App.Settings.Current.Windows.MinimizeToSysTray)
+		//    {
+		//        if (_notifyIcon == null)
+		//        {
+		//            _notifyIcon = new NotifyIcon(this, App.ApplicationIcon);
+		//            _notifyIcon.DoubleClicked += (sender, args) =>
+		//            {
+		//                _notifyIcon.Hide();
+		//                this.BeginInvoke(() =>
+		//                {
+		//                    this.Show();
+		//                    this.WindowState = _oldWindowState;
+		//                    this.Activate();
+		//                });
+		//            };
+		//        }
+		//        this.Hide();
+		//        _notifyIcon.Show();
+		//    }
 
-			base.OnStateChanged(e);
-		}
+		//    base.OnStateChanged(e);
+		//}
 
 		private void btnMinimize_Click(object sender, RoutedEventArgs e)
 		{
-			var _oldWindowState = this.WindowState;
 			this.WindowState = WindowState.Minimized;
 		}
 

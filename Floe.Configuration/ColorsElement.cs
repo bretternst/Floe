@@ -1,9 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Configuration;
 using System.Windows.Media;
-using System.Collections.Generic;
-using System.ComponentModel;
-
 using Floe.UI;
 
 namespace Floe.Configuration
@@ -150,7 +148,7 @@ namespace Floe.Configuration
 			set { this["oldMarker"] = value; OnPropertyChanged("OldMarker"); }
 		}
 
-		[ConfigurationProperty("attention", DefaultValue = "#FF00FF")]
+		[ConfigurationProperty("attention", DefaultValue = "#404000")]
 		public string Attention
 		{
 			get { return (string)this["attention"]; }

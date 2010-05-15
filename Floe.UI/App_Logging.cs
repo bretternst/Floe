@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Text;
 using System.Windows;
-using Floe.Configuration;
 
 namespace Floe.UI
 {
@@ -31,7 +29,7 @@ namespace Floe.UI
 			string path = Path.Combine(LoggingPathBase, "exception.txt");
 			using (var sw = new StreamWriter(path))
 			{
-				sw.WriteLine(string.Format("-\n{0}\n{1}\n", DateTime.Now.ToString(), exceptionObject.ToString()));
+				sw.WriteLine(string.Format("-{2}{0}{2}{1}{2}", DateTime.Now.ToString(), exceptionObject.ToString(), Environment.NewLine));
 				sw.Flush();
 			}
 		}

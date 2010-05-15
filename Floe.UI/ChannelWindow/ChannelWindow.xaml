@@ -5,6 +5,9 @@
 		xmlns:local="clr-namespace:Floe.UI"
 		MinWidth="300"  MinHeight="250" WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True"
 		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}">
+	<Window.CommandBindings>
+		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
+	</Window.CommandBindings>
 	<Window.Resources>
 		<local:BrushToColorConverter x:Key="brushToColor"/>
 		<SolidColorBrush x:Key="winBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>

@@ -107,6 +107,11 @@ namespace Floe.UI
 									this.SetTitle();
 								}
 							}
+
+							if (this.Target.Type == IrcTargetType.Nickname)
+							{
+								Interop.WindowHelper.FlashWindow(_window);
+							}
 						});
 				}
 			}
@@ -234,7 +239,8 @@ namespace Floe.UI
 					}
 
 					if(this.IsServer &&
-						!((ChatWindow)_window).Items.Any((item) => item.IsVisible && item.Control.Session == this.Session))
+						!((ChatWindow)_window).Items.Any((item) => item.IsVisible && item.Control.Session == this.Session) &&
+						!App.Current.Windows.OfType<ChannelWindow>().Any((cw) => cw.Control.Session == this.Session && cw.IsActive))
 					{
 						return true;
 					}
@@ -528,30 +534,6 @@ namespace Floe.UI
 			}
 		}
 
-		private void ChatControl_Loaded(object sender, RoutedEventArgs e)
-		{
-			if (_window == null)
-			{
-				_window = Window.GetWindow(this);
-				if (_window != null)
-				{
-					_window.Deactivated += new EventHandler(_window_Deactivated);
-				}
-			}
-			this.NotifyState = NotifyState.None;
-		}
-
-		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)
-		{
-			_hasDeactivated = true;
-			this.SelectedLink = null;
-			if (_window != null)
-			{
-				_window.Deactivated -= new EventHandler(_window_Deactivated);
-			}
-			_window = null;
-		}
-
 		private void _window_Deactivated(object sender, EventArgs e)
 		{
 			_hasDeactivated = true;
@@ -619,6 +601,30 @@ namespace Floe.UI
 				}
 				this.Connect(item);
 			}
+		}
+
+		private void ChatControl_Loaded(object sender, RoutedEventArgs e)
+		{
+			if (_window == null)
+			{
+				_window = Window.GetWindow(this);
+				if (_window != null)
+				{
+					_window.Deactivated += new EventHandler(_window_Deactivated);
+				}
+			}
+			this.NotifyState = NotifyState.None;
+		}
+
+		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)
+		{
+			_hasDeactivated = true;
+			this.SelectedLink = null;
+			if (_window != null)
+			{
+				_window.Deactivated -= new EventHandler(_window_Deactivated);
+			}
+			_window = null;
 		}
 
 		protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)

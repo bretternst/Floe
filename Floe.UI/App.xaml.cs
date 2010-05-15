@@ -102,6 +102,56 @@ namespace Floe.UI
 			System.Diagnostics.Process.Start(url);
 		}
 
+		public static void Create(IrcSession session, IrcTarget target, bool makeActive)
+		{
+			var detached = App.Current.Windows.OfType<ChannelWindow>().Where((cw) => cw.Control.Session == session
+				&& target.Equals(cw.Control.Target)).FirstOrDefault();
+			if (detached != null)
+			{
+				if (makeActive)
+				{
+					detached.Activate();
+				}
+				return;
+			}
+
+			var window = App.Current.MainWindow as ChatWindow;
+			if (makeActive)
+			{
+				window.Activate();
+			}
+
+			var page = window.FindPage(session, target);
+			if (page != null)
+			{
+				if (makeActive)
+				{
+					window.SwitchToPage(page);
+				}
+			}
+			else
+			{
+				var context = new ChatContext(session, target);
+				if (App.Settings.Current.Windows.States[context.Key].IsDetached)
+				{
+					var newWin = new ChannelWindow(new ChatControl(context));
+					if (!makeActive)
+					{
+						newWin.ShowActivated = false;
+					}
+					newWin.Show();
+					if (makeActive)
+					{
+						newWin.Activate();
+					}
+				}
+				else
+				{
+					window.AddPage(new ChatContext(session, target), makeActive);
+				}
+			}
+		}
+
 		public App()
 		{
 			this.Startup += new StartupEventHandler(App_Startup);

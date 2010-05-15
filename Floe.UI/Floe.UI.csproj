@@ -69,6 +69,7 @@
     <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
       <DependentUpon>ChannelWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ChannelWindow\ChannelWindow_Commands.cs" />
     <Compile Include="ChannelWindow\ChannelWindow_WndProc.cs" />
     <Compile Include="ChatBox\ChatBox.cs" />
     <Compile Include="ChatBox\ChatBoxBase.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="ChatControl\ChatControl_Commands.cs" />
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
+    <Compile Include="ChatControl\ChatControl_WndProc.cs" />
     <Compile Include="ChatControl\NotifyState.cs" />
     <Compile Include="ChatWindow\ChatWindow_Commands.cs" />
     <Compile Include="ChatWindow\ChatWindow_Events.cs" />

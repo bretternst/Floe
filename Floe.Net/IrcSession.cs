@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Floe.Net
 {
@@ -116,20 +116,18 @@ namespace Floe.Net
 
 		public void Send(IrcMessage message)
 		{
-			if (this.State == IrcSessionState.Disconnected)
+			if (this.State != IrcSessionState.Disconnected)
 			{
-				throw new IrcException("Not connected to a server.");
+				_conn.QueueMessage(message);
 			}
-			_conn.QueueMessage(message);
 		}
 
 		public void Send(string command, params string[] parameters)
 		{
-			if (this.State == IrcSessionState.Disconnected)
+			if (this.State != IrcSessionState.Disconnected)
 			{
-				throw new IrcException("Not connected to a server.");
+				_conn.QueueMessage(new IrcMessage(command, parameters));
 			}
-			_conn.QueueMessage(new IrcMessage(command, parameters));
 		}
 
 		public void Send(string command, IrcTarget target, params string[] parameters)

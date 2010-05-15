@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Floe.Net;
 using System.Windows;
+using Floe.Net;
 
 namespace Floe.UI
 {
@@ -19,15 +16,18 @@ namespace Floe.UI
 			this.Target = target;
 		}
 
-		public string GetKey()
+		public string Key
 		{
-			if (this.Target == null)
+			get
 			{
-				return this.Session.NetworkName;
-			}
-			else
-			{
-				return string.Format("{0}.{1}", this.Session.NetworkName, this.Target.Name.ToLowerInvariant());
+				if (this.Target == null)
+				{
+					return this.Session.NetworkName.ToLowerInvariant();
+				}
+				else
+				{
+					return string.Format("{0}.{1}", this.Session.NetworkName, this.Target.Name.ToLowerInvariant()).ToLowerInvariant();
+				}
 			}
 		}
 	}

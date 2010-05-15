@@ -1,14 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System;
 using System.Linq;
-using System.Collections.ObjectModel;
-
+using System.Windows;
+using System.Windows.Input;
 using Floe.Net;
 
 namespace Floe.UI
@@ -23,22 +16,7 @@ namespace Floe.UI
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
 			var control = tabsChat.SelectedContent as ChatControl;
-			if (control != null)
-			{
-				var target = new IrcTarget((string)e.Parameter);
-				var context = this.FindPage(control.Session, target);
-				this.BeginInvoke(() =>
-				{
-					if (context != null)
-					{
-						this.SwitchToPage(context);
-					}
-					else
-					{
-						this.AddPage(new ChatContext(control.Session, target), true);
-					}
-				});
-			}
+			this.BeginInvoke(() => App.Create(control.Session, new IrcTarget((string)e.Parameter), true));
 		}
 
 		private void ExecuteClose(object sender, ExecutedRoutedEventArgs e)

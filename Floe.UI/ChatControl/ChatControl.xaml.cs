@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Linq;
 using Floe.Net;
 
 namespace Floe.UI
 {
 	public partial class ChatControl : UserControl, IDisposable
 	{
-		private const double DefaultNickListWidth = 115.0;
 		private LinkedList<string> _history;
 		private LinkedListNode<string> _historyNode;
 		private LogFileHandle _logFile;
@@ -29,7 +27,7 @@ namespace Floe.UI
 
 			if (!this.IsServer)
 			{
-				_logFile = App.OpenLogFile(context.GetKey());
+				_logFile = App.OpenLogFile(context.Key);
 				while (_logFile.Buffer.Count > 0)
 				{
 					var cl = _logFile.Buffer.Dequeue();
@@ -43,7 +41,7 @@ namespace Floe.UI
 				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
 				this.Session.Mode(this.Target);
 				splitter.IsEnabled = true;
-				colNickList.Width = new GridLength(DefaultNickListWidth);
+				colNickList.Width = new GridLength(App.Settings.Current.Windows.States[context.Key].NickListWidth);
 			}
 			else if (this.IsNickname)
 			{
@@ -143,7 +141,7 @@ namespace Floe.UI
 				_hasDeactivated = false;
 				if (_markerLine != null)
 				{
-					_markerLine.Marker &= ~ChatMarker.None;
+					_markerLine.Marker &= ~ChatMarker.NewMarker;
 				}
 				_markerLine = cl;
 				cl.Marker = ChatMarker.NewMarker;
@@ -256,6 +254,7 @@ namespace Floe.UI
 
 		public void Dispose()
 		{
+			App.Settings.Current.Windows.States[this.Context.Key].NickListWidth = colNickList.ActualWidth;
 			this.UnsubscribeEvents();
 			if (_logFile != null)
 			{

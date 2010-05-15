@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Controls;
 using System.Windows;
-using System.Text;
-using System.Windows.Input;
+using System.Windows.Controls;
 using Floe.Net;
 
 namespace Floe.UI

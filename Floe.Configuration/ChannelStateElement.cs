@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Configuration;
 
 namespace Floe.Configuration
@@ -38,6 +37,21 @@ namespace Floe.Configuration
 			}
 		}
 
+		public new ChannelStateElement this[string key]
+		{
+			get
+			{
+				var el = this.BaseGet(key) as ChannelStateElement;
+				if(el == null)
+				{
+					el = new ChannelStateElement();
+					el.Name = key;
+					this.Add(el);
+				}
+				return el;
+			}
+		}
+
 		public void Add(ChannelStateElement element)
 		{
 			this.BaseAdd(element);
@@ -72,34 +86,6 @@ namespace Floe.Configuration
 		{
 			this.BaseRemoveAt(index);
 		}
-
-		public ChannelStateElement Get(string name)
-		{
-			name = name.ToLowerInvariant();
-			return this.OfType<ChannelStateElement>().Where((s) => name == s.Name).FirstOrDefault();
-		}
-
-		public void Set(string name, string placement)
-		{
-			var el = this.Get(name);
-			if (el != null)
-			{
-				el.Placement = placement;
-			}
-			else
-			{
-				this.Add(new ChannelStateElement() { Name = name.ToLowerInvariant(), Placement = placement });
-			}
-		}
-
-		public void Delete(string name)
-		{
-			var el = this.Get(name);
-			if (el != null)
-			{
-				this.Remove(el);
-			}
-		}
 	}
 
 	public sealed class ChannelStateElement : ConfigurationElement
@@ -115,11 +101,25 @@ namespace Floe.Configuration
 			}
 		}
 
+		[ConfigurationProperty("isDetached", DefaultValue=false)]
+		public bool IsDetached
+		{
+			get { return (bool)this["isDetached"]; }
+			set { this["isDetached"] = value; }
+		}
+
 		[ConfigurationProperty("placement", DefaultValue="")]
 		public string Placement
 		{
 			get { return (string)this["placement"]; }
 			set { this["placement"] = value; }
+		}
+
+		[ConfigurationProperty("nickListWidth", DefaultValue = 115.0)]
+		public double NickListWidth
+		{
+			get { return (double)this["nickListWidth"]; }
+			set { this["nickListWidth"] = value; }
 		}
 	}
 }

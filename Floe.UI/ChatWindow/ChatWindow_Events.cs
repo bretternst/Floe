@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 
 using Floe.Net;
 
@@ -18,8 +17,8 @@ namespace Floe.UI
 				this.Invoke(() =>
 				{
 					var context = new ChatContext((IrcSession)sender, e.Channel);
-					var el = App.Settings.Current.Windows.States.Get(context.GetKey());
-					if (el != null)
+					var state = App.Settings.Current.Windows.States[context.Key];
+					if (state.IsDetached)
 					{
 						this.OpenWindow(context);
 					}
@@ -116,22 +115,7 @@ namespace Floe.UI
 				{
 					this.Invoke(() =>
 						{
-							var session = sender as IrcSession;
-							target = new IrcTarget((IrcPeer)e.Message.From);
-							var context = new ChatContext(session, target);
-							var el = App.Settings.Current.Windows.States.Get(context.GetKey());
-							if (el != null)
-							{
-								this.OpenWindow(context);
-							}
-							else
-							{
-								var control = this.FindPage(session, target);
-								if (control == null)
-								{
-									this.AddPage(new ChatContext(session, target), false);
-								}
-							}
+							App.Create(sender as IrcSession, new IrcTarget((IrcPeer)e.Message.From), false);
 						});
 				}
 			}

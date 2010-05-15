@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 
 namespace Floe.UI.Interop
 {
@@ -85,6 +82,7 @@ namespace Floe.UI.Interop
 	{
 		private const int SW_SHOWNORMAL = 1;
 		private const int SW_SHOWMINIMIZED = 2;
+		private const int SW_SHOWMINNOACTIVE = 7;
 
 		[DllImport("user32")]
 		private static extern bool SetWindowPlacement(IntPtr hWnd, [In] ref WINDOWPLACEMENT lpwndpl);
@@ -120,6 +118,10 @@ namespace Floe.UI.Interop
 				wp.length = Marshal.SizeOf(typeof(WINDOWPLACEMENT));
 				wp.flags = 0;
 				wp.showCmd = (wp.showCmd == SW_SHOWMINIMIZED ? SW_SHOWNORMAL : wp.showCmd);
+				if (!window.ShowActivated)
+				{
+					wp.showCmd = SW_SHOWMINNOACTIVE;
+				}
 				IntPtr hwnd = new WindowInteropHelper(window).Handle;
 				SetWindowPlacement(hwnd, ref wp);
 			}
@@ -168,11 +170,14 @@ namespace Floe.UI.Interop
 
 		public static void FlashWindow(Window window)
 		{
-			var fi = new FLASHINFO();
-			fi.cbSize = Marshal.SizeOf(typeof(FLASHINFO));
-			fi.hWnd = new WindowInteropHelper(window).Handle;
-			fi.dwFlags = 0x2 | 0xc;
-			FlashWindowEx(ref fi);
+			if (window != null)
+			{
+				var fi = new FLASHINFO();
+				fi.cbSize = Marshal.SizeOf(typeof(FLASHINFO));
+				fi.hWnd = new WindowInteropHelper(window).Handle;
+				fi.dwFlags = 0x2 | 0xc;
+				FlashWindowEx(ref fi);
+			}
 		}
 	}
 }

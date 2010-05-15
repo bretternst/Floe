@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
-using System.Text.RegularExpressions;
 
 namespace Floe.Net
 {
@@ -43,6 +41,7 @@ namespace Floe.Net
 				throw new InvalidOperationException("The connection is already open.");
 			}
 
+			_writeQueue.Clear();
 			_socketThread = new Thread(new ThreadStart(this.SocketLoop));
 			_socketThread.Start();
 		}
@@ -148,12 +147,16 @@ namespace Floe.Net
 										{
 											this.OnMessageReceived(message);
 										}
+#if DEBUG
 										catch (IrcException ex)
 										{
-#if DEBUG
 											System.Diagnostics.Debug.WriteLine("Unhandled IrcException: {0}", ex.Message);
-#endif
 										}
+#else
+										catch(IrcException)
+										{
+										}
+#endif
 										input.Clear();
 									}
 								}

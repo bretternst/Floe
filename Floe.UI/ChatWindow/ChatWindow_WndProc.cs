@@ -1,19 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Interop;
-using System.Collections.ObjectModel;
 
-using Floe.Net;
 using Floe.UI.Interop;
 
 namespace Floe.UI
@@ -160,7 +148,7 @@ namespace Floe.UI
 
 		private void btnMinimize_Click(object sender, RoutedEventArgs e)
 		{
-			var _oldWindowState = this.WindowState;
+			_oldWindowState = this.WindowState;
 			this.WindowState = WindowState.Minimized;
 		}
 

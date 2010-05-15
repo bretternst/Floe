@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.ComponentModel;
 
 namespace Floe.UI
 {
@@ -32,18 +23,20 @@ namespace Floe.UI
 
 		protected override void OnClosing(CancelEventArgs e)
 		{
+			var state = App.Settings.Current.Windows.States[this.Control.Context.Key];
+
 			if (this.Control.Parent != null)
 			{
 				if (this.Control.IsConnected && this.Control.IsChannel)
 				{
 					this.Control.Session.Part(this.Control.Target.Name);
 				}
-				App.Settings.Current.Windows.States.Set(this.Control.Context.GetKey(),
-					Interop.WindowHelper.Save(this));
+				state.IsDetached = true;
+				state.Placement = Interop.WindowHelper.Save(this);
 			}
 			else
 			{
-				App.Settings.Current.Windows.States.Delete(this.Control.Context.GetKey());
+				state.IsDetached = false;
 			}
 		}
 
