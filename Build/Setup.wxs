@@ -9,6 +9,8 @@
 		Comments="Floe IRC Installer Package" Manufacturer="Floe"
       		InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" InstallScope="perMachine"/>
 
+	<Property Id="WIXUI_INSTALLDIR" Value="APPROOTDIR"/>
+	<UIRef Id="WixUI_InstallDir" />
 		<PropertyRef Id="NETFRAMEWORK40CLIENT"/>
 
 		<Condition Message="This application requires .NET Framework 4.0. Please install the .NET Framework and run this installer again.">
@@ -59,5 +61,4 @@
 	</InstallExecuteSequence> 
 
 	</Product>
-
 </Wix>
