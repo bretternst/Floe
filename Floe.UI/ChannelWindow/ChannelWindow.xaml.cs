@@ -32,12 +32,12 @@ namespace Floe.UI
 					this.Control.Session.Part(this.Control.Target.Name);
 				}
 				state.IsDetached = true;
-				state.Placement = Interop.WindowHelper.Save(this);
 			}
 			else
 			{
 				state.IsDetached = false;
 			}
+			state.Placement = Interop.WindowHelper.Save(this);
 		}
 
 		private void btnReattach_Click(object sender, RoutedEventArgs e)
