@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
-
 using Floe.UI.Interop;
 
 namespace Floe.UI
@@ -88,6 +88,12 @@ namespace Floe.UI
 				}
 				else if (p.Y <= grdRoot.RowDefinitions[0].Height.Value &&
 					p.X <= grdRoot.ColumnDefinitions[0].ActualWidth)
+				{
+					htResult = WindowConstants.HitTestValues.HTCAPTION;
+				}
+
+				var s = this.InputHitTest(p) as System.Windows.Controls.StackPanel;
+				if(s != null && s.TemplatedParent is TabControl)
 				{
 					htResult = WindowConstants.HitTestValues.HTCAPTION;
 				}

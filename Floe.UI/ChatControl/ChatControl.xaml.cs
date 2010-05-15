@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Floe.Net;
 
 namespace Floe.UI
@@ -124,7 +125,7 @@ namespace Floe.UI
 		{
 			try
 			{
-				this.Execute(text);
+				this.Execute(text, (Keyboard.Modifiers & ModifierKeys.Shift) > 0);
 			}
 			catch (IrcException ex)
 			{
@@ -243,6 +244,7 @@ namespace Floe.UI
 				if (item != null)
 				{
 					item.Items.Refresh();
+					item.IsEnabled = item.Items.Count > 0;
 				}
 				return menu;
 			}

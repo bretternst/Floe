@@ -22,7 +22,7 @@ namespace Floe.UI
 			{
 				if (this.Target == null)
 				{
-					return this.Session.NetworkName.ToLowerInvariant();
+					return "Server";
 				}
 				else
 				{

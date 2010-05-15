@@ -67,7 +67,7 @@
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
-			<Label Grid.Row="0" Grid.Column="0" Content="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
+			<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
 			<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
 				<Button x:Name="btnReattach" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnReattach_Click">
 					<Path Margin="2" 

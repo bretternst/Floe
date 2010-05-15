@@ -42,7 +42,7 @@ namespace Floe.UI
 								{
 									foreach (var cmd in this.Perform.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0))
 									{
-										this.Execute(cmd);
+										this.Execute(cmd, false);
 									}
 								}
 								break;

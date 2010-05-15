@@ -52,7 +52,7 @@
 		<Slider Canvas.Left="88" Canvas.Top="214" Height="23" Name="sldNicknameColorScheme" Width="69" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}"
 				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=TwoWay}" SmallChange="1" LargeChange="1" IsSnapToTickEnabled="True" />
 		<Label Canvas.Left="29" Canvas.Top="214" Content="Scheme" Height="28" Name="label1" />
-		<CheckBox Canvas.Left="18" Canvas.Top="176" Content="Attentionn On Own Nickname" Height="16" Name="checkBox1"
+		<CheckBox Canvas.Left="18" Canvas.Top="176" Content="Attention On Own Nickname" Height="16" Name="checkBox1"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionOnOwnNickname}"/>
 		<TextBox Canvas.Left="202" Canvas.Top="149" Height="89" Name="textBox1" Width="170" AcceptsReturn="True"
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionPatterns}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />

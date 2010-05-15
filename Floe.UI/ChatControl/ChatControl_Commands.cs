@@ -16,7 +16,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand WhoisCommand = new RoutedUICommand("Whois", "Whois", typeof(ChatControl));
 		public readonly static RoutedUICommand OpenLinkCommand = new RoutedUICommand("Open", "OpenLink", typeof(ChatControl));
 		public readonly static RoutedUICommand CopyLinkCommand = new RoutedUICommand("Copy", "CopyLink", typeof(ChatControl));
-		public readonly static RoutedUICommand QuitCommand = new RoutedUICommand("Quit", "Quit", typeof(ChatControl));
+		public readonly static RoutedUICommand QuitCommand = new RoutedUICommand("Disconnect", "Quit", typeof(ChatControl));
 		public readonly static RoutedUICommand ClearCommand = new RoutedUICommand("Clear", "Clear", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
@@ -66,7 +66,7 @@ namespace Floe.UI
 			boxOutput.Clear();
 		}
 
-		private void Execute(string text)
+		private void Execute(string text, bool literal)
 		{
 			var chars = text.ToCharArray();
 			for (int i = 0; i < chars.Length; i++)
@@ -80,7 +80,7 @@ namespace Floe.UI
 
 			string command = text.Trim();
 
-			if (command.Length > 0 && command[0] == CommandChar && !Keyboard.IsKeyToggled(Key.Scroll))
+			if (command.Length > 0 && command[0] == CommandChar && !literal)
 			{
 				string args = string.Empty;
 				command = command.Substring(1).TrimStart();
