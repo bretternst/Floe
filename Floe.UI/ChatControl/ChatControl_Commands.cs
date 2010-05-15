@@ -128,7 +128,7 @@ namespace Floe.UI
 					if (!this.IsServer)
 					{
 						this.Session.PrivateMessage(this.Target, text);
-						this.Write("Own", 0, this.Session.Nickname, text, false);
+						this.Write("Own", 0, this.GetNickWithLevel(this.Session.Nickname), text, false);
 					}
 					else
 					{
@@ -329,10 +329,10 @@ namespace Floe.UI
 					}
 					else
 					{
-						char mode = command == "OP" || command == "DEOP" ? 'o' : 'v';
+						char mode = (command == "OP" || command == "DEOP") ? 'o' : 'v';
 						args = Split(command, arguments, 1, int.MaxValue);
 						var modes = from s in args
-									select new IrcChannelMode(command == "OP", mode, s);
+									select new IrcChannelMode(command == "OP" || command == "VOICE", mode, s);
 						this.Session.Mode(this.Target.Name, modes);
 					}
 					break;
@@ -424,17 +424,4 @@ namespace Floe.UI
 			return parts.ToArray();
 		}
 	}
-
-	public class QueryEventArgs : RoutedEventArgs
-	{
-		public string Nickname { get; private set; }
-
-		public QueryEventArgs(RoutedEvent evt, string nickname)
-			: base(evt)
-		{
-			this.Nickname = nickname;
-		}
-	}
-
-	public delegate void QueryEventHandler(object sender, QueryEventArgs e);
 }

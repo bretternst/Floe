@@ -546,7 +546,7 @@ namespace Floe.UI
 				}
 				else
 				{
-					ChatWindow.ChatCommand.Execute(link, this);
+					ChatWindow.ChatCommand.Execute(this.GetNickWithoutLevel(link), this);
 				}
 			}
 		}
@@ -562,6 +562,7 @@ namespace Floe.UI
 				}
 				else
 				{
+					this.SelectedLink = this.GetNickWithoutLevel(this.SelectedLink);
 					boxOutput.ContextMenu = this.Resources["cmNickname"] as ContextMenu;
 				}
 				boxOutput.ContextMenu.IsOpen = true;

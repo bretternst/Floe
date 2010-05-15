@@ -76,6 +76,22 @@ namespace Floe.UI
 			}
 		}
 
+		private string GetNickWithLevel(string nick)
+		{
+			if (!this.IsChannel)
+			{
+				return nick;
+			}
+
+			var cn = this.GetNick(nick);
+			return cn != null ? cn.ToString() : nick;
+		}
+
+		private string GetNickWithoutLevel(string nick)
+		{
+			return (nick.Length > 1 && (nick[0] == '@' || nick[0] == '+')) ? nick.Substring(1) : nick;
+		}
+
 		private bool IsPresent(string nick)
 		{
 			return this.Nicknames.Any((cn) => cn.CompareTo(nick) == 0);
@@ -95,7 +111,7 @@ namespace Floe.UI
 				{
 					var level = cn.Level;
 					var mask = mode.Mode == 'o' ? ChannelLevel.Op : ChannelLevel.Voice;
-					level = mode.Set ? level | mask : level ^ mask;
+					level = mode.Set ? level | mask : level & ~mask;
 					this.AddNick(level, cn.Nickname);
 				}
 			}

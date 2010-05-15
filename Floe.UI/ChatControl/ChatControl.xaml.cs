@@ -176,7 +176,8 @@ namespace Floe.UI
 
 		private void Write(string styleKey, IrcPeer peer, string text, bool attn)
 		{
-			this.Write(styleKey, string.Format("{0}@{1}", peer.Username, peer.Hostname).GetHashCode(), peer.Nickname, text, attn);
+			this.Write(styleKey, string.Format("{0}@{1}", peer.Username, peer.Hostname).GetHashCode(),
+				this.GetNickWithLevel(peer.Nickname), text, attn);
 		}
 
 		private void Write(string styleKey, string text)
