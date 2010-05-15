@@ -104,7 +104,7 @@ namespace Floe.UI
 			var b = new Block();
 			b.Source = source;
 			b.Foreground = this.Palette[b.Source.ColorKey];
-			b.TimeString = b.Source.Nick != null ? this.FormatTime(b.Source.Time) : "";
+			b.TimeString = this.FormatTime(b.Source.Time);
 			b.NickString = this.FormatNick(b.Source.Nick);
 
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
@@ -177,7 +177,7 @@ namespace Floe.UI
 			_blocks.ForEach((b) =>
 				{
 					b.Foreground = this.Palette[b.Source.ColorKey];
-					b.TimeString = b.Source.Nick != null ? this.FormatTime(b.Source.Time) : "";
+					b.TimeString = this.FormatTime(b.Source.Time);
 					b.NickString = this.FormatNick(b.Source.Nick);
 					b.NickX = b.TextX = 0.0;
 
