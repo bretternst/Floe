@@ -129,6 +129,7 @@ namespace Floe.UI
 			if (!_isSelecting && !_isDragging)
 			{
 				Mouse.OverrideCursor = null;
+				this.SelectedLink = null;
 			}
 			base.OnMouseLeave(e);
 		}
