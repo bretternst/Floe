@@ -584,7 +584,14 @@ namespace Floe.Net
 			switch (e.Message.Command)
 			{
 				case "PING":
-					_conn.QueueMessage("PONG");
+					if (e.Message.Parameters.Count > 0)
+					{
+						_conn.QueueMessage("PONG " + e.Message.Parameters[0]);
+					}
+					else
+					{
+						_conn.QueueMessage("PONG");
+					}
 					break;
 				case "NICK":
 					this.OnNickChanged(e.Message);
