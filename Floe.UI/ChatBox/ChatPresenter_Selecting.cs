@@ -104,10 +104,13 @@ namespace Floe.UI
 			}
 			else if (_isSelecting)
 			{
-				string selText = this.GetSelectedText();
-				if (selText.Length >= this.MinimumCopyLength)
+				if (_selStart >= 0 && _selEnd >= 0)
 				{
-					Clipboard.SetText(selText);
+					string selText = this.GetSelectedText();
+					if (selText.Length >= this.MinimumCopyLength)
+					{
+						Clipboard.SetText(selText);
+					}
 				}
 
 				this.ReleaseMouseCapture();
