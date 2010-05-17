@@ -100,6 +100,10 @@ namespace Floe.UI
 
 		private void FormatSingle(ChatLine source)
 		{
+			if (string.IsNullOrEmpty(source.Text))
+			{
+				return;
+			}
 			var b = new Block();
 			b.Source = source;
 			b.Foreground = this.Palette[b.Source.ColorKey];
@@ -258,7 +262,7 @@ namespace Floe.UI
 			_bottomBlock = null;
 			var guidelines = new GuidelineSet();
 
-			dc.DrawRectangle(this.Background, null, new Rect(new Size(this.ViewportWidth, this.ActualHeight)));
+			dc.DrawRectangle(Brushes.Transparent, null, new Rect(new Size(this.ViewportWidth, this.ActualHeight)));
 
 			var node = _blocks.Last;
 			do
@@ -293,13 +297,13 @@ namespace Floe.UI
 					if ((block.Source.Marker & ChatMarker.NewMarker) > 0)
 					{
 						var markerBrush = new LinearGradientBrush(this.NewMarkerColor,
-							this.BackgroundColor, 90.0);
+							this.NewMarkerTransparentColor, 90.0);
 						dc.DrawRectangle(markerBrush, null,
 							new Rect(new Point(0.0, block.Y), new Size(this.ViewportWidth, _lineHeight * 5)));
 					}
 					if ((block.Source.Marker & ChatMarker.OldMarker) > 0)
 					{
-						var markerBrush = new LinearGradientBrush(this.BackgroundColor,
+						var markerBrush = new LinearGradientBrush(this.OldMarkerTransparentColor,
 							this.OldMarkerColor, 90.0);
 						dc.DrawRectangle(markerBrush, null,
 							new Rect(new Point(0.0, (block.Y + block.Height) - _lineHeight * 5),

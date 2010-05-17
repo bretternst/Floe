@@ -20,7 +20,8 @@ namespace Floe.UI
 					var state = App.Settings.Current.Windows.States[context.Key];
 					if (state.IsDetached)
 					{
-						this.OpenWindow(context);
+						var window = new ChannelWindow(new ChatControl(context));
+						window.Show();
 					}
 					else
 					{

@@ -19,6 +19,13 @@ namespace Floe.UI
 		public readonly static RoutedUICommand QuitCommand = new RoutedUICommand("Disconnect", "Quit", typeof(ChatControl));
 		public readonly static RoutedUICommand ClearCommand = new RoutedUICommand("Clear", "Clear", typeof(ChatControl));
 		public readonly static RoutedUICommand InsertCommand = new RoutedUICommand("Insert", "Insert", typeof(ChatControl));
+		public readonly static RoutedUICommand OpCommand = new RoutedUICommand("Op", "Op", typeof(ChatControl));
+		public readonly static RoutedUICommand DeopCommand = new RoutedUICommand("Deop", "Deop", typeof(ChatControl));
+		public readonly static RoutedUICommand VoiceCommand = new RoutedUICommand("Voice", "Voice", typeof(ChatControl));
+		public readonly static RoutedUICommand DevoiceCommand = new RoutedUICommand("Devoice", "Devoice", typeof(ChatControl));
+		public readonly static RoutedUICommand KickCommand = new RoutedUICommand("Kick", "Kick", typeof(ChatControl));
+		public readonly static RoutedUICommand BanCommand = new RoutedUICommand("Ban", "Ban", typeof(ChatControl));
+		public readonly static RoutedUICommand UnbanCommand = new RoutedUICommand("Unban", "Unban", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -89,6 +96,108 @@ namespace Floe.UI
 			if (!string.IsNullOrEmpty(s))
 			{
 				this.Insert(s);
+			}
+		}
+
+		private void CanExecuteIsOp(object sender, CanExecuteRoutedEventArgs e)
+		{
+			var cn = this.GetNick(this.Session.Nickname);
+			e.CanExecute = cn != null && (cn.Level & ChannelLevel.Op) > 0;
+		}
+
+		private void ExecuteOp(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ExecuteOpVoice(e, 'o', true);
+		}
+
+		private void ExecuteDeop(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ExecuteOpVoice(e, 'o', false);
+		}
+
+		private void ExecuteVoice(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ExecuteOpVoice(e, 'v', true);
+		}
+
+		private void ExecuteDevoice(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ExecuteOpVoice(e, 'v', false);
+		}
+
+		private void ExecuteOpVoice(ExecutedRoutedEventArgs e, char mode, bool set)
+		{
+			IEnumerable<string> nicks;
+			if (e.Parameter is System.Collections.IList)
+			{
+				nicks = ((System.Collections.IList)e.Parameter).OfType<NicknameItem>().Select((i) => i.Nickname);
+			}
+			else
+			{
+				nicks = new[] { e.Parameter.ToString() };
+			}
+
+			this.Session.Mode(this.Target.Name,
+				from nick in nicks
+				select new IrcChannelMode(set, mode, nick));
+		}
+
+		private void ExecuteKick(object sender, ExecutedRoutedEventArgs e)
+		{
+			IEnumerable<string> nicks;
+			if (e.Parameter is System.Collections.IList)
+			{
+				nicks = ((System.Collections.IList)e.Parameter).OfType<NicknameItem>().Select((i) => i.Nickname);
+			}
+			else
+			{
+				nicks = new[] { e.Parameter.ToString() };
+			}
+
+			foreach (var nick in nicks)
+			{
+				this.Session.Kick(this.Target.Name, nick);
+			}
+		}
+
+		private void ExecuteBan(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ExecuteBanOrUnban(e, true);
+		}
+
+		private void ExecuteUnban(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ExecuteBanOrUnban(e, false);
+		}
+
+		private void ExecuteBanOrUnban(ExecutedRoutedEventArgs e, bool banSet)
+		{
+			IEnumerable<string> nicks;
+			if (e.Parameter is System.Collections.IList)
+			{
+				nicks = ((System.Collections.IList)e.Parameter).OfType<NicknameItem>().Select((i) => i.Nickname);
+			}
+			else
+			{
+				nicks = new[] { e.Parameter.ToString() };
+			}
+
+			for(int i = 0; i < nicks.Count(); i += 3)
+			{
+				this.Session.AddHandler(new IrcCodeHandler(IrcCode.UserHost, true, (msg) =>
+					{
+						if (msg.Parameters.Count > 1)
+						{
+							var modes = from user in msg.Parameters[1].Split(' ')
+										let parts = user.Split('@')
+										where parts.Length == 2
+										select new IrcChannelMode(banSet, 'b', "*!*@" + parts[1]);
+							this.Session.Mode(this.Target.Name, modes);
+						}
+						return true;
+					}));
+				var chunk = nicks.Skip(i).Take(3).ToArray();
+				this.Session.UserHost(chunk);
 			}
 		}
 
@@ -349,6 +458,18 @@ namespace Floe.UI
 					args = Split(command, arguments, 2, int.MaxValue);
 					this.Session.SendCtcp(new IrcTarget(args[0]),
 						new CtcpCommand(args[1], args.Skip(2).ToArray()), false);
+					break;
+				case "QUERY":
+					args = Split(command, arguments, 1, 1);
+					ChatWindow.ChatCommand.Execute(args[0], this);
+					break;
+				case "BAN":
+					args = Split(command, arguments, 1, 1);
+					ChatControl.BanCommand.Execute(args[0], this);
+					break;
+				case "UNBAN":
+					args = Split(command, arguments, 1, 1);
+					ChatControl.UnbanCommand.Execute(args[0], this);
 					break;
 				default:
 					this.Write("Error", string.Format("Unrecognized command: {0}", command));

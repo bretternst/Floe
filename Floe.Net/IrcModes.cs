@@ -144,12 +144,7 @@ namespace Floe.Net
 
 			for (int i = 0; i < paramModeList.Count; i++)
 			{
-				if (i >= paramList.Count)
-				{
-					break;
-				}
-
-				modeList.Add(new IrcChannelMode(paramSetList[i], paramModeList[i], paramList[i]));
+				modeList.Add(new IrcChannelMode(paramSetList[i], paramModeList[i], i < paramList.Count ? paramList[i] : null));
 			}
 
 			return modeList;

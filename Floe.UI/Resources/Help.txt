@@ -1,5 +1,6 @@
 ﻿Available commands:
 /AWAY [message]                         - Set your away message, or remove it if empty
+/BAN <nick>                             - Bans the user from the current channel
 /CLEAR                                  - Clear the current screen
 /CTCP <nick> <command> [args]           - Send CTCP command to a user
 /DEOP <nick>                            - De-op user in the current channel
@@ -18,10 +19,12 @@
 /NOTICE <nick> <message>                - Send a notice to a user
 /OP <nick>                              - Op user in the current channel
 /PART or /LEAVE [#channel]              - Leave a channel
+/QUERY <nick>                           - Opens a chat window with the user
 /QUIT                                   - Disconnect from IRC
 /SERVER hostname [port]                 - Change servers
 /SETUP                                  - Display the settings window
 /TOPIC [#channel] [text]                - Get or set the topic on a channel
+/UNBAN <nick>                           - Unbans the user from the current channel
 /USERHOST <nick>[,<nick>...]            - Get the user@host of one or more users
 /VOICE <nick>                           - Give a user voice in the current channel
 /WHO <mask>                             - Get info on one or more users

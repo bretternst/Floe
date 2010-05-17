@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Interop;
 
 using Floe.UI.Interop;
@@ -8,6 +9,14 @@ namespace Floe.UI
 {
 	public partial class ChannelWindow : Window
 	{
+		public readonly static DependencyProperty UIBackgroundProperty = DependencyProperty.Register("UIBackground",
+			typeof(System.Windows.Media.SolidColorBrush), typeof(ChannelWindow));
+		public SolidColorBrush UIBackground
+		{
+			get { return (SolidColorBrush)this.GetValue(UIBackgroundProperty); }
+			set { this.SetValue(UIBackgroundProperty, value); }
+		}
+
 		private const double ResizeHeight = 4.0;
 		private const double ResizeWidth = 6.0;
 		private IntPtr _hWnd;

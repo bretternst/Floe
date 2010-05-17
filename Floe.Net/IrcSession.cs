@@ -15,6 +15,7 @@ namespace Floe.Net
 	{
 		private IrcConnection _conn;
 		private IrcSessionState _state;
+		private List<IrcCodeHandler> _captures;
 
 		public string Server { get; private set; }
 		public int Port { get; private set; }
@@ -93,6 +94,7 @@ namespace Floe.Net
 				_conn.WaitForClose();
 			}
 
+			_captures = new List<IrcCodeHandler>();
 			this.State = IrcSessionState.Connecting;
 			_conn = new IrcConnection(server, port);
 			_conn.Connected += new EventHandler(_conn_Connected);
@@ -312,6 +314,22 @@ namespace Floe.Net
 			this.Send("LIST", channels);
 		}
 
+		public void AddHandler(IrcCodeHandler capture)
+		{
+			lock (_captures)
+			{
+				_captures.Add(capture);
+			}
+		}
+
+		public bool RemoveHandler(IrcCodeHandler capture)
+		{
+			lock (_captures)
+			{
+				return _captures.Remove(capture);
+			}
+		}
+
 		private void OnStateChanged()
 		{
 			var handler = this.StateChanged;
@@ -322,6 +340,7 @@ namespace Floe.Net
 
 			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
 			{
+				this.State = IrcSessionState.Connecting;
 				_conn.Open();
 			}
 		}
@@ -513,6 +532,19 @@ namespace Floe.Net
 					}
 					this.State = IrcSessionState.Connected;
 				}
+
+				foreach (var capture in _captures)
+				{
+					if (capture.Code == e.Code && capture.Handler(message))
+					{
+						if (capture.AutoRemove)
+						{
+							_captures.Remove(capture);
+						}
+						return;
+					}
+				}
+
 				var handler = this.InfoReceived;
 				if (handler != null)
 				{

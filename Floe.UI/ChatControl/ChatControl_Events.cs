@@ -11,7 +11,7 @@ namespace Floe.UI
 	{
 		private char[] _channelModes = new char[0];
 		private string _topic = "", _prefix;
-		private bool _hasNames = false, _hasModes = false, _hasDeactivated = false, _usingAlternateNick = false;
+		private bool _hasNames = false, _hasDeactivated = false, _usingAlternateNick = false;
 		private Window _window;
 
 		private void Session_StateChanged(object sender, EventArgs e)
@@ -144,7 +144,7 @@ namespace Floe.UI
 						case IrcCode.NicknameInUse:
 							if (this.IsServer && this.Session.State == IrcSessionState.Connecting)
 							{
-								if (_usingAlternateNick)
+								if (_usingAlternateNick || string.IsNullOrEmpty(App.Settings.Current.User.AlternateNickname))
 								{
 									this.SetInputText("/nick ");
 								}
@@ -430,18 +430,6 @@ namespace Floe.UI
 							e.Handled = true;
 						}
 						break;
-					case IrcCode.ChannelModes:
-						if (!_hasModes && e.Message.Parameters.Count == 3 && this.IsChannel &&
-							this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
-						{
-							this.Invoke(() =>
-								{
-									_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
-									this.SetTitle();
-								});
-							e.Handled = true;
-						}
-						break;
 				}
 			}
 		}
@@ -626,59 +614,59 @@ namespace Floe.UI
 
 		protected override void OnPreviewKeyDown(KeyEventArgs e)
 		{
-			if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))
+			if (!Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt) &&
+				!(FocusManager.GetFocusedElement(this) is NicknameItem))
 			{
-				return;
-			}
+				e.Handled = true;
 
-			e.Handled = true;
-
-			switch (e.Key)
-			{
-				case Key.PageUp:
-					boxOutput.PageUp();
-					break;
-				case Key.PageDown:
-					boxOutput.PageDown();
-					break;
-				case Key.Up:
-					if (_historyNode != null)
-					{
-						if (_historyNode.Next != null)
-						{
-							_historyNode = _historyNode.Next;
-							this.SetInputText(_historyNode.Value);
-						}
-					}
-					else if (_history.First != null)
-					{
-						_historyNode = _history.First;
-						this.SetInputText(_historyNode.Value);
-					}
-					break;
-				case Key.Down:
-					if (_historyNode != null)
-					{
-						_historyNode = _historyNode.Previous;
+				switch (e.Key)
+				{
+					case Key.PageUp:
+						boxOutput.PageUp();
+						break;
+					case Key.PageDown:
+						boxOutput.PageDown();
+						break;
+					case Key.Up:
 						if (_historyNode != null)
 						{
+							if (_historyNode.Next != null)
+							{
+								_historyNode = _historyNode.Next;
+								this.SetInputText(_historyNode.Value);
+							}
+						}
+						else if (_history.First != null)
+						{
+							_historyNode = _history.First;
 							this.SetInputText(_historyNode.Value);
+						}
+						break;
+					case Key.Down:
+						if (_historyNode != null)
+						{
+							_historyNode = _historyNode.Previous;
+							if (_historyNode != null)
+							{
+								this.SetInputText(_historyNode.Value);
+							}
+							else
+							{
+								txtInput.Clear();
+							}
 						}
 						else
 						{
 							txtInput.Clear();
 						}
-					}
-					else
-					{
-						txtInput.Clear();
-					}
-					break;
-				default:
-					Keyboard.Focus(txtInput);
-					e.Handled = false;
-					break;
+						break;
+					default:
+						Keyboard.Focus(txtInput);
+						e.Handled = false;
+						break;
+				}
 			}
+
 
 			base.OnPreviewKeyDown(e);
 		}

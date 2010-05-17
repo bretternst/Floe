@@ -1,11 +1,12 @@
 ﻿<UserControl x:Class="Floe.UI.ChatControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="699" Focusable="True" Name="chatControl">
+             d:DesignHeight="400" d:DesignWidth="699" Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent">
 	<UserControl.CommandBindings>
 		<CommandBinding Command="local:ChatControl.WhoisCommand" Executed="ExecuteWhois" CanExecute="CanExecuteConnectedCommand"/>
 		<CommandBinding Command="local:ChatControl.OpenLinkCommand" Executed="ExecuteOpenLink"/>
@@ -13,8 +14,18 @@
 		<CommandBinding Command="local:ChatControl.QuitCommand" Executed="ExecuteQuit" CanExecute="CanExecuteConnectedCommand"/>
 		<CommandBinding Command="local:ChatControl.ClearCommand" Executed="ExecuteClear"/>
 		<CommandBinding Command="local:ChatControl.InsertCommand" Executed="ExecuteInsert"/>
+		<CommandBinding Command="local:ChatControl.OpCommand" Executed="ExecuteOp" CanExecute="CanExecuteIsOp"/>
+		<CommandBinding Command="local:ChatControl.DeopCommand" Executed="ExecuteDeop" CanExecute="CanExecuteIsOp"/>
+		<CommandBinding Command="local:ChatControl.VoiceCommand" Executed="ExecuteVoice" CanExecute="CanExecuteIsOp"/>
+		<CommandBinding Command="local:ChatControl.DevoiceCommand" Executed="ExecuteDevoice" CanExecute="CanExecuteIsOp"/>
+		<CommandBinding Command="local:ChatControl.KickCommand" Executed="ExecuteKick" CanExecute="CanExecuteIsOp"/>
+		<CommandBinding Command="local:ChatControl.BanCommand" Executed="ExecuteBan" CanExecute="CanExecuteIsOp"/>
+		<CommandBinding Command="local:ChatControl.UnbanCommand" Executed="ExecuteUnban" CanExecute="CanExecuteIsOp"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
+		<local:BrushAlphaConverter x:Key="opacityConverter"/>
+		<SolidColorBrush x:Key="editBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground}"/>
+		<SolidColorBrush x:Key="ctrlBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background}"/>
 		<Style TargetType="ListBoxItem">
 			<Style.Resources>
 				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{Binding Source={x:Static SystemColors.HighlightBrush}, Path=Color}"/>
@@ -24,10 +35,28 @@
 		<ContextMenu x:Key="cmNickname">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<Separator/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.VoiceCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DevoiceCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<Separator/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.KickCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.BanCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.UnbanCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmNickList">
 			<MenuItem Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<MenuItem Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			<Separator/>
+			<MenuItem Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<MenuItem Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<MenuItem Command="local:ChatControl.VoiceCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<MenuItem Command="local:ChatControl.DevoiceCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<Separator/>
+			<MenuItem Command="local:ChatControl.KickCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<MenuItem Command="local:ChatControl.BanCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<MenuItem Command="local:ChatControl.UnbanCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmHyperlink">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpenLinkCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
@@ -75,15 +104,20 @@
 	</UserControl.Resources>
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Bottom" BorderBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
-				BorderThickness="0,1,0,1">
+				BorderThickness="0,1,0,1" SnapsToDevicePixels="True">
 			<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown"
-				 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=OneWay}"
 				 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=OneWay}"
 				 FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
 				 FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
 				 FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
 				 FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
 				 Padding="1,2,2,2" Margin="0" BorderThickness="0">
+				<TextBox.Background>
+					<MultiBinding Converter="{StaticResource opacityConverter}">
+						<Binding Source="{StaticResource editBG}"/>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
+					</MultiBinding>
+				</TextBox.Background>
 				<TextBox.ContextMenu>
 					<ContextMenu>
 						<MenuItem Command="ApplicationCommands.Cut"/>
@@ -122,14 +156,14 @@
 				</TextBox.ContextMenu>
 			</TextBox>
 		</Border>
-		<Grid>
+		<Grid SnapsToDevicePixels="True">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition/>
 				<ColumnDefinition Name="colNickList"
 								  Width="0"
 								  MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=Grid}, Path=ActualWidth}"/>
 			</Grid.ColumnDefinitions>
-			<local:ChatBox x:Name="boxOutput" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"
+			<local:ChatBox x:Name="boxOutput"
 					   BufferLines="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.BufferLines, Mode=OneWay}"
 					   MinimumCopyLength="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.MinimumCopyLength, Mode=OneWay}"
 					   Palette="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Palette, Mode=OneWay}"
@@ -147,15 +181,27 @@
 					AttentionColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=OneWay}"
 					   DividerBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 						   AutoSizeColumn="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn, Mode=OneWay}"
-					   MouseDoubleClick="boxOutput_MouseDoubleClick"/>
-			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0"
-					 Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}"
+					   MouseDoubleClick="boxOutput_MouseDoubleClick">
+				<local:ChatBox.Background>
+					<MultiBinding Converter="{StaticResource opacityConverter}">
+						<Binding Source="{StaticResource editBG}"/>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
+					</MultiBinding>					
+				</local:ChatBox.Background>
+			</local:ChatBox>
+			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0" SelectionMode="Extended"
 					   FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
 					   FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
 					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
 					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
 					 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"
 					 ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Nicknames}">
+				<ListBox.Background>
+					<MultiBinding Converter="{StaticResource opacityConverter}">
+						<Binding Source="{StaticResource editBG}"/>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
+					</MultiBinding>					
+				</ListBox.Background>
 				<ListBox.ItemContainerStyle>
 					<Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
 						<Setter Property="ContextMenu" Value="{StaticResource cmNickList}"/>

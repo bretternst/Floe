@@ -118,6 +118,11 @@ namespace Floe.UI
 			var window = App.Current.MainWindow as ChatWindow;
 			if (makeActive)
 			{
+				window.Show();
+				if (window.WindowState == WindowState.Minimized)
+				{
+					window.WindowState = WindowState.Normal;
+				}
 				window.Activate();
 			}
 

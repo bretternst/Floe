@@ -32,13 +32,6 @@ namespace Floe.UI
 			this.Loaded += new RoutedEventHandler(ChatWindow_Loaded);
 		}
 
-		public void OpenWindow(ChatContext context)
-		{
-			var window = new ChannelWindow(new ChatControl(context));
-			window.Closed += window_Closed;
-			window.Show();
-		}
-
 		public void AddPage(ChatContext context, bool switchToPage)
 		{
 			var page = new ChatControl(context);
@@ -98,6 +91,19 @@ namespace Floe.UI
 		{
 			return this.Items.Where((i) => i.Control.Context.Session == session && i.Control.Context.Target != null &&
 				i.Control.Context.Target.Equals(target)).Select((p) => p.Control.Context).FirstOrDefault();
+		}
+
+		public void Attach(ChatControl control)
+		{
+			for (int i = this.Items.Count - 1; i >= 0; --i)
+			{
+				if (this.Items[i].Control.Context.Session == control.Session)
+				{
+					this.Items.Insert(++i, new ChatTabItem(control));
+					tabsChat.SelectedIndex = i;
+					break;
+				}
+			}
 		}
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)

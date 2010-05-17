@@ -17,18 +17,30 @@
 		<local:DoubleToPercentConverter x:Key="doubleToPercentConverter"/>
 	</UserControl.Resources>
 	<Canvas>
-		<Slider Canvas.Left="12" Canvas.Top="35" Height="23" Name="sldActiveOpacity" Width="121" TickFrequency="0.01" Maximum="1" TickPlacement="None"
-				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.ActiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" Minimum="0.2" LargeChange="0.1" SmallChange="0.01" />
-		<Label Canvas.Left="12" Canvas.Top="12" Content="Active Opacity" Height="28" Name="label1" />
-		<Slider Canvas.Left="162" Canvas.Top="35" Height="23" Maximum="1" Name="sldInactiveOpacity" TickFrequency="0.01" TickPlacement="None" Width="121"
-				Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.InactiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" Minimum="0.2" LargeChange="0.1" SmallChange="0.01" />
-		<Label Canvas.Left="162" Canvas.Top="12" Content="Inactive Opacity" Height="28" Name="label2" />
-		<Label Canvas.Left="104" Canvas.Top="12" Content="{Binding ElementName=sldActiveOpacity, Path=Value, Converter={StaticResource doubleToPercentConverter}}" Height="28" Name="label3" />
-		<Label Canvas.Left="262" Canvas.Top="12" Content="{Binding ElementName=sldInactiveOpacity, Path=Value, Converter={StaticResource doubleToPercentConverter}}" Height="28" Name="label4" />
-		<CheckBox Canvas.Left="168" Canvas.Top="85" Content="Minimize to systray" Height="16" Name="chkMinimizeToSystray"
+		<CheckBox Canvas.Left="228" Canvas.Top="207" Content="Minimize to systray" Height="16" Name="chkMinimizeToSystray"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinimizeToSysTray}"/>
-		<ComboBox Canvas.Left="16" Canvas.Top="85" Height="23" Name="comboBox1" Width="120" ItemsSource="{Binding Source={StaticResource tabStripPositionValues}}"
+		<ComboBox Canvas.Left="12" Canvas.Top="200" Height="23" Name="comboBox1" Width="120" ItemsSource="{Binding Source={StaticResource tabStripPositionValues}}"
 				  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.TabStripPosition, Mode=TwoWay}"/>
-		<Label Canvas.Left="12" Canvas.Top="64" Content="Tab Strip Position" Height="28" Name="label5" />
+		<Label Canvas.Left="6" Canvas.Top="178" Content="Tab Strip Position" Height="28" Name="label5" />
+		<GroupBox BorderBrush="#FFC3C3C3" Canvas.Left="197" Canvas.Top="12" Header="Overall Window Opacity" Height="100" Name="groupBox1" Width="175">
+			<Canvas>
+				<Slider Canvas.Left="70" Canvas.Top="15" Height="23" Name="sldActiveOpacity" Width="86" TickFrequency="0.01" Maximum="1" TickPlacement="None" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.ActiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" Minimum="0.2" LargeChange="0.1" SmallChange="0.01" />
+				<Label Canvas.Left="15" Canvas.Top="0" Content="Active" Height="28" Name="label1" />
+				<Slider Canvas.Left="70" Canvas.Top="48" Height="23" Maximum="1" Name="sldInactiveOpacity" TickFrequency="0.01" TickPlacement="None" Width="85" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.InactiveOpacity, Mode=TwoWay}" IsSnapToTickEnabled="True" Minimum="0.2" LargeChange="0.1" SmallChange="0.01" />
+				<Label Canvas.Left="15" Canvas.Top="34" Content="Inactive" Height="28" Name="label2" />
+				<Label Canvas.Left="15" Canvas.Top="15" Content="{Binding ElementName=sldActiveOpacity, Path=Value, Converter={StaticResource doubleToPercentConverter}}" Height="28" Name="label3" />
+				<Label Canvas.Left="14" Canvas.Top="49" Content="{Binding ElementName=sldInactiveOpacity, Path=Value, Converter={StaticResource doubleToPercentConverter}}" Height="28" Name="label4" />
+			</Canvas>
+		</GroupBox>
+		<GroupBox BorderBrush="#FFC3C3C3" Canvas.Left="6" Canvas.Top="12" Header="Background Opacity" Height="100" Name="groupBox2" Width="172">
+			<Canvas>
+				<Slider Canvas.Left="67" Canvas.Top="15" Height="23" IsSnapToTickEnabled="True" LargeChange="0.1" Maximum="1" Minimum="0.0" Name="sldBackgroundOpacity" SmallChange="0.01" TickFrequency="0.01" TickPlacement="None" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.BackgroundOpacity, Mode=TwoWay}" Width="86" />
+				<Label Canvas.Left="8" Canvas.Top="0" Content="Text Area" Height="28" Name="label6" />
+				<Slider Canvas.Left="67" Canvas.Top="48" Height="23" IsSnapToTickEnabled="True" LargeChange="0.1" Maximum="1" Minimum="0.2" Name="sldChromeOpacity" SmallChange="0.01" TickFrequency="0.01" TickPlacement="None" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.ChromeOpacity, Mode=TwoWay}" Width="85" />
+				<Label Canvas.Left="13" Canvas.Top="39" Content="Chrome" Height="18" Padding="0" Name="label7" />
+				<Label Canvas.Left="13" Canvas.Top="15" Content="{Binding ElementName=sldBackgroundOpacity, Path=Value, Converter={StaticResource doubleToPercentConverter}}" Height="28" Name="label8" />
+				<Label Canvas.Left="13" Canvas.Top="49" Content="{Binding ElementName=sldChromeOpacity, Path=Value, Converter={StaticResource doubleToPercentConverter}}" Height="28" Name="label9" />
+			</Canvas>
+		</GroupBox>
 	</Canvas>
 </UserControl>

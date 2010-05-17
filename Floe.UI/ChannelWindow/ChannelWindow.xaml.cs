@@ -36,6 +36,11 @@ namespace Floe.UI
 			else
 			{
 				state.IsDetached = false;
+				var window = App.Current.MainWindow as ChatWindow;
+				if (window != null)
+				{
+					window.Attach(this.Control);
+				}
 			}
 			state.Placement = Interop.WindowHelper.Save(this);
 		}

@@ -1,15 +1,16 @@
 ﻿<Window x:Class="Floe.UI.ChannelWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="{Binding ElementName=grdRoot, Path=Children[2].Title}" Height="399" Width="722" 
 		xmlns:local="clr-namespace:Floe.UI"
 		MinWidth="300"  MinHeight="250" WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True"
-		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}">
+		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}" x:Name="window">
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
 	</Window.CommandBindings>
 	<Window.Resources>
-		<local:BrushToColorConverter x:Key="brushToColor"/>
+		<local:BrushAlphaConverter x:Key="opacityConverter"/>
 		<SolidColorBrush x:Key="winBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
 		<SolidColorBrush x:Key="winFG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
 		<SolidColorBrush x:Key="winFGx0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0"/>
@@ -17,7 +18,7 @@
 		<SolidColorBrush x:Key="winFGx80" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.8"/>
 
 		<Style x:Key="uiButtonStyle" TargetType="Button">
-			<Setter Property="Background" Value="{StaticResource winBG}"/>
+			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
 			<Setter Property="BorderBrush" Value="Transparent"/>
 			<Setter Property="VerticalAlignment" Value="Center"/>
@@ -55,76 +56,111 @@
 		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
 		<Geometry x:Key="settingsButtonGeometry">M3,4 L6,8 L10,0</Geometry>
 		<Geometry x:Key="reattachButtonGeometry">M3,0 L3,6 M0,4 L3,6 M6,4 L3,6</Geometry>
-	</Window.Resources>
 
-	<Border Background="{StaticResource winBG}" CornerRadius="8" Padding="5, 0, 5, 5">
+		<local:BrushSaturationConverter x:Key="modifySaturation"/>
+	</Window.Resources>
+	<Window.Style>
+		<Style TargetType="Window">
+			<Setter Property="Opacity" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.ActiveOpacity}"/>
+			<Setter Property="local:ChannelWindow.UIBackground">
+				<Setter.Value>
+					<MultiBinding Converter="{StaticResource opacityConverter}">
+						<Binding Source="{StaticResource winBG}"/>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.ChromeOpacity"/>
+					</MultiBinding>
+				</Setter.Value>
+			</Setter>
+			<Style.Triggers>
+				<Trigger Property="IsActive" Value="False">
+					<Setter Property="local:ChannelWindow.UIBackground">
+						<Setter.Value>
+							<MultiBinding Converter="{StaticResource opacityConverter}">
+								<Binding Source="{StaticResource winBG}" Converter="{StaticResource modifySaturation}">
+									<Binding.ConverterParameter>
+										<sys:Double>0.7</sys:Double>
+									</Binding.ConverterParameter>
+								</Binding>
+								<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.ChromeOpacity"/>
+							</MultiBinding>
+						</Setter.Value>
+					</Setter>
+					<Setter Property="Opacity" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.InactiveOpacity}"/>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+	</Window.Style>
+	<Border BorderBrush="{Binding ElementName=window, Path=UIBackground}" CornerRadius="8,8,0,0" BorderThickness="4,3,4,4">
 		<Grid x:Name="grdRoot">
 			<Grid.RowDefinitions>
-				<RowDefinition Height="30"/>
+				<RowDefinition Height="25"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
-			<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
-			<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-				<Button x:Name="btnReattach" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnReattach_Click">
-					<Path Margin="2" 
+
+			<Border Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="0">
+				<TextBlock Margin="4,0,0,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
+			</Border>
+			<StackPanel Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+				<Button x:Name="btnReattach" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnReattach_Click">
+					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource reattachButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Flat"
 						Stretch="Uniform"
-						HorizontalAlignment="Center"/>
+						HorizontalAlignment="Center" VerticalAlignment="Top"/>
 					<Button.ToolTip>
 						<ToolTip Content="Reattach"/>
 					</Button.ToolTip>
 				</Button>
-				<Button x:Name="btnSettings" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnSettings_Click">
-					<Path Margin="2" 
+				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnSettings_Click">
+					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource settingsButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						HorizontalAlignment="Center"/>
+						HorizontalAlignment="Center" VerticalAlignment="Top">
+					</Path>
 					<Button.ToolTip>
 						<ToolTip Content="Settings"/>
 					</Button.ToolTip>
 				</Button>
-				<Button x:Name="btnMinimize" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnMinimize_Click">
-					<Path Margin="2,10,2,2"
+				<Button x:Name="btnMinimize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnMinimize_Click">
+					<Path Margin="2,10,2,2" SnapsToDevicePixels="True"
 						Data="{StaticResource minimizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+						HorizontalAlignment="Center" VerticalAlignment="Top"/>
 				</Button>
-				<Button x:Name="btnMaximize" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnMaximize_Click">
-					<Path Margin="2"
+				<Button x:Name="btnMaximize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Click="btnMaximize_Click">
+					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource maximizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						VerticalAlignment="Center"
+						VerticalAlignment="Top"
 						HorizontalAlignment="Center"/>
 				</Button>
-				<Button x:Name="btnClose" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,6,0" Click="btnClose_Click">
-					<Path Margin="2"
+				<Button x:Name="btnClose" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Click="btnClose_Click">
+					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource closeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						VerticalAlignment="Center"
+						VerticalAlignment="Top"
 						HorizontalAlignment="Center"/>
 				</Button>
 			</StackPanel>

@@ -132,6 +132,7 @@ namespace Floe.UI
 				try
 				{
 					_logFile.Write(buf, 0, buf.Length);
+					_logFile.Flush();
 				}
 				catch (Exception ex)
 				{

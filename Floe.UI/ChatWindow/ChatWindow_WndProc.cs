@@ -2,12 +2,21 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Floe.UI.Interop;
 
 namespace Floe.UI
 {
 	public partial class ChatWindow : Window
 	{
+		public readonly static DependencyProperty UIBackgroundProperty = DependencyProperty.Register("UIBackground",
+			typeof(System.Windows.Media.SolidColorBrush), typeof(ChatWindow));
+		public SolidColorBrush UIBackground
+		{
+			get { return (SolidColorBrush)this.GetValue(UIBackgroundProperty); }
+			set { this.SetValue(UIBackgroundProperty, value); }
+		}
+
 		private const double ResizeHeight = 4.0;
 		private const double ResizeWidth = 6.0;
 		private bool _isInModalDialog = false;
@@ -114,6 +123,11 @@ namespace Floe.UI
 		{
 			this.Opacity = App.Settings.Current.Windows.ActiveOpacity;
 
+			if (_notifyIcon != null)
+			{
+				_notifyIcon.Hide();
+			}
+
 			base.OnActivated(e);
 		}
 
@@ -136,7 +150,6 @@ namespace Floe.UI
 					_notifyIcon = new NotifyIcon(this, App.ApplicationIcon);
 					_notifyIcon.DoubleClicked += (sender, args) =>
 						{
-							_notifyIcon.Hide();
 							this.BeginInvoke(() =>
 								{
 									this.Show();

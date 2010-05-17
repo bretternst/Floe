@@ -33,7 +33,8 @@ namespace Floe.UI
 				if (App.Settings.Current.Formatting.AttentionOnOwnNickname && (
 					text.IndexOf(nickname, StringComparison.OrdinalIgnoreCase) >= 0 ||
 					text.IndexOf(App.Settings.Current.User.Nickname, StringComparison.OrdinalIgnoreCase) >= 0 ||
-					text.IndexOf(App.Settings.Current.User.AlternateNickname, StringComparison.OrdinalIgnoreCase) >= 0))
+					(!string.IsNullOrEmpty(App.Settings.Current.User.AlternateNickname) && 
+					text.IndexOf(App.Settings.Current.User.AlternateNickname, StringComparison.OrdinalIgnoreCase) >= 0)))
 				{
 					return true;
 				}

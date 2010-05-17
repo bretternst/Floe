@@ -12,6 +12,8 @@ namespace Floe.UI
 		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Close", "Close", typeof(ChatWindow));
 		public readonly static RoutedUICommand NewTabCommand = new RoutedUICommand("New Server Tab", "NewTab", typeof(ChatWindow));
 		public readonly static RoutedUICommand DetachCommand = new RoutedUICommand("Detach", "Detach", typeof(ChatWindow));
+		public readonly static RoutedUICommand PreviousTabCommand = new RoutedUICommand("Previous Tab", "PreviousTab", typeof(ChatWindow));
+		public readonly static RoutedUICommand NextTabCommand = new RoutedUICommand("Next Tab", "NextTab", typeof(ChatWindow));
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
@@ -68,24 +70,7 @@ namespace Floe.UI
 				var ctrl = item.Control;
 				item.Content = null;
 				var window = new ChannelWindow(ctrl);
-				window.Closed += new System.EventHandler(window_Closed);
 				window.Show();
-			}
-		}
-
-		private void window_Closed(object sender, System.EventArgs e)
-		{
-			var window = sender as ChannelWindow;
-			if (window != null && window.Control.Parent == null)
-			{
-				for (int i = this.Items.Count - 1; i >= 0; --i)
-				{
-					if (this.Items[i].Control.Context.Session == window.Control.Session)
-					{
-						this.Items.Insert(i + 1, new ChatTabItem(window.Control));
-						break;
-					}
-				}
 			}
 		}
 
@@ -103,6 +88,26 @@ namespace Floe.UI
 					e.CanExecute = true;
 				}
 			}
+		}
+
+		private void ExecutePreviousTab(object sender, ExecutedRoutedEventArgs e)
+		{
+			tabsChat.SelectedIndex--;
+		}
+
+		private void ExecuteNextTab(object sender, ExecutedRoutedEventArgs e)
+		{
+			tabsChat.SelectedIndex++;
+		}
+
+		private void CanExecutePreviousTab(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = tabsChat.SelectedIndex > 0;
+		}
+
+		private void CanExecuteNextTab(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = tabsChat.SelectedIndex < tabsChat.Items.Count - 1;
 		}
 	}
 }

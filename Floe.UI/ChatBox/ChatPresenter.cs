@@ -59,7 +59,8 @@ namespace Floe.UI
 				e.Property == ChatBoxBase.ColorizeNicknamesProperty ||
 				e.Property == ChatBoxBase.NewMarkerColorProperty ||
 				e.Property == ChatBoxBase.NicknameColorSeedProperty ||
-				e.Property == ChatBoxBase.DividerBrushProperty)
+				e.Property == ChatBoxBase.DividerBrushProperty ||
+				e.Property == ChatBoxBase.BackgroundProperty)
 			{
 				this.FormatAll();
 			}

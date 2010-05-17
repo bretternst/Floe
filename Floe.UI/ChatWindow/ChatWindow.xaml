@@ -4,16 +4,24 @@
         Title="{Binding ElementName=tabsChat, Path=SelectedContent.Title}" Height="399" Width="722" 
 		xmlns:local="clr-namespace:Floe.UI"
         xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		MinWidth="300"  MinHeight="250" WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True"
-		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}">
+		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}" x:Name="window">
+	<Window.InputBindings>
+		<KeyBinding Command="local:ChatWindow.PreviousTabCommand" Gesture="Alt+Left"/>
+		<KeyBinding Command="local:ChatWindow.NextTabCommand" Gesture="Alt+Right"/>
+	</Window.InputBindings>
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose" CanExecute="CanExecuteClose"/>
 		<CommandBinding Command="local:ChatWindow.NewTabCommand" Executed="ExecuteNewTab"/>
 		<CommandBinding Command="local:ChatWindow.DetachCommand" Executed="ExecuteDetach"/>
+		<CommandBinding Command="local:ChatWindow.PreviousTabCommand" Executed="ExecutePreviousTab" CanExecute="CanExecutePreviousTab"/>
+		<CommandBinding Command="local:ChatWindow.NextTabCommand" Executed="ExecuteNextTab" CanExecute="CanExecuteNextTab"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<local:BrushToColorConverter x:Key="brushToColor"/>
+		<local:BrushAlphaConverter x:Key="opacityConverter"/>
 		<SolidColorBrush x:Key="winBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
 		<SolidColorBrush x:Key="winFG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
 		<SolidColorBrush x:Key="winFGx0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0"/>
@@ -25,8 +33,23 @@
 			<GradientStop Offset="1" Color="{Binding Source={StaticResource winFGx0}, Converter={StaticResource brushToColor}}"/>
 		</LinearGradientBrush>
 
+		<Geometry x:Key="closeTabButtonGeometry">M0,0 L6,6 M0,6 L6,0</Geometry>
+		<Geometry x:Key="minimizeButtonGeometry">M0,8 L8,8</Geometry>
+		<Geometry x:Key="maximizeButtonGeometry">M0,0 L8,0 L8,8 L0,8 L0,0 M0,1 L8,1</Geometry>
+		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
+		<Geometry x:Key="settingsButtonGeometry">M3,4 L6,8 L10,0</Geometry>
+		<Geometry x:Key="leftArrowGeometry">M0,4 L8,8 8,0Z</Geometry>
+		<Geometry x:Key="rightArrowGeometry">M0,0 L8,4 L0,8Z</Geometry>
+		<Geometry x:Key="downArrowGeometry">M0,0 L8,0 M0,2 L4,8 L8,2</Geometry>
+		<Path x:Key="leftArrowPath" Data="{StaticResource leftArrowGeometry}"
+			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+		<Path x:Key="rightArrowPath" Data="{StaticResource rightArrowGeometry}"
+			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+		<Path x:Key="downArrowPath" Data="{StaticResource downArrowGeometry}"
+			  Stroke="{StaticResource winFG}" Margin="2,0,2,0" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
 		<Style x:Key="uiButtonStyle" TargetType="Button">
-			<Setter Property="Background" Value="{StaticResource winBG}"/>
+			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
 			<Setter Property="BorderBrush" Value="Transparent"/>
 			<Setter Property="VerticalAlignment" Value="Center"/>
@@ -60,8 +83,8 @@
 		</Style>
 
 		<Style x:Key="uiRepeatButtonStyle" TargetType="RepeatButton">
-			<Setter Property="Background" Value="{StaticResource winBG}"/>
 			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="BorderBrush" Value="Transparent"/>
 			<Setter Property="Template">
 				<Setter.Value>
@@ -137,12 +160,6 @@
 			</Setter>
 		</Style>
 
-		<Geometry x:Key="closeTabButtonGeometry">M0,0 L6,6 M0,6 L6,0</Geometry>
-		<Geometry x:Key="minimizeButtonGeometry">M0,8 L8,8</Geometry>
-		<Geometry x:Key="maximizeButtonGeometry">M0,0 L8,0 L8,8 L0,8 L0,0 M0,1 L8,1</Geometry>
-		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
-		<Geometry x:Key="settingsButtonGeometry">M3,4 L6,8 L10,0</Geometry>
-
 		<Style x:Key="tabCloseButtonStyle" TargetType="Button">
 			<Setter Property="OverridesDefaultStyle" Value="True"/>
 			<Setter Property="Focusable" Value="False"/>
@@ -179,77 +196,100 @@
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
-		</Style>
-
-		<local:CanScrollLeftConverter x:Key="canScrollLeft"/>
-		<local:CanScrollRightConverter x:Key="canScrollRight"/>
-		<Geometry x:Key="leftArrowGeometry">M0,4 L8,8 8,0Z</Geometry>
-		<Geometry x:Key="rightArrowGeometry">M0,0 L8,4 L0,8Z</Geometry>
-		<Geometry x:Key="downArrowGeometry">M0,0 L8,0 M0,2 L4,8 L8,2</Geometry>
-		<Path x:Key="leftArrowPath" Data="{StaticResource leftArrowGeometry}"
-			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-		<Path x:Key="rightArrowPath" Data="{StaticResource rightArrowGeometry}"
-			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-		<Path x:Key="downArrowPath" Data="{StaticResource downArrowGeometry}"
-			  Stroke="{StaticResource winFG}" Margin="2,0,2,0" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+		</Style>		
+		<local:BrushSaturationConverter x:Key="modifySaturation"/>
 	</Window.Resources>
+	
+	<Window.Style>
+		<Style TargetType="Window">
+			<Setter Property="local:ChatWindow.UIBackground">
+				<Setter.Value>
+					<MultiBinding Converter="{StaticResource opacityConverter}">
+						<Binding Source="{StaticResource winBG}"/>
+						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.ChromeOpacity"/>
+					</MultiBinding>
+				</Setter.Value>
+			</Setter>
+			<Setter Property="Opacity" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.ActiveOpacity}"/>
+			<Style.Triggers>
+				<Trigger Property="IsActive" Value="False">
+					<Setter Property="local:ChatWindow.UIBackground">
+						<Setter.Value>
+							<MultiBinding Converter="{StaticResource opacityConverter}">
+								<Binding Source="{StaticResource winBG}" Converter="{StaticResource modifySaturation}">
+									<Binding.ConverterParameter>
+										<sys:Double>0.7</sys:Double>
+									</Binding.ConverterParameter>
+								</Binding>
+								<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.ChromeOpacity"/>
+								</MultiBinding>
+						</Setter.Value>
+					</Setter>
+					<Setter Property="Opacity" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.InactiveOpacity}"/>
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+	</Window.Style>
 
-	<Border Background="{StaticResource winBG}" CornerRadius="8" Padding="5, 0, 5, 5">
+	<Border CornerRadius="8" BorderBrush="{Binding ElementName=window, Path=UIBackground}" BorderThickness="4,3,4,4">
 		<Grid x:Name="grdRoot">
 			<Grid.RowDefinitions>
-				<RowDefinition Height="30"/>
+				<RowDefinition Height="25"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
-			<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
-			<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-				<Button x:Name="btnSettings" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Padding="0" Click="btnSettings_Click">
-					<Path Margin="2" 
+			
+			<Border Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="0">
+				<TextBlock Margin="4,0,0,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
+			</Border>
+			<StackPanel Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnSettings_Click">
+					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource settingsButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						HorizontalAlignment="Center">
+						HorizontalAlignment="Center" VerticalAlignment="Top">
 					</Path>
 					<Button.ToolTip>
 						<ToolTip Content="Settings"/>
 					</Button.ToolTip>
 				</Button>
-				<Button x:Name="btnMinimize" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Padding="0" Click="btnMinimize_Click">
-					<Path Margin="2,10,2,2"
+				<Button x:Name="btnMinimize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnMinimize_Click">
+					<Path Margin="2,10,2,2" SnapsToDevicePixels="True"
 						Data="{StaticResource minimizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+						HorizontalAlignment="Center" VerticalAlignment="Top"/>
 				</Button>
-				<Button x:Name="btnMaximize" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,2,0" Click="btnMaximize_Click">
-					<Path Margin="2"
+				<Button x:Name="btnMaximize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Click="btnMaximize_Click">
+					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource maximizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						VerticalAlignment="Center"
+						VerticalAlignment="Top"
 						HorizontalAlignment="Center"/>
 				</Button>
-				<Button x:Name="btnClose" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,0,6,0" Click="btnClose_Click">
-					<Path Margin="2"
+				<Button x:Name="btnClose" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Click="btnClose_Click">
+					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource closeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
 						StrokeThickness="2"
 						StrokeStartLineCap="Round"
 						StrokeEndLineCap="Round"
 						Stretch="Uniform"
-						VerticalAlignment="Center"
+						VerticalAlignment="Top"
 						HorizontalAlignment="Center"/>
 				</Button>
 			</StackPanel>
@@ -257,8 +297,8 @@
 					FontFamily="Segoe UI" FontSize="14" SnapsToDevicePixels="True">
 				<TabControl.Template>
 					<ControlTemplate TargetType="TabControl">
-						<DockPanel Background="{StaticResource winBG}">
-							<Border BorderBrush="{StaticResource winFG}">
+						<DockPanel>
+							<Border Background="{Binding ElementName=window, Path=UIBackground}" BorderBrush="{StaticResource winFG}">
 								<Border.Style>
 									<Style TargetType="Border">
 										<Style.Triggers>
@@ -292,21 +332,12 @@
 											</ScrollContentPresenter>
 											<StackPanel Grid.Column="1"
 												Orientation="Horizontal">
-												<RepeatButton Focusable="False" Command="ScrollBar.LineLeftCommand" Style="{StaticResource uiRepeatButtonStyle}"
+												<RepeatButton Focusable="False" Command="local:ChatWindow.PreviousTabCommand" Style="{StaticResource uiRepeatButtonStyle}"
 													  Padding="2,5,2,5" Margin="5,0,0,0" VerticalAlignment="Center"
-													  IsEnabled="{Binding ElementName=scrollViewer, Path=HorizontalOffset, Converter={StaticResource canScrollLeft}}"
 													  Content="{StaticResource leftArrowPath}"/>
-												<RepeatButton Focusable="False" Command="ScrollBar.LineRightCommand" Style="{StaticResource uiRepeatButtonStyle}"
+												<RepeatButton Focusable="False" Command="local:ChatWindow.NextTabCommand" Style="{StaticResource uiRepeatButtonStyle}"
 													  Padding="2,5,2,5" VerticalAlignment="Center"
-													  Content="{StaticResource rightArrowPath}">
-													<RepeatButton.IsEnabled>
-														<MultiBinding Converter="{StaticResource canScrollRight}">
-															<Binding ElementName="scrollViewer" Path="HorizontalOffset"/>
-															<Binding ElementName="scrollViewer" Path="ViewportWidth"/>
-															<Binding ElementName="scrollViewer" Path="ExtentWidth"/>
-														</MultiBinding>
-													</RepeatButton.IsEnabled>
-												</RepeatButton>
+													  Content="{StaticResource rightArrowPath}"/>
 												<Menu VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" Focusable="False">
 													<MenuItem Padding="2,5,2,5" Background="{StaticResource winBG}" BorderThickness="0" Margin="0,0,5,0"
 													  Header="{StaticResource downArrowPath}" Style="{StaticResource uiMenuButtonStyle}"
@@ -325,7 +356,7 @@
 										</Grid>
 									</ControlTemplate>
 								</ScrollViewer.Template>
-								<StackPanel IsItemsHost="True" Orientation="Horizontal" Height="25" Background="{StaticResource winBG}"/>
+								<StackPanel IsItemsHost="True" Orientation="Horizontal" Height="25" Background="Transparent"/>
 							</ScrollViewer>
 							</Border>
 							<ContentPresenter ContentSource="SelectedContent" Margin="0"/>

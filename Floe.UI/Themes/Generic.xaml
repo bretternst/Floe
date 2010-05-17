@@ -7,8 +7,7 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type local:ChatBox}">
-					<ScrollViewer CanContentScroll="True"
-								  Background="{TemplateBinding Background}"
+					<ScrollViewer CanContentScroll="True" Background="{TemplateBinding Background}"
 								  Padding="4,2,4,2">
 						<local:ChatPresenter x:Name="PART_ChatPresenter"
 											 BufferLines="{TemplateBinding BufferLines}"

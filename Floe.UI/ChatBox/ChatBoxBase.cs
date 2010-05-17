@@ -80,12 +80,30 @@ namespace Floe.UI
 			set { this.SetValue(NewMarkerColorProperty, value); }
 		}
 
+		protected Color NewMarkerTransparentColor
+		{
+			get
+			{
+				var c = this.NewMarkerColor;
+				return Color.FromArgb(0, c.R, c.G, c.B);
+			}
+		}
+
 		public static readonly DependencyProperty OldMarkerColorProperty = DependencyProperty.Register("OldMarkerColor",
 			typeof(Color), typeof(ChatBoxBase));
 		public Color OldMarkerColor
 		{
 			get { return (Color)this.GetValue(OldMarkerColorProperty); }
 			set { this.SetValue(OldMarkerColorProperty, value); }
+		}
+
+		protected Color OldMarkerTransparentColor
+		{
+			get
+			{
+				var c = this.OldMarkerColor;
+				return Color.FromArgb(0, c.R, c.G, c.B);
+			}
 		}
 
 		public static readonly DependencyProperty AttentionColorProperty = DependencyProperty.Register("AttentionColor",

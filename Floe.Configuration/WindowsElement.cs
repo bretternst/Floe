@@ -27,11 +27,25 @@ namespace Floe.Configuration
 			set { this["activeOpacity"] = value; this.OnPropertyChanged("ActiveOpacity"); }
 		}
 
-		[ConfigurationProperty("inactiveOpacity", DefaultValue = 0.8)]
+		[ConfigurationProperty("inactiveOpacity", DefaultValue = 1.0)]
 		public double InactiveOpacity
 		{
 			get { return (double)this["inactiveOpacity"]; }
 			set { var val = Math.Round(value, 2); this["inactiveOpacity"] = val; this.OnPropertyChanged("InactiveOpacity"); }
+		}
+
+		[ConfigurationProperty("chromeOpacity", DefaultValue = 1.0)]
+		public double ChromeOpacity
+		{
+			get { return (double)this["chromeOpacity"]; }
+			set { this["chromeOpacity"] = value; this.OnPropertyChanged("ChromeOpacity"); }
+		}
+
+		[ConfigurationProperty("backgroundOpacity", DefaultValue = 0.92)]
+		public double BackgroundOpacity
+		{
+			get { return (double)this["backgroundOpacity"]; }
+			set { this["backgroundOpacity"] = value; this.OnPropertyChanged("BackgroundOpacity"); }
 		}
 
 		[ConfigurationProperty("minimizeToSysTray", DefaultValue=false)]
