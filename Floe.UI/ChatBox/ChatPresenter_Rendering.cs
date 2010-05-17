@@ -172,6 +172,8 @@ namespace Floe.UI
 		private void FormatAll()
 		{
 			_extentHeight = 0.0;
+			this.InvalidateVisual();
+
 			if (_blocks.Count < 1 || this.ViewportWidth < 1.0)
 			{
 				return;
@@ -233,7 +235,6 @@ namespace Floe.UI
 
 			_extentHeight += _lineHeight;
 
-			this.InvalidateVisual();
 			if (_viewer != null)
 			{
 				_viewer.InvalidateScrollInfo();
