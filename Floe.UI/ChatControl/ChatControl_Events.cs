@@ -256,7 +256,7 @@ namespace Floe.UI
 			this.BeginInvoke(() =>
 				{
 					if (((this.IsChannel && this.Target.Equals(e.To)) ||
-						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From))))
+						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From)) && e.To.Type == IrcTargetType.Nickname))
 						&& e.Command.Command == "ACTION")
 					{
 						string text = string.Join(" ", e.Command.Arguments);
