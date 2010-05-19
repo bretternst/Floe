@@ -99,7 +99,14 @@ namespace Floe.UI
 
 		public static void BrowseTo(string url)
 		{
-			System.Diagnostics.Process.Start(url);
+            try
+            {
+                System.Diagnostics.Process.Start(url);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error running browser process: " + ex.Message);
+            }
 		}
 
 		public static void Create(IrcSession session, IrcTarget target, bool makeActive)

@@ -84,7 +84,8 @@ namespace Floe.UI
 			if (!this.IsServer)
 			{
 				if ((this.Target.Type == IrcTargetType.Channel && this.Target.Equals(e.To)) ||
-					(this.Target.Type == IrcTargetType.Nickname && this.Target.Equals(new IrcTarget(e.From))))
+					(this.Target.Type == IrcTargetType.Nickname && this.Target.Equals(new IrcTarget(e.From)) &&
+                    e.To.Type == IrcTargetType.Nickname))
 				{
 					this.BeginInvoke(() =>
 						{
