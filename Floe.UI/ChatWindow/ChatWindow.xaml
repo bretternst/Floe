@@ -10,7 +10,9 @@
 	<Window.InputBindings>
 		<KeyBinding Command="local:ChatWindow.PreviousTabCommand" Gesture="Alt+Left"/>
 		<KeyBinding Command="local:ChatWindow.NextTabCommand" Gesture="Alt+Right"/>
-	</Window.InputBindings>
+        <KeyBinding Command="local:ChatWindow.CloseCommand" Gesture="Ctrl+F4" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
+        <KeyBinding Command="local:ChatWindow.CloseCommand" Gesture="Ctrl+W" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
+    </Window.InputBindings>
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose" CanExecute="CanExecuteClose"/>

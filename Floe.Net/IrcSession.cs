@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Floe.Net
 {
@@ -13,6 +14,8 @@ namespace Floe.Net
 
 	public sealed class IrcSession : IDisposable
 	{
+        private const int ReconnectWaitTime = 5000;
+
 		private IrcConnection _conn;
 		private IrcSessionState _state;
 		private List<IrcCodeHandler> _captures;
@@ -142,7 +145,12 @@ namespace Floe.Net
 			this.Send(isResponse ? "NOTICE" : "PRIVMSG", target, command.ToString());
 		}
 
-		public void Nick(string newNickname)
+        public void Quote(string rawText)
+        {
+            this.Send(new IrcMessage(rawText));
+        }
+        
+        public void Nick(string newNickname)
 		{
 			if (this.State != IrcSessionState.Disconnected)
 			{
@@ -340,8 +348,12 @@ namespace Floe.Net
 
 			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
 			{
-				this.State = IrcSessionState.Connecting;
-				_conn.Open();
+                Thread.Sleep(ReconnectWaitTime);
+                if (this.State == IrcSessionState.Disconnected)
+                {
+                    this.State = IrcSessionState.Connecting;
+                    _conn.Open();
+                }
 			}
 		}
 

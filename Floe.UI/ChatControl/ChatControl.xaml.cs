@@ -169,7 +169,7 @@ namespace Floe.UI
 				cl.Marker |= ChatMarker.Attention;
 			}
 
-			if (!this.IsVisible)
+			if (this.VisualParent == null)
 			{
 				if (!string.IsNullOrEmpty(nick))
 				{
