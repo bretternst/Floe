@@ -14,7 +14,7 @@ namespace Floe.Net
 
 	public sealed class IrcSession : IDisposable
 	{
-        private const int ReconnectWaitTime = 5000;
+		private const int ReconnectWaitTime = 5000;
 
 		private IrcConnection _conn;
 		private IrcSessionState _state;
@@ -102,6 +102,7 @@ namespace Floe.Net
 			_conn = new IrcConnection(server, port);
 			_conn.Connected += new EventHandler(_conn_Connected);
 			_conn.Disconnected += new EventHandler(_conn_Disconnected);
+			_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
 			_conn.MessageReceived += new EventHandler<IrcEventArgs>(_conn_MessageReceived);
 			_conn.MessageSent += new EventHandler<IrcEventArgs>(_conn_MessageSent);
 			_conn.ConnectionError += new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
@@ -145,12 +146,12 @@ namespace Floe.Net
 			this.Send(isResponse ? "NOTICE" : "PRIVMSG", target, command.ToString());
 		}
 
-        public void Quote(string rawText)
-        {
-            this.Send(new IrcMessage(rawText));
-        }
-        
-        public void Nick(string newNickname)
+		public void Quote(string rawText)
+		{
+			this.Send(new IrcMessage(rawText));
+		}
+
+		public void Nick(string newNickname)
 		{
 			if (this.State != IrcSessionState.Disconnected)
 			{
@@ -348,12 +349,12 @@ namespace Floe.Net
 
 			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
 			{
-                Thread.Sleep(ReconnectWaitTime);
-                if (this.State == IrcSessionState.Disconnected)
-                {
-                    this.State = IrcSessionState.Connecting;
-                    _conn.Open();
-                }
+				Thread.Sleep(ReconnectWaitTime);
+				if (this.State == IrcSessionState.Disconnected)
+				{
+					this.State = IrcSessionState.Connecting;
+					_conn.Open();
+				}
 			}
 		}
 
@@ -651,5 +652,10 @@ namespace Floe.Net
 		{
 			this.State = IrcSessionState.Disconnected;
 		}
+
+		private void _conn_Heartbeat(object sender, EventArgs e)
+		{
+			this.Send("PING", this.Server);
+        }
 	}
 }

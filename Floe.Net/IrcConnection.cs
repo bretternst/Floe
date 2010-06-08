@@ -8,6 +8,7 @@ namespace Floe.Net
 {
 	internal sealed class IrcConnection : IDisposable
 	{
+        private const int HeartbeatInterval = 300000;
 		private string _server;
 		private int _port;
 
@@ -18,6 +19,7 @@ namespace Floe.Net
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
+        public event EventHandler Heartbeat;
 		public event EventHandler<ErrorEventArgs> ConnectionError;
 		public event EventHandler<IrcEventArgs> MessageReceived;
 		public event EventHandler<IrcEventArgs> MessageSent;
@@ -123,7 +125,7 @@ namespace Floe.Net
 					{
 						ar = stream.BeginRead(readBuffer, 0, 512, null, null);
 					}
-					handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle });
+					handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle }, HeartbeatInterval);
 					if (!_tcpClient.Connected)
 					{
 						break;
@@ -193,6 +195,9 @@ namespace Floe.Net
 							}
 							_writeWaitHandle.Reset();
 							break;
+                        case WaitHandle.WaitTimeout:
+                            OnHeartbeat();
+                            break;
 					}
 				}
 			}
@@ -224,6 +229,15 @@ namespace Floe.Net
 				handler(this, EventArgs.Empty);
 			}
 		}
+
+        private void OnHeartbeat()
+        {
+            var handler = this.Heartbeat;
+            if (handler != null)
+            {
+                handler(this, EventArgs.Empty);
+            }
+        }
 
 		private void OnConnectionError(Exception ex)
 		{
