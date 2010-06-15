@@ -19,6 +19,7 @@ namespace Floe.Net
 		private IrcConnection _conn;
 		private IrcSessionState _state;
 		private List<IrcCodeHandler> _captures;
+		private bool _isWaitingForActivity;
 
 		public string Server { get; private set; }
 		public int Port { get; private set; }
@@ -94,7 +95,7 @@ namespace Floe.Net
 				_conn.MessageReceived -= new EventHandler<IrcEventArgs>(_conn_MessageReceived);
 				_conn.MessageSent -= new EventHandler<IrcEventArgs>(_conn_MessageSent);
 				_conn.ConnectionError -= new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
-				_conn.WaitForClose();
+				_conn.Close();
 			}
 
 			_captures = new List<IrcCodeHandler>();
@@ -111,7 +112,7 @@ namespace Floe.Net
 
 		public void Dispose()
 		{
-			_conn.WaitForClose();
+			_conn.Close();
 		}
 
 		public bool IsSelf(IrcTarget target)
@@ -179,7 +180,7 @@ namespace Floe.Net
 			if (this.State != IrcSessionState.Disconnected)
 			{
 				this.Send("QUIT", text);
-				_conn.WaitForClose();
+				_conn.Close();
 			}
 		}
 
@@ -589,6 +590,8 @@ namespace Floe.Net
 		{
 			this.OnMessageReceived(e);
 
+			_isWaitingForActivity = false;
+
 			if (e.Handled)
 			{
 				return;
@@ -655,7 +658,15 @@ namespace Floe.Net
 
 		private void _conn_Heartbeat(object sender, EventArgs e)
 		{
-			this.Send("PING", this.Server);
+			if (_isWaitingForActivity)
+			{
+				_conn.Close();
+			}
+			else
+			{
+				_isWaitingForActivity = true;
+				this.Send("PING", this.Server);
+			}
         }
 	}
 }

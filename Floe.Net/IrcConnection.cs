@@ -48,20 +48,18 @@ namespace Floe.Net
 			_socketThread.Start();
 		}
 
-		public void WaitForClose()
+		public void Close()
 		{
 			if (_socketThread == null || _socketThread.ThreadState != ThreadState.Running)
 			{
 				return;
 			}
 
+			this.QueueMessage(new IrcMessage(null));
+
 			if (!_socketThread.Join(1000))
 			{
-				this.QueueMessage(new IrcMessage(null));
-				if (!_socketThread.Join(1000))
-				{
-					_socketThread.Abort();
-				}
+				_socketThread.Abort();
 			}
 		}
 
@@ -196,7 +194,7 @@ namespace Floe.Net
 							_writeWaitHandle.Reset();
 							break;
                         case WaitHandle.WaitTimeout:
-                            OnHeartbeat();
+							OnHeartbeat();
                             break;
 					}
 				}
