@@ -3,7 +3,7 @@
 	xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
 
 	<Product Name="Floe IRC Client" Id="*" UpgradeCode="391a73ab-b474-407b-92c6-cac926b0e8bd"
-    	Language="1033" Codepage="1252" Version="0.9.1005.0" Manufacturer="Floe">
+    	Language="1033" Codepage="1252" Version="1.0.0.0" Manufacturer="Floe">
 
 		<Package Id="*" Keywords="Installer" Description="Floe Installer"
 		Comments="Floe IRC Installer Package" Manufacturer="Floe"
