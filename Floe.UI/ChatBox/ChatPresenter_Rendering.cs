@@ -149,8 +149,9 @@ namespace Floe.UI
 			b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
 				this.Background, TextWrapping.Wrap).ToArray();
 			b.Height = b.Text.Sum((t) => t.Height);
-			_extentHeight += b.Height;
 			_lineHeight = b.Text[0].Height;
+			_extentHeight = Math.Max(_extentHeight, _lineHeight);
+			_extentHeight += b.Height;
 			b.CharStart = offset;
 			offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
 			b.CharEnd = offset;

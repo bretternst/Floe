@@ -135,7 +135,7 @@ namespace Floe.UI
 		{
 			base.OnClosing(e);
 
-			if (this.Items.Any((i) => i.Control.IsConnected))
+			if (!_isShuttingDown && this.Items.Any((i) => i.Control.IsConnected))
 			{
 				if (!this.Confirm("Are you sure you want to exit?", "Confirm Exit"))
 				{
@@ -144,14 +144,7 @@ namespace Floe.UI
 				}
 			}
 
-			foreach (var page in this.Items.Where((i) => i.Control.Context.Target == null).Select((i) => i.Control))
-			{
-				if (page.IsConnected)
-				{
-					page.Context.Session.AutoReconnect = false;
-					page.Context.Session.Quit("Leaving");
-				}
-			}
+			this.QuitAllSessions();
 
 			foreach (var page in this.Items)
 			{
@@ -172,6 +165,18 @@ namespace Floe.UI
 			if (_notifyIcon != null)
 			{
 				_notifyIcon.Dispose();
+			}
+		}
+
+		private void QuitAllSessions()
+		{
+			foreach (var page in this.Items.Where((i) => i.Control.Context.Target == null).Select((i) => i.Control))
+			{
+				if (page.IsConnected)
+				{
+					page.Context.Session.AutoReconnect = false;
+					page.Context.Session.Quit("Leaving");
+				}
 			}
 		}
 	}
