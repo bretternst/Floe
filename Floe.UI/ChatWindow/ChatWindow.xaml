@@ -220,7 +220,7 @@
 							<MultiBinding Converter="{StaticResource opacityConverter}">
 								<Binding Source="{StaticResource winBG}" Converter="{StaticResource modifySaturation}">
 									<Binding.ConverterParameter>
-										<sys:Double>0.7</sys:Double>
+										<sys:Double>0.5</sys:Double>
 									</Binding.ConverterParameter>
 								</Binding>
 								<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.ChromeOpacity"/>
