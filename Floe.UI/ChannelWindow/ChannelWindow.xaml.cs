@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
+using Floe.Net;
+
 namespace Floe.UI
 {
 	public partial class ChannelWindow : Window
@@ -19,10 +21,13 @@ namespace Floe.UI
 			control.SetValue(Grid.RowProperty, 1);
 			control.SetValue(Grid.ColumnSpanProperty, 2);
 			grdRoot.Children.Add(control);
+			control.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 		}
 
 		protected override void OnClosing(CancelEventArgs e)
 		{
+			this.Control.Session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
+
 			var state = App.Settings.Current.Windows.States[this.Control.Context.Key];
 
 			if (this.Control.Parent != null)
@@ -43,6 +48,14 @@ namespace Floe.UI
 				}
 			}
 			state.Placement = Interop.WindowHelper.Save(this);
+		}
+
+		private void Session_StateChanged(object sender, EventArgs e)
+		{
+			if (((IrcSession)sender).State == IrcSessionState.Connecting)
+			{
+				this.Invoke(() => this.Close());
+			}
 		}
 
 		private void btnReattach_Click(object sender, RoutedEventArgs e)
