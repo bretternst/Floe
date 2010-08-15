@@ -203,6 +203,7 @@ namespace Floe.UI
 		{
 			txtInput.Text = text;
 			txtInput.SelectionStart = text.Length;
+			_nickCandidates = null;
 		}
 
 		private void SetTitle()
@@ -281,6 +282,11 @@ namespace Floe.UI
 			{
 				_logFile.Dispose();
 			}
+		}
+
+		private void txtInput_SelectionChanged(object sender, RoutedEventArgs e)
+		{
+			_nickCandidates = null;
 		}
 	}
 }

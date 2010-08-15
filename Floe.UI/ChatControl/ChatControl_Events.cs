@@ -616,6 +616,7 @@ namespace Floe.UI
 		protected override void OnPreviewKeyDown(KeyEventArgs e)
 		{
 			if (!Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt) &&
+				!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl) &&
 				!(FocusManager.GetFocusedElement(this) is NicknameItem))
 			{
 				e.Handled = true;
@@ -659,6 +660,12 @@ namespace Floe.UI
 						else
 						{
 							txtInput.Clear();
+						}
+						break;
+					case Key.Tab:
+						if (this.IsChannel || this.IsNickname)
+						{
+							DoNickCompletion();
 						}
 						break;
 					default:

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +10,10 @@ namespace Floe.UI
 {
 	public partial class ChatControl : UserControl
 	{
+		private static char[] NickSpecialChars = new[] { '[', ']', '\\', '`', '_', '^', '{', '|', '}' };
+
+		private string[] _nickCandidates;
+
 		public static readonly DependencyProperty NicknamesProperty = DependencyProperty.Register(
 			"Nicknames", typeof(ObservableCollection<NicknameItem>), typeof(ChatControl));
 
@@ -114,6 +119,70 @@ namespace Floe.UI
 					level = mode.Set ? level | mask : level & ~mask;
 					this.AddNick(level, cn.Nickname);
 				}
+			}
+		}
+
+		private static bool IsNicknameChar(char c)
+		{
+			return char.IsLetterOrDigit(c) || NickSpecialChars.Contains(c);
+		}
+
+		private void DoNickCompletion()
+		{
+			int start = 0, end = 0;
+			if (txtInput.Text.Length > 0)
+			{
+				start = Math.Max(0, txtInput.CaretIndex - 1);
+				end = start < txtInput.Text.Length ? start + 1 : start;
+
+				while (start >= 0 && IsNicknameChar(txtInput.Text[start]))
+				{
+					start--;
+				}
+				start++;
+
+				while (end < txtInput.Text.Length && IsNicknameChar(txtInput.Text[end]))
+				{
+					end++;
+				}
+			}
+			else
+			{
+				start = end = 0;
+			}
+
+			if (end - start > 0)
+			{
+				string nickPart = txtInput.Text.Substring(start, end - start);
+				string nextNick = null;
+				if (_nickCandidates == null)
+				{
+					_nickCandidates = (from n in this.Nicknames
+									   where n.Nickname.StartsWith(nickPart, StringComparison.InvariantCultureIgnoreCase)
+									   orderby n.Nickname.ToLowerInvariant()
+									   select n.Nickname).ToArray();
+					if (_nickCandidates.Length > 0)
+					{
+						nextNick = _nickCandidates[0];
+					}
+				}
+
+				for (int i = 0; i < _nickCandidates.Length; i++)
+				{
+					if (string.Compare(_nickCandidates[i], nickPart, StringComparison.OrdinalIgnoreCase) == 0)
+					{
+						nextNick = i < _nickCandidates.Length - 1 ? _nickCandidates[i + 1] : _nickCandidates[0];
+						break;
+					}
+				}
+
+				var keepNickCandidates = _nickCandidates;
+				if (nextNick != null)
+				{
+					txtInput.Text = txtInput.Text.Substring(0, start) + nextNick + txtInput.Text.Substring(end);
+					txtInput.CaretIndex = start + nextNick.Length;
+				}
+				_nickCandidates = keepNickCandidates;
 			}
 		}
 	}

@@ -105,7 +105,7 @@
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Bottom" BorderBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 				BorderThickness="0,1,0,1" SnapsToDevicePixels="True">
-			<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown"
+			<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown" SelectionChanged="txtInput_SelectionChanged"
 				 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=OneWay}"
 				 FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
 				 FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"

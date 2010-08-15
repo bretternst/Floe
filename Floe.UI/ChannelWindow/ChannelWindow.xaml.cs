@@ -37,6 +37,7 @@ namespace Floe.UI
 					this.Control.Session.Part(this.Control.Target.Name);
 				}
 				state.IsDetached = true;
+				this.Control.Dispose();
 			}
 			else
 			{
