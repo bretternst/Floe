@@ -169,7 +169,7 @@ namespace Floe.UI
 
 				for (int i = 0; i < _nickCandidates.Length; i++)
 				{
-					if (string.Compare(_nickCandidates[i], nickPart, StringComparison.OrdinalIgnoreCase) == 0)
+					if (string.Compare(_nickCandidates[i], nickPart, StringComparison.InvariantCulture) == 0)
 					{
 						nextNick = i < _nickCandidates.Length - 1 ? _nickCandidates[i + 1] : _nickCandidates[0];
 						break;
@@ -230,7 +230,7 @@ namespace Floe.UI
 		{
 			if (this.HighestLevel == other.HighestLevel)
 			{
-				return string.Compare(this.Nickname, other.Nickname, StringComparison.OrdinalIgnoreCase);
+				return string.Compare(this.Nickname, other.Nickname, StringComparison.InvariantCultureIgnoreCase);
 			}
 			else
 			{
@@ -240,7 +240,7 @@ namespace Floe.UI
 
 		public int CompareTo(string other)
 		{
-			return string.Compare(this.Nickname, other, StringComparison.OrdinalIgnoreCase);
+			return string.Compare(this.Nickname, other, StringComparison.InvariantCultureIgnoreCase);
 		}
 
 		public override string ToString()
