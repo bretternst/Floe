@@ -161,7 +161,8 @@
 				<ColumnDefinition/>
 				<ColumnDefinition Name="colNickList"
 								  Width="0"
-								  MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=Grid}, Path=ActualWidth}"/>
+								  MaxWidth="{Binding RelativeSource={RelativeSource AncestorType=Grid}, Path=ActualWidth}"
+								  MinWidth="50.0"/>
 			</Grid.ColumnDefinitions>
 			<local:ChatBox x:Name="boxOutput"
 					   BufferLines="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.BufferLines, Mode=OneWay}"

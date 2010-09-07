@@ -48,18 +48,28 @@ namespace Floe.UI
 
 		private void AddNick(string nick)
 		{
-			if (string.IsNullOrEmpty(nick) || nick == "+" || nick == "@")
-			{
-				return;
-			}
-
 			var level = ChannelLevel.Normal;
-			while (nick.StartsWith("@") || nick.StartsWith("+"))
+			while (nick.Length > 0 && !char.IsLetterOrDigit(nick[0]) && !NickSpecialChars.Contains(nick[0]))
 			{
-				level |= nick[0] == '@' ? ChannelLevel.Op : ChannelLevel.Voice;
+				switch (nick[0])
+				{
+					case '@':
+						level |= ChannelLevel.Op;
+						break;
+					case '%':
+						level |= ChannelLevel.HalfOp;
+						break;
+					case '+':
+						level |= ChannelLevel.Voice;
+						break;
+				}
 				nick = nick.Substring(1);
 			}
-			this.AddNick(level, nick);
+
+			if (nick.Length > 0)
+			{
+				this.AddNick(level, nick);
+			}
 		}
 
 		private void RemoveNick(string nick)
@@ -109,14 +119,26 @@ namespace Floe.UI
 
 		private void ProcessMode(IrcChannelMode mode)
 		{
-			if (mode.Mode == 'o' || mode.Mode == 'v')
+			var mask = ChannelLevel.Normal;
+			switch (mode.Mode)
+			{
+				case 'o':
+					mask = ChannelLevel.Op;
+					break;
+				case 'h':
+					mask = ChannelLevel.HalfOp;
+					break;
+				case 'v':
+					mask = ChannelLevel.Voice;
+					break;
+			}
+
+			if (mask != ChannelLevel.Normal)
 			{
 				var cn = this.GetNick(mode.Parameter);
 				if (cn != null)
 				{
-					var level = cn.Level;
-					var mask = mode.Mode == 'o' ? ChannelLevel.Op : ChannelLevel.Voice;
-					level = mode.Set ? level | mask : level & ~mask;
+					var level = mode.Set ? cn.Level | mask : cn.Level & ~mask;
 					this.AddNick(level, cn.Nickname);
 				}
 			}
@@ -192,7 +214,8 @@ namespace Floe.UI
 	{
 		Normal = 0,
 		Voice = 1,
-		Op = 2
+		HalfOp = 2,
+		Op = 4
 	}
 
 	public class NicknameItem : ListBoxItem, IComparable<NicknameItem>, IComparable<string>
@@ -207,6 +230,10 @@ namespace Floe.UI
 				if ((this.Level & ChannelLevel.Op) > 0)
 				{
 					return ChannelLevel.Op;
+				}
+				else if ((this.Level & ChannelLevel.HalfOp) > 0)
+				{
+					return ChannelLevel.HalfOp;
 				}
 				else if ((this.Level & ChannelLevel.Voice) > 0)
 				{
@@ -245,7 +272,24 @@ namespace Floe.UI
 
 		public override string ToString()
 		{
-			return (this.Level == ChannelLevel.Op ? "@" : (this.Level == ChannelLevel.Voice ? "+" : "")) + this.Nickname;
+			string prefix;
+			switch (this.HighestLevel)
+			{
+				case ChannelLevel.Op:
+					prefix = "@";
+					break;
+				case ChannelLevel.HalfOp:
+					prefix = "%";
+					break;
+				case ChannelLevel.Voice:
+					prefix = "+";
+					break;
+				default:
+					prefix = "";
+					break;
+			}
+
+			return prefix + this.Nickname;
 		}
 	}
 }

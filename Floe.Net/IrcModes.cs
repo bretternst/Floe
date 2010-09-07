@@ -125,6 +125,7 @@ namespace Floe.Net
 								case 'O':
 								case 'o':
 								case 'v':
+								case 'h':
 								case 'k':
 								case 'l':
 								case 'b':

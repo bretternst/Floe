@@ -105,6 +105,12 @@ namespace Floe.UI
 			e.CanExecute = cn != null && (cn.Level & ChannelLevel.Op) > 0;
 		}
 
+		private void CanExecuteIsHalfOp(object sender, CanExecuteRoutedEventArgs e)
+		{
+			var cn = this.GetNick(this.Session.Nickname);
+			e.CanExecute = cn != null && (cn.Level & (ChannelLevel.Op | ChannelLevel.HalfOp)) > 0;
+		}
+
 		private void ExecuteOp(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.ExecuteOpVoice(e, 'o', true);
