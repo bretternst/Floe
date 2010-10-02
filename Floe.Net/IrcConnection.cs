@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -11,6 +13,7 @@ namespace Floe.Net
         private const int HeartbeatInterval = 300000;
 		private string _server;
 		private int _port;
+		private bool _isSecure;
 
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
@@ -24,7 +27,7 @@ namespace Floe.Net
 		public event EventHandler<IrcEventArgs> MessageReceived;
 		public event EventHandler<IrcEventArgs> MessageSent;
 
-		public IrcConnection(string server, int port)
+		public IrcConnection(string server, int port, bool isSecure)
 		{
 			if (string.IsNullOrEmpty(server))
 				throw new ArgumentNullException("server");
@@ -33,6 +36,7 @@ namespace Floe.Net
 
 			_server = server;
 			_port = port;
+			_isSecure = isSecure;
 			_writeQueue = new Queue<IrcMessage>();
 		}
 
@@ -91,9 +95,24 @@ namespace Floe.Net
 		private void SocketLoop()
 		{
 			_tcpClient = new TcpClient();
+			Stream stream = null;
 			try
 			{
 				_tcpClient.Connect(_server, _port);
+				stream = _tcpClient.GetStream();
+
+				if (_isSecure)
+				{
+					var sslStream = new SslStream(stream, true,
+						(sender, cert, chain, sslPolicyErrors) =>
+						{
+							// Just accept all server certs for now; we'll take advantage of the encryption
+							// but not the authentication unless users ask for it.
+							return true;
+						});
+					sslStream.AuthenticateAsClient(_server);
+					stream = sslStream;
+				}
 			}
 			catch (Exception ex)
 			{
@@ -102,7 +121,6 @@ namespace Floe.Net
 				return;
 			}
 
-			NetworkStream stream = _tcpClient.GetStream();
 			_writeWaitHandle = new ManualResetEvent(false);
 			_writeQueue = new Queue<IrcMessage>();
 

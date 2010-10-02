@@ -674,7 +674,10 @@ namespace Floe.UI
 						break;
 				}
 			}
-
+			else if (e.Key >= Key.A && e.Key <= Key.Z)
+			{
+				Keyboard.Focus(txtInput);
+			}
 
 			base.OnPreviewKeyDown(e);
 		}

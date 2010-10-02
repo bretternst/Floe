@@ -118,7 +118,7 @@ namespace Floe.UI
 
 		public Rect MakeVisible(Visual visual, Rect rectangle)
 		{
-			throw new NotImplementedException();
+			return Rect.Empty;
 		}
 
 		public void ScrollToEnd()

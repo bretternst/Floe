@@ -11,6 +11,8 @@ namespace Floe.UI
 {
 	public partial class ChatControl : UserControl, IDisposable
 	{
+		private const double MinNickListWidth = 50.0;
+
 		private LinkedList<string> _history;
 		private LinkedListNode<string> _historyNode;
 		private LogFileHandle _logFile;
@@ -57,6 +59,7 @@ namespace Floe.UI
 					}));
 				this.Session.Mode(this.Target);
 				splitter.IsEnabled = true;
+				colNickList.MinWidth = MinNickListWidth;
 				colNickList.Width = new GridLength(state.NickListWidth);
 			}
 			else if (this.IsNickname)
@@ -123,12 +126,12 @@ namespace Floe.UI
 		{
 			this.Session.AutoReconnect = false;
 			this.Perform = server.OnConnect;
-			this.Connect(server.Hostname, server.Port, server.AutoReconnect);
+			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect);
 		}
 
-		public void Connect(string hostname, int port, bool autoReconnect)
+		public void Connect(string hostname, int port, bool useSsl, bool autoReconnect)
 		{
-			this.Session.Open(hostname, port,
+			this.Session.Open(hostname, port, useSsl,
 				!string.IsNullOrEmpty(this.Session.Nickname) ?
 					this.Session.Nickname : App.Settings.Current.User.Nickname,
 				App.Settings.Current.User.Username,

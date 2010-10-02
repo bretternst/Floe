@@ -60,5 +60,6 @@
 		<CheckBox Canvas.Left="165" Canvas.Top="122" Content="Automatically Reconnect" Height="16" Name="chkAutoReconnect" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.AutoReconnect, Mode=TwoWay}"/>
 		<Label ToolTip="{StaticResource ttOnConnect}" Canvas.Left="166" Canvas.Top="143" Content="On Connect:" Height="28" Name="label4" />
 		<TextBox ToolTip="{StaticResource ttOnConnect}" Canvas.Left="165" Canvas.Top="159" Height="76" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
+		<CheckBox Canvas.Left="320" Canvas.Top="100" Content="SSL" Height="16" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.IsSecure, Mode=TwoWay}" Name="chkSsl" Width="52" />
 	</Canvas>
 </UserControl>

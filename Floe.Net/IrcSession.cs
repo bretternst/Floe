@@ -23,6 +23,7 @@ namespace Floe.Net
 
 		public string Server { get; private set; }
 		public int Port { get; private set; }
+		public bool IsSecure { get; private set; }
 		public string Nickname { get; private set; }
 		public string Username { get; private set; }
 		public string Hostname { get; private set; }
@@ -71,7 +72,7 @@ namespace Floe.Net
 			this.UserModes = new char[0];
 		}
 
-		public void Open(string server, int port, string nickname,
+		public void Open(string server, int port, bool isSecure, string nickname,
 			string userName, string hostName, string fullname, bool autoReconnect)
 		{
 			if (string.IsNullOrEmpty(nickname))
@@ -81,6 +82,7 @@ namespace Floe.Net
 			this.Nickname = nickname;
 			this.Server = server;
 			this.Port = port;
+			this.IsSecure = isSecure;
 			this.Username = userName;
 			this.Hostname = hostName;
 			this.FullName = fullname;
@@ -100,7 +102,7 @@ namespace Floe.Net
 
 			_captures = new List<IrcCodeHandler>();
 			this.State = IrcSessionState.Connecting;
-			_conn = new IrcConnection(server, port);
+			_conn = new IrcConnection(server, port, isSecure);
 			_conn.Connected += new EventHandler(_conn_Connected);
 			_conn.Disconnected += new EventHandler(_conn_Disconnected);
 			_conn.Heartbeat += new EventHandler(_conn_Heartbeat);

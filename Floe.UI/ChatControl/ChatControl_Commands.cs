@@ -389,8 +389,13 @@ namespace Floe.UI
 				case "SERVER":
 					args = Split(command, arguments, 1, 2);
 					int port = 0;
-					if (args.Length > 1)
+					bool useSsl = false;
+					if (args.Length > 1 && (args[1] = args[1].Trim()).Length > 0)
 					{
+						if(args[1][0] == '+')
+						{
+							useSsl = true;
+						}
 						int.TryParse(args[1], out port);
 					}
 					if (port == 0)
@@ -403,7 +408,7 @@ namespace Floe.UI
 						this.Session.Quit("Changing servers");
 					}
 					this.Perform = "";
-					this.Connect(args[0], port, false);
+					this.Connect(args[0], port, useSsl, false);
 					break;
 				case "ME":
 				case "ACTION":

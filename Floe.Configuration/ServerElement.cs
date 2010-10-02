@@ -108,6 +108,13 @@ namespace Floe.Configuration
 			set { this["port"] = value; }
 		}
 
+		[ConfigurationProperty("isSecure", DefaultValue=false)]
+		public bool IsSecure
+		{
+			get { return (bool)this["isSecure"]; }
+			set { this["isSecure"] = value; }
+		}
+
 		[ConfigurationProperty("connectOnStartup", DefaultValue=false)]
 		public bool ConnectOnStartup
 		{
