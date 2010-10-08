@@ -25,24 +25,11 @@ namespace Floe.UI
 				};
 		}
 
-		public void AppendLine(ChatLine line)
-		{
-			this.FormatSingle(line);
-
-			while (_blocks.Count > this.BufferLines)
-			{
-				_blocks.RemoveFirst();
-			}
-		}
-
 		public void Clear()
 		{
 			_blocks.Clear();
-			_extentHeight = 0.0;
-			if (_viewer != null)
-			{
-				_viewer.InvalidateScrollInfo();
-			}
+			_bufferLines = 0;
+			this.InvalidateScrollInfo();
 			this.InvalidateVisual();
 		}
 
@@ -62,7 +49,7 @@ namespace Floe.UI
 				e.Property == ChatBoxBase.DividerBrushProperty ||
 				e.Property == ChatBoxBase.BackgroundProperty)
 			{
-				this.FormatAll();
+				this.InvalidateAll(true);
 			}
 			
 			base.OnPropertyChanged(e);

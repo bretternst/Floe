@@ -74,7 +74,7 @@ namespace Floe.UI
 			else if (_isDragging)
 			{
 				this.ColumnWidth = Math.Max(0.0, Math.Min(this.ViewportWidth / 2.0, p.X));
-				this.FormatAll();
+				this.InvalidateAll(false);
 			}
 			else if (this.UseTabularView && Math.Abs(p.X - (this.ColumnWidth + SeparatorPadding)) < SeparatorPadding / 2.0)
 			{
@@ -100,7 +100,7 @@ namespace Floe.UI
 				_isDragging = false;
 				this.ReleaseMouseCapture();
 				Mouse.OverrideCursor = null;
-				this.FormatAll();
+				this.InvalidateAll(false);
 			}
 			else if (_isSelecting)
 			{

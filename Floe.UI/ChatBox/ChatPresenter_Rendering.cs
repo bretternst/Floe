@@ -20,6 +20,7 @@ namespace Floe.UI
 			public string TimeString { get; set; }
 			public string NickString { get; set; }
 
+			public bool IsValid { get; set; }
 			public TextLine Time { get; set; }
 			public TextLine Nick { get; set; }
 			public TextLine[] Text { get; set; }
@@ -98,17 +99,47 @@ namespace Floe.UI
 			return new SolidColorBrush(c);
 		}
 
-		private void FormatSingle(ChatLine source)
+		public void AppendLine(ChatLine line)
 		{
-			if (string.IsNullOrEmpty(source.Text))
-			{
-				return;
-			}
 			var b = new Block();
-			b.Source = source;
-			b.Foreground = this.Palette[b.Source.ColorKey];
+			b.Source = line;
+
 			b.TimeString = this.FormatTime(b.Source.Time);
 			b.NickString = this.FormatNick(b.Source.Nick);
+
+			var offset = _blocks.Last != null ? _blocks.Last.Value.CharEnd : 0;
+			b.CharStart = offset;
+			offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
+			b.CharEnd = offset;
+
+			_blocks.AddLast(b);
+			_bufferLines++;
+
+			while (_blocks.Count > this.BufferLines)
+			{
+				if (_blocks.First.Value.IsValid)
+				{
+					_bufferLines -= _blocks.First.Value.Text.Length;
+				}
+				else
+				{
+					_bufferLines--;
+				}
+				_blocks.RemoveFirst();
+			}
+
+			if (!_isAutoScrolling)
+			{
+				this.LineUp();
+			}
+
+			this.InvalidateScrollInfo();
+			this.InvalidateVisual();
+		}
+
+		private void FormatOne(Block b)
+		{
+			b.Foreground = this.Palette[b.Source.ColorKey];
 
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
 			b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
@@ -124,145 +155,48 @@ namespace Floe.UI
 				TextWrapping.NoWrap).First();
 			b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
 
+			if (this.AutoSizeColumn && b.TextX > this.ColumnWidth)
+			{
+				this.ColumnWidth = b.TextX;
+				this.InvalidateAll(false);
+			}
+
 			if (this.UseTabularView)
 			{
-				if (b.TextX > this.ColumnWidth)
-				{
-					if (this.AutoSizeColumn)
-					{
-						this.ColumnWidth = b.TextX;
-						_blocks.AddLast(b);
-						this.FormatAll();
-						return;
-					}
-					else
-					{
-						b.Nick = formatter.Format(b.NickString, null, this.ColumnWidth - (b.Time != null ? b.Time.Width : 0.0),
-							nickBrush, this.Background, TextWrapping.NoWrap).First();
-					}
-				}
 				b.TextX = this.ColumnWidth + SeparatorPadding * 2.0 + 1.0;
 				b.NickX = this.ColumnWidth - b.Nick.WidthIncludingTrailingWhitespace;
 			}
 
-			var offset = _blocks.Last != null ? _blocks.Last.Value.CharEnd : 0;
 			b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
 				this.Background, TextWrapping.Wrap).ToArray();
 			b.Height = b.Text.Sum((t) => t.Height);
-
-			_lineHeight = b.Text[0].Height;
-			_extentHeight = Math.Max(_extentHeight, _lineHeight);
-			b.CharStart = offset;
-			offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
-			b.CharEnd = offset;
-
-			_blocks.AddLast(b);
-			if (_blocks.Count < this.BufferLines)
-			{
-				_extentHeight += b.Height;
-			}
-
-			this.InvalidateVisual();
-			if (_viewer != null)
-			{
-				_viewer.InvalidateScrollInfo();
-
-				if (_isAutoScrolling)
-				{
-					this.ScrollToEnd();
-				}
-			}
+			b.IsValid = true;
 		}
 
-		private void FormatAll()
+		private void InvalidateAll(bool styleChanged)
 		{
-			_extentHeight = 0.0;
-			this.InvalidateVisual();
-
-			if (_blocks.Count < 1 || this.ViewportWidth < 1.0)
-			{
-				return;
-			}
-
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
-
-			var node = _blocks.First;
-
-			node = _blocks.First;
-			while (node != null)
-			{
-				Block b = node.Value;
-				b.Foreground = this.Palette[b.Source.ColorKey];
-				b.TimeString = this.FormatTime(b.Source.Time);
-				b.NickString = this.FormatNick(b.Source.Nick);
-				b.NickX = b.TextX = 0.0;
-
-				b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
-					TextWrapping.NoWrap).FirstOrDefault();
-				b.NickX = b.Time != null ? b.Time.WidthIncludingTrailingWhitespace : 0.0;
-				this.ColumnWidth = Math.Max(this.ColumnWidth, b.NickX);
-
-				node = node.Next;
-			}
-
-			double nickX = _blocks.Max((b) => b.NickX);
-
-			node = _blocks.First;
-			while (node != null)
-			{
-				Block b = node.Value;
-				var nickBrush = b.Foreground;
-				if (this.ColorizeNicknames && b.Source.NickHashCode != 0)
-				{
-					nickBrush = this.GetNickColor(b.Source.NickHashCode);
-				}
-				b.Nick = formatter.Format(b.NickString, null,
-					this.UseTabularView ? this.ColumnWidth - (b.Time != null ? b.Time.Width : 0.0) : this.ViewportWidth,
-					nickBrush, this.Background, TextWrapping.NoWrap).First();
-				if (this.UseTabularView)
-				{
-					b.NickX = nickX;
-				}
-				b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
-
-				node = node.Next;
-			}
-
-			double textX = this.ColumnWidth + SeparatorPadding * 2.0 + 1.0;
+			var sample = formatter.Format("|", null, this.ViewportWidth, this.Foreground, this.Background, TextWrapping.NoWrap);
+			_lineHeight = sample.First().Height;
+			_bufferLines = 0;
 
 			var offset = 0;
-			node = _blocks.First;
-			while (node != null)
-			{
-				Block b = node.Value;
-				if (this.UseTabularView)
+			_blocks.ForEach((b) =>
 				{
-					b.TextX = textX;
-					b.NickX = Math.Max(b.Time != null ? b.Time.Width : 0.0, this.ColumnWidth - b.Nick.Width);
-				}
-				b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
-					this.Background, TextWrapping.Wrap).ToArray();
-				b.Height = b.Text.Sum((t) => t.Height);
-				_extentHeight += b.Height;
-				_lineHeight = b.Text[0].Height;
-				b.CharStart = offset;
-				offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
-				b.CharEnd = offset;
+					b.IsValid = false;
+					if (styleChanged)
+					{
+						b.CharStart = offset;
+						b.TimeString = this.FormatTime(b.Source.Time);
+						b.NickString = this.FormatNick(b.Source.Nick);
+						offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
+						b.CharEnd = offset;
+					}
+					_bufferLines++;
+				});
+//			_bufferLines++;
 
-				node = node.Next;
-			}
-
-			_extentHeight += _lineHeight;
-
-			if (_viewer != null)
-			{
-				_viewer.InvalidateScrollInfo();
-
-				if (_isAutoScrolling)
-				{
-					this.ScrollToEnd();
-				}
-			}
+			this.InvalidateVisual();
 		}
 
 		protected override void OnRender(DrawingContext dc)
@@ -294,6 +228,14 @@ namespace Floe.UI
 
 				var block = node.Value;
 				block.Y = double.NaN;
+				if (!block.IsValid)
+				{
+					this.FormatOne(block);
+					if (block.Text.Length > 1)
+					{
+						_bufferLines += block.Text.Length - 1;
+					}
+				}
 
 				bool drawAny = false;
 				if (block.Text == null || block.Text.Length < 1)
@@ -387,7 +329,7 @@ namespace Floe.UI
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
-			this.FormatAll();
+			this.InvalidateAll(false);
 		}
 	}
 }

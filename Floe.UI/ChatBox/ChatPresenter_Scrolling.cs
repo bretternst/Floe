@@ -8,79 +8,66 @@ namespace Floe.UI
 {
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
-		private double _extentHeight, _offset;
+		private int _bufferLines, _scrollPos;
 		private bool _isAutoScrolling = true;
 
 		public bool CanHorizontallyScroll { get { return false; } set { } }
 		public bool CanVerticallyScroll { get { return true; } set { } }
-		public double ExtentHeight { get { return _extentHeight; } }
+		public double ExtentHeight { get { return _lineHeight * _bufferLines; } }
 		public double ExtentWidth { get { return this.ActualWidth; } }
 		public ScrollViewer ScrollOwner { get { return _viewer; } set { _viewer = value; } }
 		public double ViewportHeight { get { return this.ActualHeight; } }
 		public double ViewportWidth { get { return this.ActualWidth; } }
 		public double HorizontalOffset { get { return 0.0; } }
-		public double VerticalOffset { get { return _offset; } }
+		public double VerticalOffset { get { return (_bufferLines - _scrollPos) * _lineHeight - this.ActualHeight; } }
 
 		public void LineUp()
 		{
-			this.SetVerticalOffset(Math.Max(0.0, _offset - _lineHeight));
+			this.ScrollTo(_scrollPos + 1);
 		}
 
 		public void LineDown()
 		{
-			if (_extentHeight > this.ActualHeight)
-			{
-				this.SetVerticalOffset(Math.Min(_extentHeight - this.ActualHeight, _offset + _lineHeight));
-			}
+			this.ScrollTo(_scrollPos - 1);
 		}
 
 		public void MouseWheelUp()
 		{
-			this.SetVerticalOffset(Math.Max(0.0, _offset - _lineHeight * SystemParameters.WheelScrollLines));
+			this.ScrollTo(_scrollPos + SystemParameters.WheelScrollLines);
 		}
 
 		public void MouseWheelDown()
 		{
-			if (_extentHeight > this.ActualHeight)
-			{
-				this.SetVerticalOffset(Math.Min(_extentHeight - this.ActualHeight,
-					_offset + _lineHeight * SystemParameters.WheelScrollLines));
-			}
+			this.ScrollTo(_scrollPos - SystemParameters.WheelScrollLines);
 		}
 
 		public void PageUp()
 		{
-			this.SetVerticalOffset(Math.Max(0.0, _offset - _lineHeight * (this.VisibleLineCount - 1)));
+			this.ScrollTo(_scrollPos + this.VisibleLineCount - 1);
 		}
 
 		public void PageDown()
 		{
-			if (_extentHeight > this.ActualHeight)
-			{
-				this.SetVerticalOffset(Math.Min(_extentHeight - this.ActualHeight,
-					_offset + _lineHeight * (this.VisibleLineCount - 1)));
-			}
+			this.ScrollTo(_scrollPos - this.VisibleLineCount + 1);
+		}
+
+		public void ScrollTo(int pos)
+		{
+			pos = Math.Max(0, Math.Min(_bufferLines - this.VisibleLineCount + 1, pos));
+
+			var delta = (pos - _scrollPos) * _lineHeight;
+			_scrollPos = pos;
+
+			this.InvalidateVisual();
+			this.InvalidateScrollInfo();
+
+			_isAutoScrolling = _scrollPos == 0;
 		}
 
 		public void SetVerticalOffset(double offset)
 		{
-			var delta = offset - _offset;
-
-			_blocks.ForEach((b) =>
-				{
-					if (b.Y >= 0.0)
-					{
-						b.Y += delta;
-					}
-				});
-			_offset = offset;
-			this.InvalidateVisual();
-			if (_viewer != null)
-			{
-				_viewer.InvalidateScrollInfo();
-			}
-
-			_isAutoScrolling = _offset > _extentHeight - this.ActualHeight - _lineHeight;
+			int pos = _bufferLines - (int)((offset + this.ViewportHeight) / _lineHeight);
+			this.ScrollTo(pos);
 		}
 
 		public void LineLeft()
@@ -123,7 +110,15 @@ namespace Floe.UI
 
 		public void ScrollToEnd()
 		{
-			this.SetVerticalOffset(Math.Max(0.0, this.ExtentHeight - this.ActualHeight));
+			_scrollPos = 0;
+		}
+
+		public void InvalidateScrollInfo()
+		{
+			if (_viewer != null)
+			{
+				_viewer.InvalidateScrollInfo();
+			}
 		}
 
 		public int VisibleLineCount
