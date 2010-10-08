@@ -34,7 +34,7 @@ namespace Floe.UI
 		}
 
 		private LinkedList<Block> _blocks = new LinkedList<Block>();
-		private double _lineHeight;
+		private double _lineHeight, _previousWidth;
 		private LinkedListNode<Block> _bottomBlock;
 
 		private Typeface Typeface
@@ -128,11 +128,6 @@ namespace Floe.UI
 				_blocks.RemoveFirst();
 			}
 
-			if (!_isAutoScrolling)
-			{
-				this.LineUp();
-			}
-
 			this.InvalidateScrollInfo();
 			this.InvalidateVisual();
 		}
@@ -158,7 +153,7 @@ namespace Floe.UI
 			if (this.AutoSizeColumn && b.TextX > this.ColumnWidth)
 			{
 				this.ColumnWidth = b.TextX;
-				this.InvalidateAll(false);
+				this.InvalidateAll(false, true);
 			}
 
 			if (this.UseTabularView)
@@ -173,7 +168,7 @@ namespace Floe.UI
 			b.IsValid = true;
 		}
 
-		private void InvalidateAll(bool styleChanged)
+		private void InvalidateAll(bool styleChanged, bool widthChanged)
 		{
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
 			var sample = formatter.Format("|", null, this.ViewportWidth, this.Foreground, this.Background, TextWrapping.NoWrap);
@@ -194,9 +189,9 @@ namespace Floe.UI
 					}
 					_bufferLines++;
 				});
-//			_bufferLines++;
 
 			this.InvalidateVisual();
+			this.InvalidateScrollInfo();
 		}
 
 		protected override void OnRender(DrawingContext dc)
@@ -234,6 +229,7 @@ namespace Floe.UI
 					if (block.Text.Length > 1)
 					{
 						_bufferLines += block.Text.Length - 1;
+						this.InvalidateScrollInfo();
 					}
 				}
 
@@ -329,7 +325,8 @@ namespace Floe.UI
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
-			this.InvalidateAll(false);
+			this.InvalidateAll(false, this.ActualWidth != _previousWidth);
+			_previousWidth = this.ActualWidth;
 		}
 	}
 }

@@ -49,7 +49,7 @@ namespace Floe.UI
 				e.Property == ChatBoxBase.DividerBrushProperty ||
 				e.Property == ChatBoxBase.BackgroundProperty)
 			{
-				this.InvalidateAll(true);
+				this.InvalidateAll(true, true);
 			}
 			
 			base.OnPropertyChanged(e);
