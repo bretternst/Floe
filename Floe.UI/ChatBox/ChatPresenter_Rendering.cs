@@ -152,12 +152,15 @@ namespace Floe.UI
 
 			_lineHeight = b.Text[0].Height;
 			_extentHeight = Math.Max(_extentHeight, _lineHeight);
-			_extentHeight += b.Height;
 			b.CharStart = offset;
 			offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
 			b.CharEnd = offset;
 
 			_blocks.AddLast(b);
+			if (_blocks.Count < this.BufferLines)
+			{
+				_extentHeight += b.Height;
+			}
 
 			this.InvalidateVisual();
 			if (_viewer != null)
@@ -183,57 +186,71 @@ namespace Floe.UI
 
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
 
-			_blocks.ForEach((b) =>
-				{
-					b.Foreground = this.Palette[b.Source.ColorKey];
-					b.TimeString = this.FormatTime(b.Source.Time);
-					b.NickString = this.FormatNick(b.Source.Nick);
-					b.NickX = b.TextX = 0.0;
+			var node = _blocks.First;
 
-					b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
-						TextWrapping.NoWrap).FirstOrDefault();
-					b.NickX = b.Time != null ? b.Time.WidthIncludingTrailingWhitespace : 0.0;
-					this.ColumnWidth = Math.Max(this.ColumnWidth, b.NickX);
-				});
+			node = _blocks.First;
+			while (node != null)
+			{
+				Block b = node.Value;
+				b.Foreground = this.Palette[b.Source.ColorKey];
+				b.TimeString = this.FormatTime(b.Source.Time);
+				b.NickString = this.FormatNick(b.Source.Nick);
+				b.NickX = b.TextX = 0.0;
+
+				b.Time = formatter.Format(b.TimeString, null, this.ViewportWidth, b.Foreground, this.Background,
+					TextWrapping.NoWrap).FirstOrDefault();
+				b.NickX = b.Time != null ? b.Time.WidthIncludingTrailingWhitespace : 0.0;
+				this.ColumnWidth = Math.Max(this.ColumnWidth, b.NickX);
+
+				node = node.Next;
+			}
 
 			double nickX = _blocks.Max((b) => b.NickX);
 
-			_blocks.ForEach((b) =>
+			node = _blocks.First;
+			while (node != null)
+			{
+				Block b = node.Value;
+				var nickBrush = b.Foreground;
+				if (this.ColorizeNicknames && b.Source.NickHashCode != 0)
 				{
-					var nickBrush = b.Foreground;
-					if (this.ColorizeNicknames && b.Source.NickHashCode != 0)
-					{
-						nickBrush = this.GetNickColor(b.Source.NickHashCode);
-					}
-					b.Nick = formatter.Format(b.NickString, null,
-						this.UseTabularView ? this.ColumnWidth - (b.Time != null ? b.Time.Width : 0.0) : this.ViewportWidth,
-						nickBrush, this.Background, TextWrapping.NoWrap).First();
-					if (this.UseTabularView)
-					{
-						b.NickX = nickX;
-					}
-					b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
-				});
+					nickBrush = this.GetNickColor(b.Source.NickHashCode);
+				}
+				b.Nick = formatter.Format(b.NickString, null,
+					this.UseTabularView ? this.ColumnWidth - (b.Time != null ? b.Time.Width : 0.0) : this.ViewportWidth,
+					nickBrush, this.Background, TextWrapping.NoWrap).First();
+				if (this.UseTabularView)
+				{
+					b.NickX = nickX;
+				}
+				b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
+
+				node = node.Next;
+			}
 
 			double textX = this.ColumnWidth + SeparatorPadding * 2.0 + 1.0;
 
 			var offset = 0;
-			_blocks.ForEach((b) =>
+			node = _blocks.First;
+			while (node != null)
+			{
+				Block b = node.Value;
+				if (this.UseTabularView)
 				{
-					if (this.UseTabularView)
-					{
-						b.TextX = textX;
-						b.NickX = Math.Max(b.Time != null ? b.Time.Width : 0.0, this.ColumnWidth - b.Nick.Width);
-					}
-					b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
-						this.Background, TextWrapping.Wrap).ToArray();
-					b.Height = b.Text.Sum((t) => t.Height);
-					_extentHeight += b.Height;
-					_lineHeight = b.Text[0].Height;
-					b.CharStart = offset;
-					offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
-					b.CharEnd = offset;
-				});
+					b.TextX = textX;
+					b.NickX = Math.Max(b.Time != null ? b.Time.Width : 0.0, this.ColumnWidth - b.Nick.Width);
+				}
+				b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
+					this.Background, TextWrapping.Wrap).ToArray();
+				b.Height = b.Text.Sum((t) => t.Height);
+				_extentHeight += b.Height;
+				_lineHeight = b.Text[0].Height;
+				b.CharStart = offset;
+				offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
+				b.CharEnd = offset;
+
+				node = node.Next;
+			}
 
 			_extentHeight += _lineHeight;
 
