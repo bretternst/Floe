@@ -135,7 +135,7 @@ namespace Floe.UI
 			b.CharEnd = offset;
 
 			_blocks.AddLast(b);
-			this.FormatOne(b);
+			this.FormatOne(b, this.AutoSizeColumn);
 			_bufferLines += b.Text.Length;
 			if (!_isAutoScrolling)
 			{
@@ -155,7 +155,7 @@ namespace Floe.UI
 			this.InvalidateVisual();
 		}
 
-		private void FormatOne(Block b)
+		private void FormatOne(Block b, bool autoSize)
 		{
 			b.Foreground = this.Palette[b.Source.ColorKey];
 
@@ -173,7 +173,7 @@ namespace Floe.UI
 				TextWrapping.NoWrap).First();
 			b.TextX = b.NickX + b.Nick.WidthIncludingTrailingWhitespace;
 
-			if (this.AutoSizeColumn && b.TextX > this.ColumnWidth)
+			if (autoSize && b.TextX > this.ColumnWidth)
 			{
 				this.ColumnWidth = b.TextX;
 				this.InvalidateAll(false);
@@ -230,7 +230,7 @@ namespace Floe.UI
 			while (_curBlock != null && count < TextProcessingBatchSize)
 			{
 				int oldLineCount = _curBlock.Value.Text != null ? _curBlock.Value.Text.Length : 0;
-				this.FormatOne(_curBlock.Value);
+				this.FormatOne(_curBlock.Value, false);
 				_curLine += _curBlock.Value.Text.Length;
 				int deltaLines = _curBlock.Value.Text.Length - oldLineCount;
 				_bufferLines += deltaLines;

@@ -40,20 +40,23 @@ namespace Floe.UI
 
 		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
 		{
-			var p = e.GetPosition(this);
-			if (Math.Abs(p.X - (this.ColumnWidth + SeparatorPadding)) < SeparatorPadding / 2.0 && this.UseTabularView)
+			if (!_isDragging && !_isSelecting)
 			{
-				_isDragging = true;
-				this.CaptureMouse();
-			}
-			else
-			{
-				int idx = this.GetCharIndexAt(p);
-				if (idx >= 0 && idx < int.MaxValue)
+				var p = e.GetPosition(this);
+				if (Math.Abs(p.X - (this.ColumnWidth + SeparatorPadding)) < SeparatorPadding / 2.0 && this.UseTabularView)
 				{
-					_isSelecting = true;
+					_isDragging = true;
 					this.CaptureMouse();
-					_selStart = idx;
+				}
+				else
+				{
+					int idx = this.GetCharIndexAt(p);
+					if (idx >= 0 && idx < int.MaxValue)
+					{
+						_isSelecting = true;
+						this.CaptureMouse();
+						_selStart = idx;
+					}
 				}
 			}
 
@@ -73,6 +76,7 @@ namespace Floe.UI
 			}
 			else if (_isDragging)
 			{
+
 				this.ColumnWidth = Math.Max(0.0, Math.Min(this.ViewportWidth / 2.0, p.X));
 				this.InvalidateAll(false);
 			}
