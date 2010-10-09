@@ -12,6 +12,7 @@ namespace Floe.UI
 	public partial class ChatPresenter : ChatBoxBase, IScrollInfo
 	{
 		private const double SeparatorPadding = 6.0;
+		private const int TextProcessingBatchSize = 50;
 
 		private class Block
 		{
@@ -226,7 +227,7 @@ namespace Floe.UI
 		private void ProcessText()
 		{
 			int count = 0;
-			while (_curBlock != null && count < 50)
+			while (_curBlock != null && count < TextProcessingBatchSize)
 			{
 				int oldLineCount = _curBlock.Value.Text != null ? _curBlock.Value.Text.Length : 0;
 				this.FormatOne(_curBlock.Value);
