@@ -213,6 +213,10 @@ namespace Floe.UI
 			while (node.Previous != null && p.Y >= 0.0 && (node = node.Previous) != null);
 			block = node.Value;
 			p.Y = Math.Max(block.Y, p.Y);
+			if (block.Text == null)
+			{
+				return -1;
+			}
 
 			int line = (int)(p.Y - block.Y) / (int)_lineHeight;
 			if (line >= block.Text.Length)

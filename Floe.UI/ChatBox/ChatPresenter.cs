@@ -29,6 +29,7 @@ namespace Floe.UI
 		public void Clear()
 		{
 			_blocks = new LinkedList<Block>();
+			_curBlock = null;
 			_bufferLines = 0;
 			this.InvalidateScrollInfo();
 			this.InvalidateVisual();
