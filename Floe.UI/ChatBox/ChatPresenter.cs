@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -27,7 +28,7 @@ namespace Floe.UI
 
 		public void Clear()
 		{
-			_blocks.Clear();
+			_blocks = new LinkedList<Block>();
 			_bufferLines = 0;
 			this.InvalidateScrollInfo();
 			this.InvalidateVisual();
