@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.TextFormatting;
+using System.Windows.Threading;
 
 namespace Floe.UI
 {
@@ -20,7 +21,6 @@ namespace Floe.UI
 			public string TimeString { get; set; }
 			public string NickString { get; set; }
 
-			public bool IsValid { get; set; }
 			public TextLine Time { get; set; }
 			public TextLine Nick { get; set; }
 			public TextLine[] Text { get; set; }
@@ -35,7 +35,9 @@ namespace Floe.UI
 
 		private LinkedList<Block> _blocks = new LinkedList<Block>();
 		private double _lineHeight;
-		private LinkedListNode<Block> _bottomBlock;
+		private LinkedListNode<Block> _bottomBlock, _curBlock;
+		private int _curLine;
+		private bool _isProcessingText;
 
 		private Typeface Typeface
 		{
@@ -99,6 +101,25 @@ namespace Floe.UI
 			return new SolidColorBrush(c);
 		}
 
+		public void AppendBulkLines(IEnumerable<ChatLine> lines)
+		{
+			foreach (var line in lines)
+			{
+				var b = new Block();
+				b.Source = line;
+				b.TimeString = this.FormatTime(b.Source.Time);
+				b.NickString = this.FormatNick(b.Source.Nick);
+
+				var offset = _blocks.Last != null ? _blocks.Last.Value.CharEnd : 0;
+				b.CharStart = offset;
+				offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
+				b.CharEnd = offset;
+
+				_blocks.AddLast(b);
+			}
+			this.StartProcessingText();
+		}
+
 		public void AppendLine(ChatLine line)
 		{
 			var b = new Block();
@@ -113,17 +134,18 @@ namespace Floe.UI
 			b.CharEnd = offset;
 
 			_blocks.AddLast(b);
-			_bufferLines++;
+			this.FormatOne(b);
+			_bufferLines += b.Text.Length;
+			if (!_isAutoScrolling)
+			{
+				_scrollPos += b.Text.Length;
+			}
 
 			while (_blocks.Count > this.BufferLines)
 			{
-				if (_blocks.First.Value.IsValid)
+				if (_blocks.First.Value.Text != null)
 				{
 					_bufferLines -= _blocks.First.Value.Text.Length;
-				}
-				else
-				{
-					_bufferLines--;
 				}
 				_blocks.RemoveFirst();
 			}
@@ -165,33 +187,71 @@ namespace Floe.UI
 			b.Text = formatter.Format(b.Source.Text, b.Source, this.ViewportWidth - b.TextX, b.Foreground,
 				this.Background, TextWrapping.Wrap).ToArray();
 			b.Height = b.Text.Sum((t) => t.Height);
-			b.IsValid = true;
 		}
 
 		private void InvalidateAll(bool styleChanged)
 		{
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
+			// Surely there's a better way to measure the height of a font?
 			var sample = formatter.Format("|", null, this.ViewportWidth, this.Foreground, this.Background, TextWrapping.NoWrap);
 			_lineHeight = sample.First().Height;
-			_bufferLines = 0;
 
-			var offset = 0;
-			_blocks.ForEach((b) =>
+			if (styleChanged)
+			{
+				var offset = 0;
+				_blocks.ForEach((b) =>
 				{
-					b.IsValid = false;
-					if (styleChanged)
-					{
-						b.CharStart = offset;
-						b.TimeString = this.FormatTime(b.Source.Time);
-						b.NickString = this.FormatNick(b.Source.Nick);
-						offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
-						b.CharEnd = offset;
-					}
-					_bufferLines++;
+					b.CharStart = offset;
+					b.TimeString = this.FormatTime(b.Source.Time);
+					b.NickString = this.FormatNick(b.Source.Nick);
+					offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
+					b.CharEnd = offset;
 				});
+			}
 
-			this.InvalidateVisual();
+			this.StartProcessingText();
+		}
+
+		private void StartProcessingText()
+		{
+			_curBlock = _blocks.Last;
+			_curLine = 0;
+			if (!_isProcessingText)
+			{
+				_isProcessingText = true;
+				Application.Current.Dispatcher.BeginInvoke((Action)ProcessText, DispatcherPriority.ApplicationIdle, null);
+			}
+		}
+
+		private void ProcessText()
+		{
+			int count = 0;
+			while (_curBlock != null && count < 50)
+			{
+				int oldLineCount = _curBlock.Value.Text != null ? _curBlock.Value.Text.Length : 0;
+				this.FormatOne(_curBlock.Value);
+				_curLine += _curBlock.Value.Text.Length;
+				int deltaLines = _curBlock.Value.Text.Length - oldLineCount;
+				_bufferLines += deltaLines;
+				if (_curLine < _scrollPos)
+				{
+					_scrollPos += deltaLines;
+				}
+				_curBlock = _curBlock.Previous;
+				count++;
+			}
+
+			if (_curBlock == null)
+			{
+				_isProcessingText = false;
+			}
+			else
+			{
+				Application.Current.Dispatcher.BeginInvoke((Action)ProcessText, DispatcherPriority.ApplicationIdle, null);
+			}
+
 			this.InvalidateScrollInfo();
+			this.InvalidateVisual();
 		}
 
 		protected override void OnRender(DrawingContext dc)
@@ -207,7 +267,8 @@ namespace Floe.UI
 			var scaledPen = new Pen(this.DividerBrush, 1 / m.M11);
 			double guidelineHeight = scaledPen.Thickness;
 
-			double vPos = this.ActualHeight, height = 0.0, minHeight = this.ExtentHeight - (this.VerticalOffset + this.ActualHeight);
+			double vPos = this.ActualHeight;
+			int curLine = 0;
 			_bottomBlock = null;
 			var guidelines = new GuidelineSet();
 
@@ -223,15 +284,6 @@ namespace Floe.UI
 
 				var block = node.Value;
 				block.Y = double.NaN;
-				if (!block.IsValid)
-				{
-					this.FormatOne(block);
-					if (block.Text.Length > 1)
-					{
-						_bufferLines += block.Text.Length - 1;
-						this.InvalidateScrollInfo();
-					}
-				}
 
 				bool drawAny = false;
 				if (block.Text == null || block.Text.Length < 1)
@@ -241,7 +293,7 @@ namespace Floe.UI
 				for (int j = block.Text.Length - 1; j >= 0; --j)
 				{
 					var line = block.Text[j];
-					if ((height += line.Height) <= minHeight)
+					if (curLine++ < _scrollPos)
 					{
 						continue;
 					}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace Floe.UI
@@ -23,6 +24,11 @@ namespace Floe.UI
 			{
 				throw new Exception("Missing template part.");
 			}
+		}
+
+		public void AppendBulkLines(IEnumerable<ChatLine> lines)
+		{
+			_presenter.AppendBulkLines(lines);
 		}
 
 		public void AppendLine(ChatLine line)

@@ -31,12 +31,14 @@ namespace Floe.UI
 			if (!this.IsServer)
 			{
 				_logFile = App.OpenLogFile(context.Key);
+				var logLines = new List<ChatLine>();
 				while (_logFile.Buffer.Count > 0)
 				{
 					var cl = _logFile.Buffer.Dequeue();
 					cl.Marker = _logFile.Buffer.Count == 0 ? ChatMarker.OldMarker : ChatMarker.None;
-					boxOutput.AppendLine(cl);
+					logLines.Add(cl);
 				}
+				boxOutput.AppendBulkLines(logLines);
 			}
 
 			var state = App.Settings.Current.Windows.States[context.Key];

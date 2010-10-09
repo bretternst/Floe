@@ -200,7 +200,7 @@ namespace Floe.UI
 				return -1;
 			}
 
-			p.Y = Math.Min(this.ActualHeight - 1, p.Y);
+			p.Y = Math.Min(this.ActualHeight - 1, Math.Max(0, p.Y));
 			Block block = null;
 			var node = _bottomBlock;
 			do
