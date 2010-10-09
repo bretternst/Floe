@@ -34,7 +34,7 @@ namespace Floe.UI
 		}
 
 		private LinkedList<Block> _blocks = new LinkedList<Block>();
-		private double _lineHeight, _previousWidth;
+		private double _lineHeight;
 		private LinkedListNode<Block> _bottomBlock;
 
 		private Typeface Typeface
@@ -153,7 +153,7 @@ namespace Floe.UI
 			if (this.AutoSizeColumn && b.TextX > this.ColumnWidth)
 			{
 				this.ColumnWidth = b.TextX;
-				this.InvalidateAll(false, true);
+				this.InvalidateAll(false);
 			}
 
 			if (this.UseTabularView)
@@ -168,7 +168,7 @@ namespace Floe.UI
 			b.IsValid = true;
 		}
 
-		private void InvalidateAll(bool styleChanged, bool widthChanged)
+		private void InvalidateAll(bool styleChanged)
 		{
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
 			var sample = formatter.Format("|", null, this.ViewportWidth, this.Foreground, this.Background, TextWrapping.NoWrap);
@@ -325,8 +325,10 @@ namespace Floe.UI
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
-			this.InvalidateAll(false, this.ActualWidth != _previousWidth);
-			_previousWidth = this.ActualWidth;
+			if (sizeInfo.WidthChanged)
+			{
+				this.InvalidateAll(false);
+			}
 		}
 	}
 }
