@@ -486,6 +486,55 @@ namespace Floe.UI
 					args = Split(command, arguments, 1, 1);
 					ChatControl.UnbanCommand.Execute(args[0], this);
 					break;
+				case "IGNORE":
+					{
+						args = Split(command, arguments, 0, 1);
+						if (args.Length == 0)
+						{
+							if (App.IgnoreMasks.Any())
+							{
+								this.Write("Own", "Ignore list:");
+								foreach (string m in App.IgnoreMasks)
+								{
+									this.Write("Own", "  " + m);
+								}
+							}
+							else
+							{
+								this.Write("Own", "Ignore list is empty.");
+							}
+							break;
+						}
+
+						string mask = args[0];
+
+						if (!mask.Contains('!') && !mask.Contains('@'))
+						{
+							mask = mask + "!*@*";
+						}
+						App.AddIgnore(mask);
+						this.Write("Own", "Added to ignore list: " + mask);
+					}
+					break;
+				case "UNIGNORE":
+					{
+						args = Split(command, arguments, 1, 1);
+						string mask = args[0];
+
+						if (!mask.Contains('!') && !mask.Contains('@'))
+						{
+							mask = mask + "!*@*";
+						}
+						if (App.RemoveIgnore(mask))
+						{
+							this.Write("Own", "Removed from ignore list: " + mask);
+						}
+						else
+						{
+							this.Write("Error", "Specified pattern was not on ignore list.");
+						}
+					}
+					break;
 				default:
 					this.Write("Error", string.Format("Unrecognized command: {0}", command));
 					break;

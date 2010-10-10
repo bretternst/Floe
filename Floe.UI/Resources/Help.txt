@@ -6,6 +6,7 @@
 /DEOP <nick>                            - De-op user in the current channel
 /DEVOICE <nick>                         - Remove a user's voice in the current channel
 /HELP                                   - Display this message
+/IGNORE <nick!user@host>                - Add a mask to the ignore list
 /INVITE <nick> #<channel>               - Invite a user to a channel
 /JOIN or /J #<channel>                  - Join a channel
 /KICK [#channel] <nick> [text]          - Kick a user from a channel
@@ -21,10 +22,11 @@
 /PART or /LEAVE [#channel]              - Leave a channel
 /QUERY <nick>                           - Opens a chat window with the user
 /QUIT                                   - Disconnect from IRC
-/SERVER hostname [port]                 - Change servers
+/SERVER hostname [+][port]              - Change servers (+ before port for SSL)
 /SETUP                                  - Display the settings window
 /TOPIC [#channel] [text]                - Get or set the topic on a channel
 /UNBAN <nick>                           - Unbans the user from the current channel
+/UNIGNORE <nick!user@host>              - Remove a mask from the ignore list
 /USERHOST <nick>[,<nick>...]            - Get the user@host of one or more users
 /VOICE <nick>                           - Give a user voice in the current channel
 /WHO <mask>                             - Get info on one or more users

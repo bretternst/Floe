@@ -63,6 +63,11 @@ namespace Floe.UI
 
 		private void Session_Noticed(object sender, IrcDialogEventArgs e)
 		{
+			if (App.IsIgnoreMatch(e.From))
+			{
+				return;
+			}
+
 			if (this.IsServer)
 			{
 				this.BeginInvoke(() =>
@@ -81,6 +86,11 @@ namespace Floe.UI
 
 		private void Session_PrivateMessaged(object sender, IrcDialogEventArgs e)
 		{
+			if (App.IsIgnoreMatch(e.From))
+			{
+				return;
+			}
+
 			if (!this.IsServer)
 			{
 				if ((this.Target.Type == IrcTargetType.Channel && this.Target.Equals(e.To)) ||
@@ -253,6 +263,11 @@ namespace Floe.UI
 
 		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
+			if (App.IsIgnoreMatch(e.From))
+			{
+				return;
+			}
+
 			this.BeginInvoke(() =>
 				{
 					if (((this.IsChannel && this.Target.Equals(e.To)) ||
@@ -283,12 +298,17 @@ namespace Floe.UI
 
 		private void Session_Joined(object sender, IrcChannelEventArgs e)
 		{
+			bool isIgnored = App.IsIgnoreMatch(e.Who);
+
 			if (!e.IsSelf && !this.IsServer && this.Target.Equals(e.Channel))
 			{
 				this.BeginInvoke(() =>
 					{
-						this.Write("Join", string.Format("{0} ({1}@{2}) has joined channel {3}",
-							e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
+						if (!isIgnored)
+						{
+							this.Write("Join", string.Format("{0} ({1}@{2}) has joined channel {3}",
+								e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
+						}
 						this.AddNick(ChannelLevel.Normal, e.Who.Nickname);
 					});
 			}
@@ -296,12 +316,17 @@ namespace Floe.UI
 
 		private void Session_Parted(object sender, IrcChannelEventArgs e)
 		{
+			bool isIgnored = App.IsIgnoreMatch(e.Who);
+
 			if (!e.IsSelf && !this.IsServer && this.Target.Equals(e.Channel))
 			{
 				this.BeginInvoke(() =>
 					{
-						this.Write("Part", string.Format("{0} ({1}@{2}) has left channel {3}",
-							e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
+						if (!isIgnored)
+						{
+							this.Write("Part", string.Format("{0} ({1}@{2}) has left channel {3}",
+								e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
+						}
 						this.RemoveNick(e.Who.Nickname);
 					});
 			}
@@ -309,6 +334,8 @@ namespace Floe.UI
 
 		private void Session_NickChanged(object sender, IrcNickEventArgs e)
 		{
+			bool isIgnored = App.IsIgnoreMatch(e.Message.From);
+
 			this.BeginInvoke(() =>
 				{
 					if (e.IsSelf)
@@ -321,7 +348,10 @@ namespace Floe.UI
 					}
 					else if (this.IsChannel && this.IsPresent(e.OldNickname))
 					{
-						this.Write("Nick", string.Format("{0} is now known as {1}", e.OldNickname, e.NewNickname));
+						if (!isIgnored)
+						{
+							this.Write("Nick", string.Format("{0} is now known as {1}", e.OldNickname, e.NewNickname));
+						}
 					}
 
 					if (this.IsChannel && this.IsPresent(e.OldNickname))
@@ -358,11 +388,16 @@ namespace Floe.UI
 
 		private void Session_UserQuit(object sender, IrcQuitEventArgs e)
 		{
+			bool isIgnored = App.IsIgnoreMatch(e.Who);
+
 			this.BeginInvoke(() =>
 				{
 					if (this.IsChannel && this.IsPresent(e.Who.Nickname))
 					{
-						this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Text));
+						if (!isIgnored)
+						{
+							this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Text));
+						}
 						this.RemoveNick(e.Who.Nickname);
 					}
 				});

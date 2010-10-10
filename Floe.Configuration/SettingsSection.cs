@@ -49,5 +49,12 @@ namespace Floe.Configuration
 			get { return (WindowsElement)this["windows"]; }
 			set { this["windows"] = value; }
 		}
+
+		[ConfigurationProperty("ignore", DefaultValue="")]
+		public string Ignore
+		{
+			get { return (string)this["ignore"]; }
+			set { this["ignore"] = value; }
+		}
 	}
 }

@@ -64,6 +64,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="App_Ignore.cs" />
     <Compile Include="App_Logging.cs" />
     <Compile Include="App_Patterns.cs" />
     <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
