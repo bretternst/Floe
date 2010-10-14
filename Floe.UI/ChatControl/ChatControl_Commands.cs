@@ -27,7 +27,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand KickCommand = new RoutedUICommand("Kick", "Kick", typeof(ChatControl));
 		public readonly static RoutedUICommand BanCommand = new RoutedUICommand("Ban", "Ban", typeof(ChatControl));
 		public readonly static RoutedUICommand UnbanCommand = new RoutedUICommand("Unban", "Unban", typeof(ChatControl));
-		public readonly static RoutedUICommand SearchCommand = new RoutedUICommand("Search...", "Search", typeof(ChatControl));
+		public readonly static RoutedUICommand SearchCommand = new RoutedUICommand("Search", "Search", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -613,9 +613,7 @@ namespace Floe.UI
 
 		private void ExecuteSearch(object sender, ExecutedRoutedEventArgs e)
 		{
-			pnlSearch.Visibility = Visibility.Visible;
-			txtSearchTerm.Focus();
-			txtSearchTerm.SelectAll();
+			this.ToggleSearch();
 		}
 
 		private void btnSearchPrevious_Click(object sender, RoutedEventArgs e)
@@ -628,17 +626,38 @@ namespace Floe.UI
 			this.DoSearch(SearchDirection.Next);
 		}
 
-		private void btnCloseSearch_Click(object sender, RoutedEventArgs e)
+		private void ToggleSearch()
 		{
-			pnlSearch.Visibility = Visibility.Collapsed;
-			boxOutput.ClearSearch();
+			if (pnlSearch.Visibility == Visibility.Visible)
+			{
+				pnlSearch.Visibility = Visibility.Collapsed;
+				boxOutput.ClearSearch();
+			}
+			else
+			{
+				pnlSearch.Visibility = Visibility.Visible;
+				txtSearchTerm.Focus();
+				txtSearchTerm.SelectAll();
+			}
 		}
 
 		private void DoSearch(SearchDirection dir)
 		{
-			boxOutput.Search(
-				new Regex(txtSearchTerm.Text, chkMatchCase.IsChecked.Value ? RegexOptions.None : RegexOptions.IgnoreCase),
-				dir);
+			Regex pattern = null;
+
+			try
+			{
+				pattern = new Regex(
+						chkUseRegEx.IsChecked.Value ? txtSearchTerm.Text : Regex.Escape(txtSearchTerm.Text),
+						chkMatchCase.IsChecked.Value ? RegexOptions.None : RegexOptions.IgnoreCase);
+			}
+			catch (ArgumentException ex)
+			{
+				MessageBox.Show("The regular expression was not valid: " + Environment.NewLine + ex.Message,
+					"Invalid pattern", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
+
+			boxOutput.Search(pattern, dir);
 		}
 	}
 }

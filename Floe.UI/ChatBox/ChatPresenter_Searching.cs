@@ -76,7 +76,9 @@ namespace Floe.UI
 				pos += node.Value.Text.Length;
 				node = node.Previous;
 			}
-			_scrollPos = Math.Max(Math.Min(_scrollPos, pos), pos - this.VisibleLineCount + node.Value.Text.Length + 2);
+			_scrollPos = Math.Max(
+				Math.Min(_scrollPos, Math.Max(0, pos - this.VisibleLineCount / 2)),
+				Math.Min(_bufferLines - this.VisibleLineCount + 1, pos - this.VisibleLineCount / 2 + node.Value.Text.Length));
 			this.InvalidateScrollInfo();
 		}
 
