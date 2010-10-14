@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using Floe.Configuration;
 using Floe.Net;
 
@@ -21,7 +22,7 @@ namespace Floe.UI
 		}
 
 		public ObservableCollection<ChatTabItem> Items { get; private set; }
-		public ChatControl CurrentControl { get { return tabsChat.SelectedContent as ChatControl; } }
+		public ChatControl ActiveControl { get { return tabsChat.SelectedContent as ChatControl; } }
 
 		public ChatWindow()
 		{
@@ -36,6 +37,11 @@ namespace Floe.UI
 		{
 			var page = new ChatControl(context);
 			var item = new ChatTabItem(page);
+
+			var bgBinding = new Binding();
+			bgBinding.Source = this;
+			bgBinding.Path = new PropertyPath("UIBackground");
+			page.SetBinding(ChatControl.BackgroundProperty, bgBinding);
 
 			if (context.Target == null)
 			{

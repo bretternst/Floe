@@ -6,7 +6,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="699" Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent">
+             d:DesignHeight="400" d:DesignWidth="699" Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
+			 FontFamily="Segoe UI" FontSize="12">
 	<UserControl.CommandBindings>
 		<CommandBinding Command="local:ChatControl.WhoisCommand" Executed="ExecuteWhois" CanExecute="CanExecuteConnectedCommand"/>
 		<CommandBinding Command="local:ChatControl.OpenLinkCommand" Executed="ExecuteOpenLink"/>
@@ -21,6 +22,7 @@
 		<CommandBinding Command="local:ChatControl.KickCommand" Executed="ExecuteKick" CanExecute="CanExecuteIsOp"/>
 		<CommandBinding Command="local:ChatControl.BanCommand" Executed="ExecuteBan" CanExecute="CanExecuteIsOp"/>
 		<CommandBinding Command="local:ChatControl.UnbanCommand" Executed="ExecuteUnban" CanExecute="CanExecuteIsOp"/>
+		<CommandBinding Command="local:ChatControl.SearchCommand" Executed="ExecuteSearch"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<local:BrushAlphaConverter x:Key="opacityConverter"/>
@@ -66,9 +68,13 @@
 			<MenuItem Header="Connect" Click="connect_Click" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand"/>
+			<Separator/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmChannel">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand"/>
+			<Separator/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand"/>
 		</ContextMenu>
 		<Style TargetType="MenuItem" x:Key="colorMenuItem">
 			<Setter Property="Template">
@@ -103,6 +109,27 @@
 		</Style>
 	</UserControl.Resources>
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
+		<Border DockPanel.Dock="Top">
+			<StackPanel Orientation="Vertical">
+				<StackPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlSearch" Margin="0,5,10,5" SnapsToDevicePixels="True">
+					<Button x:Name="btnCloseSearch" VerticalAlignment="Center" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Click="btnCloseSearch_Click">
+						<Path Margin="2" SnapsToDevicePixels="True"
+						Data="{StaticResource closeButtonGeometry}"
+						Stroke="{StaticResource winFG}"
+						StrokeThickness="2"
+						StrokeStartLineCap="Round"
+						StrokeEndLineCap="Round"
+						Stretch="Uniform"
+						VerticalAlignment="Top"
+						HorizontalAlignment="Center"/>
+					</Button>
+					<TextBox x:Name="txtSearchTerm" Width="300" Style="{StaticResource uiTextBoxStyle}"/>
+					<Button x:Name="btnSearchPrevious" IsEnabled="{Binding ElementName=txtSearchTerm, Path=Text.Length}" Padding="3,1,3,1" Content="&lt;&lt; Previous" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnSearchPrevious_Click"/>
+					<Button x:Name="btnSearchNext" IsEnabled="{Binding ElementName=txtSearchTerm, Path=Text.Length}" Padding="3,1,3,1" Content="Next &gt;&gt;" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Click="btnSearchNext_Click"/>
+					<CheckBox x:Name="chkMatchCase" Style="{StaticResource uiCheckBoxStyle}" Content="Match Case" Focusable="False" Margin="10,0,10,2"/>
+				</StackPanel>
+			</StackPanel>
+		</Border>
 		<Border DockPanel.Dock="Bottom" BorderBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 				BorderThickness="0,1,0,1" SnapsToDevicePixels="True">
 			<TextBox Name="txtInput" SnapsToDevicePixels="True" KeyDown="txtInput_KeyDown" SelectionChanged="txtInput_SelectionChanged"
@@ -186,7 +213,7 @@
 					<MultiBinding Converter="{StaticResource opacityConverter}">
 						<Binding Source="{StaticResource editBG}"/>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
-					</MultiBinding>					
+					</MultiBinding>
 				</local:ChatBox.Background>
 			</local:ChatBox>
 			<ListBox Name="lstNicknames" Grid.Column="1" BorderBrush="{x:Null}" BorderThickness="0" SelectionMode="Extended"
@@ -200,7 +227,7 @@
 					<MultiBinding Converter="{StaticResource opacityConverter}">
 						<Binding Source="{StaticResource editBG}"/>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
-					</MultiBinding>					
+					</MultiBinding>
 				</ListBox.Background>
 				<ListBox.ItemContainerStyle>
 					<Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">

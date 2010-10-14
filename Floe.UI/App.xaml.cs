@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Reflection;
 using System.Linq;
+using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -55,6 +56,28 @@ namespace Floe.UI
 			get
 			{
 				return typeof(App).Assembly.GetName().Version.ToString();
+			}
+		}
+
+		public static ChatControl ActiveControl
+		{
+			get
+			{
+				var chatWindow = Application.Current.Windows.OfType<ChatWindow>().FirstOrDefault((w) => w.IsActive);
+				if (chatWindow != null)
+				{
+					return chatWindow.ActiveControl;
+				}
+				else
+				{
+					var channelWindow = Application.Current.Windows.OfType<ChannelWindow>().FirstOrDefault((w) => w.IsActive);
+					if (channelWindow != null)
+					{
+						return channelWindow.Control;
+					}
+				}
+
+				return null;
 			}
 		}
 

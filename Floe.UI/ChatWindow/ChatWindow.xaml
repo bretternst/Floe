@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding ElementName=tabsChat, Path=SelectedContent.Title}" Height="399" Width="722" 
 		xmlns:local="clr-namespace:Floe.UI"
-        xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		MinWidth="300"  MinHeight="250" WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True"
 		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}" x:Name="window">
@@ -22,13 +21,6 @@
 		<CommandBinding Command="local:ChatWindow.NextTabCommand" Executed="ExecuteNextTab" CanExecute="CanExecuteNextTab"/>
 	</Window.CommandBindings>
 	<Window.Resources>
-		<local:BrushToColorConverter x:Key="brushToColor"/>
-		<local:BrushAlphaConverter x:Key="opacityConverter"/>
-		<SolidColorBrush x:Key="winBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
-		<SolidColorBrush x:Key="winFG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
-		<SolidColorBrush x:Key="winFGx0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0"/>
-		<SolidColorBrush x:Key="winFGx40" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.4"/>
-		<SolidColorBrush x:Key="winFGx80" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.8"/>
 		<LinearGradientBrush x:Key="winTabSep" StartPoint="0,0" EndPoint="0,1">
 			<GradientStop Offset="0" Color="{Binding Source={StaticResource winFGx0}, Converter={StaticResource brushToColor}}"/>
 			<GradientStop Offset="0.5" Color="{Binding Source={StaticResource winFG}, Converter={StaticResource brushToColor}}"/>
@@ -38,7 +30,6 @@
 		<Geometry x:Key="closeTabButtonGeometry">M0,0 L6,6 M0,6 L6,0</Geometry>
 		<Geometry x:Key="minimizeButtonGeometry">M0,8 L8,8</Geometry>
 		<Geometry x:Key="maximizeButtonGeometry">M0,0 L8,0 L8,8 L0,8 L0,0 M0,1 L8,1</Geometry>
-		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
 		<Geometry x:Key="settingsButtonGeometry">M3,4 L6,8 L10,0</Geometry>
 		<Geometry x:Key="leftArrowGeometry">M0,4 L8,8 8,0Z</Geometry>
 		<Geometry x:Key="rightArrowGeometry">M0,0 L8,4 L0,8Z</Geometry>
@@ -49,118 +40,6 @@
 			  Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 		<Path x:Key="downArrowPath" Data="{StaticResource downArrowGeometry}"
 			  Stroke="{StaticResource winFG}" Margin="2,0,2,0" Fill="{StaticResource winFG}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-
-		<Style x:Key="uiButtonStyle" TargetType="Button">
-			<Setter Property="Background" Value="Transparent"/>
-			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
-			<Setter Property="BorderBrush" Value="Transparent"/>
-			<Setter Property="VerticalAlignment" Value="Center"/>
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="Button">
-						<Border Background="{TemplateBinding Background}" BorderThickness="1"
-								BorderBrush="{TemplateBinding BorderBrush}"
-								Padding="{TemplateBinding Padding}">
-							<ContentPresenter VerticalAlignment="Center"/>
-						</Border>
-						<ControlTemplate.Triggers>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="IsMouseOver" Value="True"/>
-									<Condition Property="IsEnabled" Value="True"/>
-								</MultiTrigger.Conditions>
-								<Setter Property="BorderBrush" Value="{StaticResource winFG}"/>
-								<Setter Property="Background" Value="{StaticResource winFGx40}"/>
-							</MultiTrigger>
-							<Trigger Property="IsEnabled" Value="False">
-								<Setter Property="Opacity" Value="0.4"/>
-							</Trigger>
-							<Trigger Property="IsPressed" Value="True">
-								<Setter Property="Background" Value="{StaticResource winFGx80}"/>
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-
-		<Style x:Key="uiRepeatButtonStyle" TargetType="RepeatButton">
-			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
-			<Setter Property="Background" Value="Transparent"/>
-			<Setter Property="BorderBrush" Value="Transparent"/>
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="RepeatButton">
-						<Border Background="{TemplateBinding Background}" BorderThickness="1"
-								BorderBrush="{TemplateBinding BorderBrush}"
-								Padding="{TemplateBinding Padding}">
-							<ContentPresenter VerticalAlignment="Center"/>
-						</Border>
-						<ControlTemplate.Triggers>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="IsMouseOver" Value="True"/>
-									<Condition Property="IsEnabled" Value="True"/>
-								</MultiTrigger.Conditions>
-								<Setter Property="BorderBrush" Value="{StaticResource winFG}"/>
-								<Setter Property="Background" Value="{StaticResource winFGx40}"/>
-							</MultiTrigger>
-							<Trigger Property="IsEnabled" Value="False">
-								<Setter Property="Opacity" Value="0.4"/>
-							</Trigger>
-							<Trigger Property="IsPressed" Value="True">
-								<Setter Property="Background" Value="{StaticResource winFGx80}"/>
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-
-		<Style x:Key="uiMenuButtonStyle" TargetType="MenuItem">
-			<Setter Property="OverridesDefaultStyle" Value="True"/>
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="MenuItem">
-						<Border Background="Transparent" BorderThickness="1"
-								BorderBrush="Transparent" x:Name="border1">
-							<Grid>
-								<ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}" VerticalAlignment="Center"/>
-								<Popup Name="Popup" Placement="Bottom"
-									   IsOpen="{TemplateBinding IsSubmenuOpen}"
-									   AllowsTransparency="True"
-									   Focusable="False"
-									   PopupAnimation="Fade">
-									<mwt:SystemDropShadowChrome Color="#00FFFFFF" Name="Shdw">
-										<ContentControl IsTabStop="False" Template="{DynamicResource {ComponentResourceKey TypeInTargetAssembly=FrameworkElement, ResourceId=SubmenuContent}}" Name="SubMenuBorder">
-											<ScrollViewer CanContentScroll="True" Style="{DynamicResource {ComponentResourceKey TypeInTargetAssembly=FrameworkElement, ResourceId=MenuScrollViewer}}">
-												<ItemsPresenter Margin="2,2,2,2" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.DirectionalNavigation="Cycle" Grid.IsSharedSizeScope="True" />
-											</ScrollViewer>
-										</ContentControl>
-									</mwt:SystemDropShadowChrome>
-								</Popup>
-							</Grid>
-						</Border>
-						<ControlTemplate.Triggers>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="IsMouseOver" Value="True"/>
-									<Condition Property="IsEnabled" Value="True"/>
-								</MultiTrigger.Conditions>
-								<Setter Property="BorderBrush" TargetName="border1" Value="{StaticResource winFG}"/>
-								<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGx40}"/>
-							</MultiTrigger>
-							<Trigger Property="IsEnabled" Value="False">
-								<Setter Property="Opacity" Value="0.4"/>
-							</Trigger>
-							<Trigger Property="IsPressed" Value="True">
-								<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGx80}"/>
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
 
 		<Style x:Key="tabCloseButtonStyle" TargetType="Button">
 			<Setter Property="OverridesDefaultStyle" Value="True"/>
@@ -198,8 +77,7 @@
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
-		</Style>		
-		<local:BrushSaturationConverter x:Key="modifySaturation"/>
+		</Style>
 	</Window.Resources>
 	
 	<Window.Style>

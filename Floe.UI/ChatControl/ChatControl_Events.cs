@@ -650,6 +650,12 @@ namespace Floe.UI
 
 		protected override void OnPreviewKeyDown(KeyEventArgs e)
 		{
+			var focused = FocusManager.GetFocusedElement(this);
+			if (focused is TextBox && focused != txtInput)
+			{
+				return;
+			}
+
 			if (!Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt) &&
 				!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl) &&
 				!(FocusManager.GetFocusedElement(this) is NicknameItem))

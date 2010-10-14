@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace Floe.UI
@@ -59,6 +60,16 @@ namespace Floe.UI
 		public void MouseWheelDown()
 		{
 			_presenter.MouseWheelDown();
+		}
+
+		public void Search(Regex pattern, SearchDirection dir)
+		{
+			_presenter.Search(pattern, dir);
+		}
+
+		public void ClearSearch()
+		{
+			_presenter.ClearSearch();
 		}
 	}
 }

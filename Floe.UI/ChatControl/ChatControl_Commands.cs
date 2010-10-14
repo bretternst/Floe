@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,6 +27,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand KickCommand = new RoutedUICommand("Kick", "Kick", typeof(ChatControl));
 		public readonly static RoutedUICommand BanCommand = new RoutedUICommand("Ban", "Ban", typeof(ChatControl));
 		public readonly static RoutedUICommand UnbanCommand = new RoutedUICommand("Unban", "Unban", typeof(ChatControl));
+		public readonly static RoutedUICommand SearchCommand = new RoutedUICommand("Search...", "Search", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -607,6 +609,36 @@ namespace Floe.UI
 			}
 
 			return parts.ToArray();
+		}
+
+		private void ExecuteSearch(object sender, ExecutedRoutedEventArgs e)
+		{
+			pnlSearch.Visibility = Visibility.Visible;
+			txtSearchTerm.Focus();
+			txtSearchTerm.SelectAll();
+		}
+
+		private void btnSearchPrevious_Click(object sender, RoutedEventArgs e)
+		{
+			this.DoSearch(SearchDirection.Previous);
+		}
+
+		private void btnSearchNext_Click(object sender, RoutedEventArgs e)
+		{
+			this.DoSearch(SearchDirection.Next);
+		}
+
+		private void btnCloseSearch_Click(object sender, RoutedEventArgs e)
+		{
+			pnlSearch.Visibility = Visibility.Collapsed;
+			boxOutput.ClearSearch();
+		}
+
+		private void DoSearch(SearchDirection dir)
+		{
+			boxOutput.Search(
+				new Regex(txtSearchTerm.Text, chkMatchCase.IsChecked.Value ? RegexOptions.None : RegexOptions.IgnoreCase),
+				dir);
 		}
 	}
 }

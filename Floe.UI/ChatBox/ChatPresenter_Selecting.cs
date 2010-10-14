@@ -259,14 +259,14 @@ namespace Floe.UI
 			}
 		}
 
-		private static Lazy<Brush> _highlightBrush = new Lazy<Brush>(() =>
+		private static Lazy<Brush> _selectBrush = new Lazy<Brush>(() =>
 			{
 				var c = SystemColors.HighlightColor;
 				c.A = 102;
 				return new SolidColorBrush(c);
 			});
 
-		private void DrawSelectedLine(DrawingContext dc, Block block)
+		private void DrawSelectionHighlight(DrawingContext dc, Block block)
 		{
 			if (this.SelectionEnd < block.CharStart || this.SelectionStart >= block.CharEnd ||
 				this.SelectionStart >= this.SelectionEnd)
@@ -294,7 +294,7 @@ namespace Floe.UI
 
 				if (end > start)
 				{
-					dc.DrawRectangle(_highlightBrush.Value, null,
+					dc.DrawRectangle(_selectBrush.Value, null,
 						new Rect(new Point(start, y), new Point(end, y + _lineHeight)));
 				}
 				y += _lineHeight;

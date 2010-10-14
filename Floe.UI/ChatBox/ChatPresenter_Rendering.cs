@@ -148,6 +148,10 @@ namespace Floe.UI
 				{
 					_bufferLines -= _blocks.First.Value.Text.Length;
 				}
+				if (_blocks.First == _curSearchBlock)
+				{
+					this.ClearSearch();
+				}
 				_blocks.RemoveFirst();
 			}
 
@@ -370,7 +374,11 @@ namespace Floe.UI
 
 				if (this.IsSelecting)
 				{
-					this.DrawSelectedLine(dc, block);
+					this.DrawSelectionHighlight(dc, block);
+				}
+				if (node == _curSearchBlock)
+				{
+					this.DrawSearchHighlight(dc, node.Value);
 				}
 			}
 			while ((node = node.Next) != null);

@@ -80,8 +80,10 @@
     <Compile Include="ChatBox\ChatPresenter.cs" />
     <Compile Include="ChatBox\ChatPresenter_Rendering.cs" />
     <Compile Include="ChatBox\ChatPresenter_Scrolling.cs" />
+    <Compile Include="ChatBox\ChatPresenter_Searching.cs" />
     <Compile Include="ChatBox\ChatPresenter_Selecting.cs" />
     <Compile Include="ChatBox\Constants.cs" />
+    <Compile Include="ChatBox\Enums.cs" />
     <Compile Include="ChatControl\ChatControl.xaml.cs">
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
