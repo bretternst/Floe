@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Floe.Net;
 
 namespace Floe.UI
@@ -17,6 +18,14 @@ namespace Floe.UI
 		private LinkedListNode<string> _historyNode;
 		private LogFileHandle _logFile;
 		private ChatLine _markerLine;
+
+		public readonly static DependencyProperty UIBackgroundProperty = DependencyProperty.Register("UIBackground",
+			typeof(SolidColorBrush), typeof(ChatControl));
+		public SolidColorBrush UIBackground
+		{
+			get { return (SolidColorBrush)this.GetValue(UIBackgroundProperty); }
+			set { this.SetValue(UIBackgroundProperty, value); }
+		}
 
 		public ChatControl(ChatContext context)
 		{

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 using Floe.Net;
 
@@ -17,6 +18,10 @@ namespace Floe.UI
 			this.DataContext = this;
 
 			this.Control = control;
+			var bgBinding = new Binding();
+			bgBinding.Source = this;
+			bgBinding.Path = new PropertyPath("UIBackground");
+			control.SetBinding(ChatControl.UIBackgroundProperty, bgBinding);
 
 			control.SetValue(Grid.RowProperty, 1);
 			control.SetValue(Grid.ColumnSpanProperty, 2);

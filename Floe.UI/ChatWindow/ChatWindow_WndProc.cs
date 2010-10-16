@@ -11,7 +11,7 @@ namespace Floe.UI
 	public partial class ChatWindow : Window
 	{
 		public readonly static DependencyProperty UIBackgroundProperty = DependencyProperty.Register("UIBackground",
-			typeof(System.Windows.Media.SolidColorBrush), typeof(ChatWindow));
+			typeof(SolidColorBrush), typeof(ChatWindow));
 		public SolidColorBrush UIBackground
 		{
 			get { return (SolidColorBrush)this.GetValue(UIBackgroundProperty); }

@@ -38,10 +38,7 @@ namespace Floe.UI
 			var page = new ChatControl(context);
 			var item = new ChatTabItem(page);
 
-			var bgBinding = new Binding();
-			bgBinding.Source = this;
-			bgBinding.Path = new PropertyPath("UIBackground");
-			page.SetBinding(ChatControl.BackgroundProperty, bgBinding);
+			this.SetBindings(page);
 
 			if (context.Target == null)
 			{
@@ -110,6 +107,8 @@ namespace Floe.UI
 					break;
 				}
 			}
+
+			this.SetBindings(control);
 		}
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
@@ -184,6 +183,14 @@ namespace Floe.UI
 					page.Context.Session.Quit("Leaving");
 				}
 			}
+		}
+
+		private void SetBindings(ChatControl control)
+		{
+			var bgBinding = new Binding();
+			bgBinding.Source = this;
+			bgBinding.Path = new PropertyPath("UIBackground");
+			control.SetBinding(ChatControl.UIBackgroundProperty, bgBinding);
 		}
 	}
 }
