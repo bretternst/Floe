@@ -353,6 +353,7 @@ namespace Floe.Net
 			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
 			{
 				Thread.Sleep(ReconnectWaitTime);
+
 				if (this.State == IrcSessionState.Disconnected)
 				{
 					this.State = IrcSessionState.Connecting;

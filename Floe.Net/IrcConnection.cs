@@ -116,6 +116,11 @@ namespace Floe.Net
 			}
 			catch (Exception ex)
 			{
+				if (_tcpClient.Connected)
+				{
+					_tcpClient.Close();
+				}
+				_tcpClient = null;
 				this.OnConnectionError(ex);
 				this.OnDisconnected();
 				return;
