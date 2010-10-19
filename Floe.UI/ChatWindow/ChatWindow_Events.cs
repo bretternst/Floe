@@ -79,7 +79,7 @@ namespace Floe.UI
 
 		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
-			if (!App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From))
 			{
 				return;
 			}

@@ -9,6 +9,7 @@
              d:DesignHeight="400" d:DesignWidth="699" Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
 			 FontFamily="Segoe UI" FontSize="12">
 	<UserControl.InputBindings>
+		<KeyBinding Command="local:ChatControl.ClearCommand" Gesture="Alt+C"/>
 		<KeyBinding Command="local:ChatControl.SearchCommand" Gesture="Ctrl+F"/>
 	</UserControl.InputBindings>
 	<UserControl.CommandBindings>
@@ -70,14 +71,14 @@
 		<ContextMenu x:Key="cmServer">
 			<MenuItem Header="Connect" Click="connect_Click" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
-			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
-			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand"/>
+			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmChannel">
-			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
-			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand"/>
+			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
 		</ContextMenu>
 		<Style TargetType="MenuItem" x:Key="colorMenuItem">
 			<Setter Property="Template">
@@ -177,12 +178,12 @@
 							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;12" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color12}"/>
 							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;13" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color13}"/>
 							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;14" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color14}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;15" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color15}"/>
+							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand"  CommandParameter="&#x2503;15" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color15}"/>
 						</MenuItem>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2502;" Header="Toggle Bold"/>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x251F;" Header="Toggle Underline"/>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2516;" Header="Toggle Reverse"/>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x250F;" Header="Toggle All Off"/>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2502;" Header="Toggle Bold" InputGestureText="Ctrl+B"/>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x251F;" Header="Toggle Underline" InputGestureText="Ctrl+U"/>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2516;" Header="Toggle Reverse" InputGestureText="Ctrl+R"/>
+						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x250F;" Header="Toggle All Off" InputGestureText="Ctrl+O"/>
 					</ContextMenu>
 				</TextBox.ContextMenu>
 			</TextBox>
