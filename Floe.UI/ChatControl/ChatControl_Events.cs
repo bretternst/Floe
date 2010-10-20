@@ -434,6 +434,22 @@ namespace Floe.UI
 			}
 		}
 
+		private void Session_Invited(object sender, IrcInviteEventArgs e)
+		{
+			if(App.IsIgnoreMatch(e.From))
+			{
+				return;
+			}
+
+			this.BeginInvoke(() =>
+				{
+					if (this.IsDefault)
+					{
+						this.Write("Invite", string.Format("{0} invited you to channel {1}", e.From.Nickname, e.Channel));
+					}
+				});
+		}
+
 		private void Session_RawMessageReceived(object sender, IrcEventArgs e)
 		{
 			int code;
@@ -755,6 +771,7 @@ namespace Floe.UI
 			this.Session.ChannelModeChanged += new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
 			this.Session.RawMessageReceived += new EventHandler<IrcEventArgs>(Session_RawMessageReceived);
+            this.Session.Invited += new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
 			this.Loaded += (sender, e) =>
