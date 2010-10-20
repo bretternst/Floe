@@ -126,6 +126,7 @@ namespace Floe.UI
 					this.Invoke(() =>
 						{
 							App.Create(sender as IrcSession, new IrcTarget((IrcPeer)e.Message.From), false);
+							Interop.WindowHelper.FlashWindow(this);
 						});
 				}
 			}

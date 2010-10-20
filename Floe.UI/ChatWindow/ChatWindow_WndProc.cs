@@ -137,11 +137,6 @@ namespace Floe.UI
 		{
 			this.Opacity = App.Settings.Current.Windows.ActiveOpacity;
 
-			if (_notifyIcon != null)
-			{
-				_notifyIcon.Hide();
-			}
-
 			base.OnActivated(e);
 		}
 
@@ -157,7 +152,7 @@ namespace Floe.UI
 
 		protected override void OnStateChanged(EventArgs e)
 		{
-			if (this.WindowState == System.Windows.WindowState.Minimized && App.Settings.Current.Windows.MinimizeToSysTray)
+			if (this.WindowState == WindowState.Minimized && App.Settings.Current.Windows.MinimizeToSysTray)
 			{
 				if (_notifyIcon == null)
 				{
@@ -169,6 +164,19 @@ namespace Floe.UI
 									this.Show();
 									this.WindowState = _oldWindowState;
 									this.Activate();
+									_notifyIcon.Hide();
+								});
+						};
+					_notifyIcon.RightClicked += (sender, args) =>
+						{
+							this.BeginInvoke(() =>
+								{
+									var menu = this.FindResource("NotifyMenu") as ContextMenu;
+									if (menu != null)
+									{
+										menu.IsOpen = true;
+										System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+									}
 								});
 						};
 				}
@@ -177,34 +185,6 @@ namespace Floe.UI
 			}
 
 			base.OnStateChanged(e);
-		}
-
-		private void btnMinimize_Click(object sender, RoutedEventArgs e)
-		{
-			_oldWindowState = this.WindowState;
-			this.WindowState = WindowState.Minimized;
-		}
-
-		private void btnMaximize_Click(object sender, RoutedEventArgs e)
-		{
-			if (this.WindowState == WindowState.Maximized)
-			{
-				this.WindowState = WindowState.Normal;
-			}
-			else
-			{
-				this.WindowState = WindowState.Maximized;
-			}
-		}
-
-		private void btnClose_Click(object sender, RoutedEventArgs e)
-		{
-			this.Close();
-		}
-
-		private void btnSettings_Click(object sender, RoutedEventArgs e)
-		{
-			App.ShowSettings();
 		}
 	}
 }

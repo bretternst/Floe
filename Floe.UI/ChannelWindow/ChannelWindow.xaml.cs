@@ -63,11 +63,5 @@ namespace Floe.UI
 				this.Invoke(() => this.Close());
 			}
 		}
-
-		private void btnReattach_Click(object sender, RoutedEventArgs e)
-		{
-			grdRoot.Children.Remove(this.Control);
-			this.Close();
-		}
 	}
 }

@@ -8,6 +8,11 @@
 		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}" x:Name="window">
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
+		<CommandBinding Command="local:ChatWindow.SettingsCommand" Executed="ExecuteSettings"/>
+		<CommandBinding Command="local:ChannelWindow.ReattachCommand" Executed="ExecuteReattach"/>
+		<CommandBinding Command="local:ChatWindow.MinimizeCommand" Executed="ExecuteMinimize"/>
+		<CommandBinding Command="local:ChatWindow.MaximizeCommand" Executed="ExecuteMaximize"/>
+		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<local:BrushAlphaConverter x:Key="opacityConverter"/>
@@ -104,7 +109,7 @@
 				<TextBlock Margin="4,0,0,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
 			</Border>
 			<StackPanel Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-				<Button x:Name="btnReattach" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnReattach_Click">
+				<Button x:Name="btnReattach" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Command="local:ChannelWindow.ReattachCommand">
 					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource reattachButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -117,7 +122,7 @@
 						<ToolTip Content="Reattach"/>
 					</Button.ToolTip>
 				</Button>
-				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnSettings_Click">
+				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Command="local:ChatWindow.SettingsCommand">
 					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource settingsButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -131,7 +136,7 @@
 						<ToolTip Content="Settings"/>
 					</Button.ToolTip>
 				</Button>
-				<Button x:Name="btnMinimize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnMinimize_Click">
+				<Button x:Name="btnMinimize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Command="local:ChatWindow.MinimizeCommand">
 					<Path Margin="2,10,2,2" SnapsToDevicePixels="True"
 						Data="{StaticResource minimizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -141,7 +146,7 @@
 						Stretch="Uniform"
 						HorizontalAlignment="Center" VerticalAlignment="Top"/>
 				</Button>
-				<Button x:Name="btnMaximize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Click="btnMaximize_Click">
+				<Button x:Name="btnMaximize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Command="local:ChatWindow.MaximizeCommand">
 					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource maximizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -152,7 +157,7 @@
 						VerticalAlignment="Top"
 						HorizontalAlignment="Center"/>
 				</Button>
-				<Button x:Name="btnClose" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Click="btnClose_Click">
+				<Button x:Name="btnClose" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Command="local:ChatWindow.CloseCommand">
 					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource closeButtonGeometry}"
 						Stroke="{StaticResource winFG}"

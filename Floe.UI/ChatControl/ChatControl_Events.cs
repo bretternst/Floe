@@ -225,6 +225,14 @@ namespace Floe.UI
 								return;
 							}
 							break;
+						case IrcCode.Inviting:
+							if (e.Message.Parameters.Count == 3 && this.IsDefault)
+							{
+								this.Write("ServerInfo", string.Format("Invited {0} to channel {1}",
+									e.Message.Parameters[1], e.Message.Parameters[2]));
+								return;
+							}
+							break;
 					}
 
 					if ((int)e.Code < 200 && this.IsServer || this.IsDefault)
@@ -443,7 +451,7 @@ namespace Floe.UI
 
 			this.BeginInvoke(() =>
 				{
-					if (this.IsDefault)
+					if (this.IsDefault || this.IsServer)
 					{
 						this.Write("Invite", string.Format("{0} invited you to channel {1}", e.From.Nickname, e.Channel));
 					}
@@ -644,7 +652,10 @@ namespace Floe.UI
 					_window.Deactivated += new EventHandler(_window_Deactivated);
 				}
 			}
-			this.NotifyState = NotifyState.None;
+			else
+			{
+				this.NotifyState = NotifyState.None;
+			}
 		}
 
 		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)

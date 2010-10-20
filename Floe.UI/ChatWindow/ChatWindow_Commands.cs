@@ -9,11 +9,15 @@ namespace Floe.UI
 	public partial class ChatWindow : Window
 	{
 		public readonly static RoutedUICommand ChatCommand = new RoutedUICommand("Chat", "Chat", typeof(ChatWindow));
-		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Close", "Close", typeof(ChatWindow));
+		public readonly static RoutedUICommand CloseTabCommand = new RoutedUICommand("Close", "CloseTab", typeof(ChatWindow));
 		public readonly static RoutedUICommand NewTabCommand = new RoutedUICommand("New Server Tab", "NewTab", typeof(ChatWindow));
 		public readonly static RoutedUICommand DetachCommand = new RoutedUICommand("Detach", "Detach", typeof(ChatWindow));
 		public readonly static RoutedUICommand PreviousTabCommand = new RoutedUICommand("Previous Tab", "PreviousTab", typeof(ChatWindow));
 		public readonly static RoutedUICommand NextTabCommand = new RoutedUICommand("Next Tab", "NextTab", typeof(ChatWindow));
+		public readonly static RoutedUICommand SettingsCommand = new RoutedUICommand("Settings", "Settings", typeof(ChatWindow));
+		public readonly static RoutedUICommand MinimizeCommand = new RoutedUICommand("Minimize", "Minimize", typeof(ChatWindow));
+		public readonly static RoutedUICommand MaximizeCommand = new RoutedUICommand("Maximize", "Maximize", typeof(ChatWindow));
+		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Quit", "Close", typeof(ChatWindow));
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
@@ -21,7 +25,7 @@ namespace Floe.UI
 			this.BeginInvoke(() => App.Create(control.Session, new IrcTarget((string)e.Parameter), true));
 		}
 
-		private void ExecuteClose(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteCloseTab(object sender, ExecutedRoutedEventArgs e)
 		{
 			var context = e.Parameter as ChatContext;
 			if (context != null)
@@ -74,7 +78,7 @@ namespace Floe.UI
 			}
 		}
 
-		private void CanExecuteClose(object sender, CanExecuteRoutedEventArgs e)
+		private void CanExecuteCloseTab(object sender, CanExecuteRoutedEventArgs e)
 		{
 			var context = e.Parameter as ChatContext;
 			if (context != null)
@@ -108,6 +112,34 @@ namespace Floe.UI
 		private void CanExecuteNextTab(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = tabsChat.SelectedIndex < tabsChat.Items.Count - 1;
+		}
+
+		private void ExecuteSettings(object sender, ExecutedRoutedEventArgs e)
+		{
+			App.ShowSettings();
+		}
+
+		private void ExecuteMinimize(object sender, ExecutedRoutedEventArgs e)
+		{
+			_oldWindowState = this.WindowState;
+			this.WindowState = WindowState.Minimized;
+		}
+
+		private void ExecuteMaximize(object sender, ExecutedRoutedEventArgs e)
+		{
+			if (this.WindowState == WindowState.Maximized)
+			{
+				this.WindowState = WindowState.Normal;
+			}
+			else
+			{
+				this.WindowState = WindowState.Maximized;
+			}
+		}
+
+		private void ExecuteClose(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.Close();
 		}
 	}
 }

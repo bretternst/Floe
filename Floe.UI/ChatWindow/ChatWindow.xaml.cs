@@ -192,5 +192,10 @@ namespace Floe.UI
 			bgBinding.Path = new PropertyPath("UIBackground");
 			control.SetBinding(ChatControl.UIBackgroundProperty, bgBinding);
 		}
+
+		private void NotifyQuit_Click(object sender, RoutedEventArgs e)
+		{
+			this.ExecuteClose(sender, null);
+		}
 	}
 }
