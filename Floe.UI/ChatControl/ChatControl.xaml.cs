@@ -137,10 +137,10 @@ namespace Floe.UI
 		{
 			this.Session.AutoReconnect = false;
 			this.Perform = server.OnConnect;
-			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect);
+			this.Connect(server.Hostname, server.Port, server.Password, server.IsSecure, server.AutoReconnect);
 		}
 
-		public void Connect(string hostname, int port, bool useSsl, bool autoReconnect)
+		public void Connect(string hostname, int port, string password, bool useSsl, bool autoReconnect)
 		{
 			this.Session.Open(hostname, port, useSsl,
 				!string.IsNullOrEmpty(this.Session.Nickname) ?
@@ -148,6 +148,7 @@ namespace Floe.UI
 				App.Settings.Current.User.Username,
 				App.Settings.Current.User.Hostname,
 				App.Settings.Current.User.FullName,
+				password,
 				autoReconnect);
 		}
 
@@ -296,11 +297,6 @@ namespace Floe.UI
 			{
 				_logFile.Dispose();
 			}
-		}
-
-		private void txtInput_SelectionChanged(object sender, RoutedEventArgs e)
-		{
-			_nickCandidates = null;
 		}
 	}
 }

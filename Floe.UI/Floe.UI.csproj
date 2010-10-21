@@ -99,6 +99,9 @@
     </Compile>
     <Compile Include="ChatWindow\ChatWindow_WndProc.cs" />
     <Compile Include="Converters.cs" />
+    <Compile Include="Dialogs\ConfirmDialog.xaml.cs">
+      <DependentUpon>ConfirmDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Extensions.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\NotifyIcon.cs" />
@@ -138,6 +141,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ChatWindow\ChatWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\ConfirmDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

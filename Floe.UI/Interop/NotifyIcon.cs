@@ -42,6 +42,8 @@ namespace Floe.UI.Interop
 		private NotifyIconData _data;
 		private HwndSource _src;
 
+		public bool IsVisible { get; private set; }
+
 		public event EventHandler DoubleClicked;
 		public event EventHandler RightClicked;
 
@@ -58,13 +60,32 @@ namespace Floe.UI.Interop
 			_src = HwndSource.FromHwnd(_data.hWnd);
 			_src.AddHook(new HwndSourceHook(WndProc));
 			Shell_NotifyIcon(0x0, ref _data);
+			this.IsVisible = true;
 		}
 
 		public void Show()
 		{
+			this.Show(null, null);
+		}
+
+		public void Show(string balloonTitle, string balloonMessage)
+		{
 			_data.dwState = 0x0;
 			_data.dwStateMask = 0x1;
+			if (!string.IsNullOrEmpty(balloonTitle) && !string.IsNullOrEmpty(balloonMessage))
+			{
+				_data.uFlags |= 0x10;
+				_data.szInfo = balloonMessage;
+				_data.szInfoTitle = balloonTitle;
+				_data.uTimeoutOrVersion = 0;
+				_data.dwInfoFlags = 0x1;
+			}
+			else
+			{
+				_data.uFlags &= ~(uint)0x10;
+			}
 			Shell_NotifyIcon(0x1, ref _data);
+			this.IsVisible = true;
 		}
 
 		public void Hide()
@@ -72,6 +93,7 @@ namespace Floe.UI.Interop
 			_data.dwState = 0x1;
 			_data.dwStateMask = 0x1;
 			Shell_NotifyIcon(0x1, ref _data);
+			this.IsVisible = false;
 		}
 
 		public void Dispose()

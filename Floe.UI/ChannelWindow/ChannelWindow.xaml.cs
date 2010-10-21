@@ -56,6 +56,23 @@ namespace Floe.UI
 			state.Placement = Interop.WindowHelper.Save(this);
 		}
 
+		protected override void OnActivated(EventArgs e)
+		{
+			this.Opacity = App.Settings.Current.Windows.ActiveOpacity;
+
+			base.OnActivated(e);
+		}
+
+		protected override void OnDeactivated(EventArgs e)
+		{
+			if (this.OwnedWindows.Count == 0)
+			{
+				this.Opacity = App.Settings.Current.Windows.InactiveOpacity;
+			}
+
+			base.OnDeactivated(e);
+		}
+
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)

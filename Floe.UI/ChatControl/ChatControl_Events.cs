@@ -654,6 +654,7 @@ namespace Floe.UI
 			}
 			else
 			{
+				_window = Window.GetWindow(this);
 				this.NotifyState = NotifyState.None;
 			}
 		}
@@ -666,7 +667,11 @@ namespace Floe.UI
 			{
 				_window.Deactivated -= new EventHandler(_window_Deactivated);
 			}
-			_window = null;
+		}
+
+		private void txtInput_SelectionChanged(object sender, RoutedEventArgs e)
+		{
+			_nickCandidates = null;
 		}
 
 		protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)

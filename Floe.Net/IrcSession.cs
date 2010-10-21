@@ -31,6 +31,7 @@ namespace Floe.Net
 		public bool AutoReconnect { get; set; }
 		public string NetworkName { get; private set; }
 		public char[] UserModes { get; private set; }
+		public string Password { get; private set; }
 
 		public IrcSessionState State
 		{
@@ -73,7 +74,7 @@ namespace Floe.Net
 		}
 
 		public void Open(string server, int port, bool isSecure, string nickname,
-			string userName, string hostName, string fullname, bool autoReconnect)
+			string userName, string hostName, string fullname, string password, bool autoReconnect)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -82,6 +83,7 @@ namespace Floe.Net
 			this.Nickname = nickname;
 			this.Server = server;
 			this.Port = port;
+			this.Password = password;
 			this.IsSecure = isSecure;
 			this.Username = userName;
 			this.Hostname = hostName;
@@ -189,6 +191,11 @@ namespace Floe.Net
 		public void Join(string channel)
 		{
 			this.Send("JOIN", channel);
+		}
+
+		public void Join(string channel, string key)
+		{
+			this.Send("JOIN", channel, key);
 		}
 
 		public void Part(string channel)
@@ -650,6 +657,10 @@ namespace Floe.Net
 
 		private void _conn_Connected(object sender, EventArgs e)
 		{
+			if (!string.IsNullOrEmpty(this.Password))
+			{
+				_conn.QueueMessage(new IrcMessage("PASS", this.Password));
+			}
 			_conn.QueueMessage(new IrcMessage("USER", this.Username, this.Hostname, "*", this.FullName));
 			_conn.QueueMessage(new IrcMessage("NICK", this.Nickname));
 		}

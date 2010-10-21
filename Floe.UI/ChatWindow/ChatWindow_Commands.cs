@@ -33,7 +33,8 @@ namespace Floe.UI
 				if (context.Target == null)
 				{
 					if (context.Session.State == IrcSessionState.Disconnected || 
-						this.Confirm(string.Format("Are you sure you want to disconnect from {0}?", context.Session.NetworkName),
+						App.Settings.Current.Windows.SuppressWarningOnQuit ||
+						this.ConfirmQuit(string.Format("Are you sure you want to disconnect from {0}?", context.Session.NetworkName),
 						"Close Server Tab"))
 					{
 						if(context.Session.State != IrcSessionState.Disconnected)

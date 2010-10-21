@@ -109,22 +109,5 @@ namespace Floe.UI
 
 			return IntPtr.Zero;
 		}
-
-		protected override void OnActivated(EventArgs e)
-		{
-			this.Opacity = App.Settings.Current.Windows.ActiveOpacity;
-
-			base.OnActivated(e);
-		}
-
-		protected override void OnDeactivated(EventArgs e)
-		{
-			if (this.OwnedWindows.Count == 0)
-			{
-				this.Opacity = App.Settings.Current.Windows.InactiveOpacity;
-			}
-
-			base.OnDeactivated(e);
-		}
 	}
 }

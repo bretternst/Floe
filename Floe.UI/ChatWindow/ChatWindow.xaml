@@ -214,7 +214,7 @@
 															Content="{TemplateBinding ScrollViewer.Content}">
 												<ScrollContentPresenter.ContextMenu>
 													<ContextMenu>
-														<MenuItem Command="local:ChatWindow.NewTabCommand"/>
+														<MenuItem Command="local:ChatWindow.NewTabCommand" CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
 													</ContextMenu>
 												</ScrollContentPresenter.ContextMenu>
 											</ScrollContentPresenter>
@@ -258,7 +258,7 @@
 								<Setter Property="ContextMenu">
 									<Setter.Value>
 										<ContextMenu>
-											<MenuItem Command="local:ChatWindow.DetachCommand" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}"/>
+											<MenuItem Command="local:ChatWindow.DetachCommand" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}" CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
 										</ContextMenu>
 									</Setter.Value>
 								</Setter>

@@ -25,14 +25,6 @@ namespace Floe.UI
 		private WindowState _oldWindowState = WindowState.Normal;
 		private IntPtr _hWnd;
 
-		public bool Confirm(string text, string caption)
-		{
-			_isInModalDialog = true;
-			bool result = MessageBox.Show(this, text, caption, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
-			_isInModalDialog = false;
-			return result;
-		}
-
 		protected override void OnSourceInitialized(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
@@ -185,6 +177,19 @@ namespace Floe.UI
 			}
 
 			base.OnStateChanged(e);
+		}
+
+		private bool ConfirmQuit(string text, string caption)
+		{
+			_isInModalDialog = true;
+			bool dontAskAgain = true;
+			var result = App.Confirm(this, text, caption, ref dontAskAgain);
+			if (dontAskAgain)
+			{
+				App.Settings.Current.Windows.SuppressWarningOnQuit = true;
+			}
+			_isInModalDialog = false;
+			return result;
 		}
 	}
 }
