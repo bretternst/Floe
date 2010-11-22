@@ -62,6 +62,20 @@ namespace Floe.Configuration
 			set { this["tabStripPosition"] = value; this.OnPropertyChanged("TabStripPosition"); }
 		}
 
+		[ConfigurationProperty("defaultQueryDetached", DefaultValue = false)]
+		public bool DefaultQueryDetached
+		{
+			get { return (bool)this["defaultQueryDetached"]; }
+			set { this["defaultQueryDetached"] = value; this.OnPropertyChanged("DefaultQueryDetached"); }
+		}
+
+		[ConfigurationProperty("suppressWarningOnQuit", DefaultValue = false)]
+		public bool SuppressWarningOnQuit
+		{
+			get { return (bool)this["suppressWarningOnQuit"]; }
+			set { this["suppressWarningOnQuit"] = value; this.OnPropertyChanged("SuppressWarningOnQuit"); }
+		}
+
 		[ConfigurationProperty("states")]
 		[ConfigurationCollection(typeof(ChannelStateElement))]
 		public ChannelStateElementCollection States

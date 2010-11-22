@@ -9,18 +9,26 @@
 	<Window.InputBindings>
 		<KeyBinding Command="local:ChatWindow.PreviousTabCommand" Gesture="Alt+Left"/>
 		<KeyBinding Command="local:ChatWindow.NextTabCommand" Gesture="Alt+Right"/>
-        <KeyBinding Command="local:ChatWindow.CloseCommand" Gesture="Ctrl+F4" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
-        <KeyBinding Command="local:ChatWindow.CloseCommand" Gesture="Ctrl+W" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
+        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+F4" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
+        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+W" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
     </Window.InputBindings>
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
-		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose" CanExecute="CanExecuteClose"/>
+		<CommandBinding Command="local:ChatWindow.CloseTabCommand" Executed="ExecuteCloseTab" CanExecute="CanExecuteCloseTab"/>
 		<CommandBinding Command="local:ChatWindow.NewTabCommand" Executed="ExecuteNewTab"/>
 		<CommandBinding Command="local:ChatWindow.DetachCommand" Executed="ExecuteDetach"/>
 		<CommandBinding Command="local:ChatWindow.PreviousTabCommand" Executed="ExecutePreviousTab" CanExecute="CanExecutePreviousTab"/>
 		<CommandBinding Command="local:ChatWindow.NextTabCommand" Executed="ExecuteNextTab" CanExecute="CanExecuteNextTab"/>
+		<CommandBinding Command="local:ChatWindow.SettingsCommand" Executed="ExecuteSettings"/>
+		<CommandBinding Command="local:ChatWindow.MinimizeCommand" Executed="ExecuteMinimize"/>
+		<CommandBinding Command="local:ChatWindow.MaximizeCommand" Executed="ExecuteMaximize"/>
+		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose"/>
 	</Window.CommandBindings>
 	<Window.Resources>
+		<ContextMenu Placement="MousePoint" x:Key="NotifyMenu">
+			<MenuItem Click="NotifyQuit_Click" Header="Quit"/>
+		</ContextMenu>
+
 		<LinearGradientBrush x:Key="winTabSep" StartPoint="0,0" EndPoint="0,1">
 			<GradientStop Offset="0" Color="{Binding Source={StaticResource winFGx0}, Converter={StaticResource brushToColor}}"/>
 			<GradientStop Offset="0.5" Color="{Binding Source={StaticResource winFG}, Converter={StaticResource brushToColor}}"/>
@@ -126,7 +134,7 @@
 				<TextBlock Margin="4,0,0,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
 			</Border>
 			<StackPanel Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
-				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnSettings_Click">
+				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Command="local:ChatWindow.SettingsCommand">
 					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource settingsButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -140,7 +148,7 @@
 						<ToolTip Content="Settings"/>
 					</Button.ToolTip>
 				</Button>
-				<Button x:Name="btnMinimize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Click="btnMinimize_Click">
+				<Button x:Name="btnMinimize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Command="local:ChatWindow.MinimizeCommand">
 					<Path Margin="2,10,2,2" SnapsToDevicePixels="True"
 						Data="{StaticResource minimizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -150,7 +158,7 @@
 						Stretch="Uniform"
 						HorizontalAlignment="Center" VerticalAlignment="Top"/>
 				</Button>
-				<Button x:Name="btnMaximize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Click="btnMaximize_Click">
+				<Button x:Name="btnMaximize" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Command="local:ChatWindow.MaximizeCommand">
 					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource maximizeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -161,7 +169,7 @@
 						VerticalAlignment="Top"
 						HorizontalAlignment="Center"/>
 				</Button>
-				<Button x:Name="btnClose" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Click="btnClose_Click">
+				<Button x:Name="btnClose" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Command="local:ChatWindow.CloseCommand">
 					<Path Margin="2" SnapsToDevicePixels="True"
 						Data="{StaticResource closeButtonGeometry}"
 						Stroke="{StaticResource winFG}"
@@ -206,7 +214,7 @@
 															Content="{TemplateBinding ScrollViewer.Content}">
 												<ScrollContentPresenter.ContextMenu>
 													<ContextMenu>
-														<MenuItem Command="local:ChatWindow.NewTabCommand"/>
+														<MenuItem Command="local:ChatWindow.NewTabCommand" CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
 													</ContextMenu>
 												</ScrollContentPresenter.ContextMenu>
 											</ScrollContentPresenter>
@@ -250,7 +258,7 @@
 								<Setter Property="ContextMenu">
 									<Setter.Value>
 										<ContextMenu>
-											<MenuItem Command="local:ChatWindow.DetachCommand" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}"/>
+											<MenuItem Command="local:ChatWindow.DetachCommand" CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}" CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
 										</ContextMenu>
 									</Setter.Value>
 								</Setter>
@@ -279,7 +287,7 @@
 													<ContentPresenter Grid.Column="0" Grid.Row="1" Margin="5,0,10,0" x:Name="ContentSite" VerticalAlignment="Bottom" HorizontalAlignment="Center"
 																  ContentSource="Header" RecognizesAccessKey="True"/>
 													<Button x:Name="btnTabClose" Margin="0,0,3,0" Style="{StaticResource tabCloseButtonStyle}"
-														Command="local:ChatWindow.CloseCommand" Grid.Column="1" Grid.Row="1"
+														Command="local:ChatWindow.CloseTabCommand" Grid.Column="1" Grid.Row="1"
 														Height="Auto" VerticalAlignment="Bottom"
 														CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Control.Context}"/>
 												</Grid>

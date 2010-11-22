@@ -52,6 +52,11 @@ namespace Floe.Configuration
 			}
 		}
 
+		public bool Exists(string key)
+		{
+			return this.BaseGet(key) as ChannelStateElement != null;
+		}
+
 		public void Add(ChannelStateElement element)
 		{
 			this.BaseAdd(element);

@@ -225,6 +225,14 @@ namespace Floe.UI
 								return;
 							}
 							break;
+						case IrcCode.Inviting:
+							if (e.Message.Parameters.Count == 3 && this.IsDefault)
+							{
+								this.Write("ServerInfo", string.Format("Invited {0} to channel {1}",
+									e.Message.Parameters[1], e.Message.Parameters[2]));
+								return;
+							}
+							break;
 					}
 
 					if ((int)e.Code < 200 && this.IsServer || this.IsDefault)
@@ -434,6 +442,22 @@ namespace Floe.UI
 			}
 		}
 
+		private void Session_Invited(object sender, IrcInviteEventArgs e)
+		{
+			if(App.IsIgnoreMatch(e.From))
+			{
+				return;
+			}
+
+			this.BeginInvoke(() =>
+				{
+					if (this.IsDefault || this.IsServer)
+					{
+						this.Write("Invite", string.Format("{0} invited you to channel {1}", e.From.Nickname, e.Channel));
+					}
+				});
+		}
+
 		private void Session_RawMessageReceived(object sender, IrcEventArgs e)
 		{
 			int code;
@@ -628,7 +652,11 @@ namespace Floe.UI
 					_window.Deactivated += new EventHandler(_window_Deactivated);
 				}
 			}
-			this.NotifyState = NotifyState.None;
+			else
+			{
+				_window = Window.GetWindow(this);
+				this.NotifyState = NotifyState.None;
+			}
 		}
 
 		private void ChatControl_Unloaded(object sender, RoutedEventArgs e)
@@ -639,7 +667,11 @@ namespace Floe.UI
 			{
 				_window.Deactivated -= new EventHandler(_window_Deactivated);
 			}
-			_window = null;
+		}
+
+		private void txtInput_SelectionChanged(object sender, RoutedEventArgs e)
+		{
+			_nickCandidates = null;
 		}
 
 		protected override void OnPreviewMouseRightButtonDown(MouseButtonEventArgs e)
@@ -755,6 +787,7 @@ namespace Floe.UI
 			this.Session.ChannelModeChanged += new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
 			this.Session.RawMessageReceived += new EventHandler<IrcEventArgs>(Session_RawMessageReceived);
+            this.Session.Invited += new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
 			this.Loaded += (sender, e) =>

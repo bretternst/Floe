@@ -108,6 +108,13 @@ namespace Floe.Configuration
 			set { this["port"] = value; }
 		}
 
+		[ConfigurationProperty("password", DefaultValue = null)]
+		public string Password
+		{
+			get { return (string)this["password"]; }
+			set { this["password"] = value; }
+		}
+
 		[ConfigurationProperty("isSecure", DefaultValue=false)]
 		public bool IsSecure
 		{

@@ -17,8 +17,11 @@
 		<local:DoubleToPercentConverter x:Key="doubleToPercentConverter"/>
 	</UserControl.Resources>
 	<Canvas>
-		<CheckBox Canvas.Left="228" Canvas.Top="207" Content="Minimize to systray" Height="16" Name="chkMinimizeToSystray"
+		<CheckBox Canvas.Left="149" Canvas.Top="162" Content="Suppress warning on quit" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.SuppressWarningOnQuit}" Name="chkSuppressWarningOnQuit" />
+		<CheckBox Canvas.Left="149" Canvas.Top="207" Content="Minimize to systray" Height="16" Name="chkMinimizeToSystray"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinimizeToSysTray}"/>
+		<CheckBox Canvas.Left="149" Canvas.Top="185" Content="Detach incoming queries by default" Height="16" Name="chkDefaultQueryDetached"
+				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.DefaultQueryDetached}"/>
 		<ComboBox Canvas.Left="12" Canvas.Top="200" Height="23" Name="comboBox1" Width="120" ItemsSource="{Binding Source={StaticResource tabStripPositionValues}}"
 				  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.TabStripPosition, Mode=TwoWay}"/>
 		<Label Canvas.Left="6" Canvas.Top="178" Content="Tab Strip Position" Height="28" Name="label5" />

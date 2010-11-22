@@ -28,6 +28,8 @@ namespace Floe.UI
 		public readonly static RoutedUICommand BanCommand = new RoutedUICommand("Ban", "Ban", typeof(ChatControl));
 		public readonly static RoutedUICommand UnbanCommand = new RoutedUICommand("Unban", "Unban", typeof(ChatControl));
 		public readonly static RoutedUICommand SearchCommand = new RoutedUICommand("Search", "Search", typeof(ChatControl));
+		public readonly static RoutedUICommand SearchPreviousCommand = new RoutedUICommand("Previous", "SearchPrevious", typeof(ChatControl));
+		public readonly static RoutedUICommand SearchNextCommand = new RoutedUICommand("Next", "SearchNext", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -280,8 +282,15 @@ namespace Floe.UI
 					break;
 				case "JOIN":
 				case "J":
-					args = Split(command, arguments, 1, 1);
-					this.Session.Join(args[0]);
+					args = Split(command, arguments, 1, 2);
+					if (args.Length == 2)
+					{
+						this.Session.Join(args[0], args[1]);
+					}
+					else
+					{
+						this.Session.Join(args[0]);
+					}
 					break;
 				case "PART":
 				case "LEAVE":
@@ -389,7 +398,7 @@ namespace Floe.UI
 					}
 					break;
 				case "SERVER":
-					args = Split(command, arguments, 1, 2);
+					args = Split(command, arguments, 1, 3);
 					int port = 0;
 					bool useSsl = false;
 					if (args.Length > 1 && (args[1] = args[1].Trim()).Length > 0)
@@ -399,6 +408,11 @@ namespace Floe.UI
 							useSsl = true;
 						}
 						int.TryParse(args[1], out port);
+					}
+					string password = null;
+					if (args.Length > 2)
+					{
+						password = args[2];
 					}
 					if (port == 0)
 					{
@@ -410,7 +424,7 @@ namespace Floe.UI
 						this.Session.Quit("Changing servers");
 					}
 					this.Perform = "";
-					this.Connect(args[0], port, useSsl, false);
+					this.Connect(args[0], port, password, useSsl, false);
 					break;
 				case "ME":
 				case "ACTION":
@@ -616,12 +630,12 @@ namespace Floe.UI
 			this.ToggleSearch();
 		}
 
-		private void btnSearchPrevious_Click(object sender, RoutedEventArgs e)
+		private void ExecuteSearchPrevious(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.DoSearch(SearchDirection.Previous);
 		}
 
-		private void btnSearchNext_Click(object sender, RoutedEventArgs e)
+		private void ExecuteSearchNext(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.DoSearch(SearchDirection.Next);
 		}

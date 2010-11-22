@@ -4,7 +4,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Floe.Configuration;
+using System.Windows.Input;
+
 using Floe.Net;
 
 namespace Floe.UI
@@ -109,68 +110,7 @@ namespace Floe.UI
 			}
 
 			this.SetBindings(control);
-		}
-
-		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
-		{
-			this.AddPage(new ChatContext(new IrcSession(), null), true);
-
-			if (Application.Current.MainWindow == this)
-			{
-				if (App.Settings.IsFirstLaunch)
-				{
-					App.ShowSettings();
-				}
-
-				int i = 0;
-				foreach (var server in from ServerElement s in App.Settings.Current.Servers
-									   where s.ConnectOnStartup == true
-									   select s)
-				{
-					if (i++ > 0)
-					{
-						this.AddPage(new ChatContext(new IrcSession(), null), false);
-					}
-					this.Items[this.Items.Count - 1].Control.Connect(server);
-				}
-			}
-		}
-
-		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
-		{
-			base.OnClosing(e);
-
-			if (!_isShuttingDown && this.Items.Any((i) => i.Control.IsConnected))
-			{
-				if (!this.Confirm("Are you sure you want to exit?", "Confirm Exit"))
-				{
-					e.Cancel = true;
-					return;
-				}
-			}
-
-			this.QuitAllSessions();
-
-			foreach (var page in this.Items)
-			{
-				page.Control.Dispose();
-			}
-
-			foreach (var win in App.Current.Windows)
-			{
-				var channelWindow = win as ChannelWindow;
-				if (channelWindow != null)
-				{
-					channelWindow.Close();
-				}
-			}
-
-			App.Settings.Current.Windows.Placement = Interop.WindowHelper.Save(this);
-
-			if (_notifyIcon != null)
-			{
-				_notifyIcon.Dispose();
-			}
+			this.BeginInvoke(() => this.SwitchToPage(control.Context));
 		}
 
 		private void QuitAllSessions()

@@ -117,7 +117,16 @@ namespace Floe.UI
 
 		public static bool Confirm(Window owner, string text, string caption)
 		{
-			bool result = MessageBox.Show(owner, text, caption, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+			bool dummy = false;
+			return Confirm(owner, text, caption, ref dummy);
+		}
+
+		public static bool Confirm(Window owner, string text, string caption, ref bool dontAskAgain)
+		{
+			var confirm = new ConfirmDialog(caption, text, dontAskAgain);
+			confirm.Owner = owner;
+			bool result = confirm.ShowDialog().Value;
+			dontAskAgain = confirm.IsDontAskAgainChecked;
 			return result;
 		}
 
@@ -133,7 +142,7 @@ namespace Floe.UI
             }
 		}
 
-		public static void Create(IrcSession session, IrcTarget target, bool makeActive)
+		public static bool Create(IrcSession session, IrcTarget target, bool makeActive)
 		{
 			var detached = App.Current.Windows.OfType<ChannelWindow>().Where((cw) => cw.Control.Session == session
 				&& target.Equals(cw.Control.Target)).FirstOrDefault();
@@ -143,48 +152,57 @@ namespace Floe.UI
 				{
 					detached.Activate();
 				}
-				return;
+				return false;
 			}
 
 			var window = App.Current.MainWindow as ChatWindow;
-			if (makeActive)
-			{
-				window.Show();
-				if (window.WindowState == WindowState.Minimized)
-				{
-					window.WindowState = WindowState.Normal;
-				}
-				window.Activate();
-			}
 
 			var page = window.FindPage(session, target);
 			if (page != null)
 			{
 				if (makeActive)
 				{
+					window.Show();
+					if (window.WindowState == WindowState.Minimized)
+					{
+						window.WindowState = WindowState.Normal;
+					}
+					window.Activate();
 					window.SwitchToPage(page);
 				}
+				return false;
 			}
 			else
 			{
 				var context = new ChatContext(session, target);
-				if (App.Settings.Current.Windows.States[context.Key].IsDetached)
+				if (App.Settings.Current.Windows.States.Exists(context.Key) ? App.Settings.Current.Windows.States[context.Key].IsDetached : App.Settings.Current.Windows.DefaultQueryDetached)
 				{
 					var newWin = new ChannelWindow(new ChatControl(context));
 					if (!makeActive)
 					{
 						newWin.ShowActivated = false;
+						newWin.WindowState = WindowState.Minimized;
 					}
 					newWin.Show();
+
 					if (makeActive)
 					{
 						newWin.Activate();
+					}
+					else
+					{
+						Interop.WindowHelper.FlashWindow(newWin);
 					}
 				}
 				else
 				{
 					window.AddPage(new ChatContext(session, target), makeActive);
+					if (!window.IsActive)
+					{
+						Interop.WindowHelper.FlashWindow(window);
+					}
 				}
+				return true;
 			}
 		}
 
