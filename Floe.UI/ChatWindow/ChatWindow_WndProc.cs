@@ -126,7 +126,7 @@ namespace Floe.UI
 				case WindowConstants.WM_ENDSESSION:
 					handled = true;
 					_isShuttingDown = true;
-					QuitAllSessions();
+					this.Close();
 					break;
 			}
 
