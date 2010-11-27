@@ -69,7 +69,7 @@
 			<MenuItem Command="local:ChatControl.BanCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<MenuItem Command="local:ChatControl.UnbanCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<Separator/>
-			<MenuItem Command="local:ChatControl.SlapCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<MenuItem Command="local:ChatControl.SlapCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmHyperlink">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpenLinkCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
