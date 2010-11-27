@@ -49,6 +49,7 @@ namespace Floe.Net
 
 			_writeQueue.Clear();
 			_socketThread = new Thread(new ThreadStart(this.SocketLoop));
+			_socketThread.IsBackground = true;
 			_socketThread.Start();
 		}
 
@@ -178,9 +179,9 @@ namespace Floe.Net
 												System.Diagnostics.Debug.WriteLine("Unhandled IrcException: {0}", ex.Message);
 											}
 #else
-										catch(IrcException)
-										{
-										}
+											catch(IrcException)
+											{
+											}
 #endif
 											input.Clear();
 										}
@@ -209,6 +210,7 @@ namespace Floe.Net
 									count = Math.Min(510, count);
 									writeBuffer[count] = 0xd;
 									writeBuffer[count + 1] = 0xa;
+
 									stream.Write(writeBuffer, 0, count + 2);
 
 									this.OnMessageSent(message);

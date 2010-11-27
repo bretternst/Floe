@@ -91,6 +91,7 @@
     <Compile Include="ChatControl\ChatControl_Commands.cs" />
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
+    <Compile Include="ChatControl\ChatControl_Slap.cs" />
     <Compile Include="ChatControl\NotifyState.cs" />
     <Compile Include="ChatWindow\ChatWindow_Commands.cs" />
     <Compile Include="ChatWindow\ChatWindow_Events.cs" />

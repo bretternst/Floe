@@ -29,6 +29,7 @@
 		<CommandBinding Command="local:ChatControl.SearchCommand" Executed="ExecuteSearch"/>
 		<CommandBinding Command="local:ChatControl.SearchPreviousCommand" Executed="ExecuteSearchPrevious"/>
 		<CommandBinding Command="local:ChatControl.SearchNextCommand" Executed="ExecuteSearchNext"/>
+		<CommandBinding Command="local:ChatControl.SlapCommand" Executed="ExecuteSlap"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<local:BrushAlphaConverter x:Key="opacityConverter"/>
@@ -52,6 +53,8 @@
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.KickCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.BanCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.UnbanCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<Separator/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SlapCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmNickList">
 			<MenuItem Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
@@ -65,6 +68,8 @@
 			<MenuItem Command="local:ChatControl.KickCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<MenuItem Command="local:ChatControl.BanCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<MenuItem Command="local:ChatControl.UnbanCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
+			<Separator/>
+			<MenuItem Command="local:ChatControl.SlapCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmHyperlink">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpenLinkCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>

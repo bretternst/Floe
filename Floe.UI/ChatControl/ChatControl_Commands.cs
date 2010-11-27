@@ -30,6 +30,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand SearchCommand = new RoutedUICommand("Search", "Search", typeof(ChatControl));
 		public readonly static RoutedUICommand SearchPreviousCommand = new RoutedUICommand("Previous", "SearchPrevious", typeof(ChatControl));
 		public readonly static RoutedUICommand SearchNextCommand = new RoutedUICommand("Next", "SearchNext", typeof(ChatControl));
+		public readonly static RoutedUICommand SlapCommand = new RoutedUICommand("Slap!", "Slap", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
