@@ -11,7 +11,7 @@ namespace Floe.UI
 {
 	public partial class ChatControl : UserControl
 	{
-		private const string SlapStringFormat = "slaps {0} around a bit with a {1} {2}!";
+		private const string SlapStringFormat = "slaps {0} around a bit with {1} {2} {3}!";
 		private static Random _slapRandom = new Random((int)DateTime.Now.Ticks);
 
 		private static readonly string[] AquaticLifeForms = new[]
@@ -73,16 +73,20 @@ namespace Floe.UI
 				"wide",
 				"long",
 				"short",
-				"rotund"
+				"rotund",
+				"nondescript"
 			};
 
 		private void ExecuteSlap(object sender, ExecutedRoutedEventArgs e)
 		{
 			var nick = e.Parameter as string;
+			var size = Sizes[_slapRandom.Next(Sizes.Length)];
+
 			string slapString = string.Format(
 				SlapStringFormat,
 				nick,
-				Sizes[_slapRandom.Next(Sizes.Length)],
+				(size[0] == 'a' || size[0] == 'e' || size[0] == 'i' || size[0] == 'o' || size[0] == 'u') ? "an" : "a",
+				size,
 				AquaticLifeForms[_slapRandom.Next(AquaticLifeForms.Length)]
 				);
 
