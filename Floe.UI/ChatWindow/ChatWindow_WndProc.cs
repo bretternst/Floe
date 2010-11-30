@@ -113,12 +113,14 @@ namespace Floe.UI
 					}
 					break;
 				case WindowConstants.WM_QUERYENDSESSION:
+					_isShuttingDown = true;
 					handled = true;
 					return (IntPtr)1;
 				case WindowConstants.WM_ENDSESSION:
-					handled = true;
-					_isShuttingDown = true;
-					this.Close();
+					if (wParam == (IntPtr)0)
+					{
+						_isShuttingDown = false;
+					}
 					break;
 			}
 
