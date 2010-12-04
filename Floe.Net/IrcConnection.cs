@@ -183,7 +183,8 @@ namespace Floe.Net
 											{
 											}
 #endif
-											input.Clear();
+											input.Length = 0;
+//											input.Clear();
 										}
 									}
 									else if (c != 0xd && c != 0xa)
