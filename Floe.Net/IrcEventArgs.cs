@@ -29,25 +29,23 @@ namespace Floe.Net
 	{
 		public string OldNickname { get; private set; }
 		public string NewNickname { get; private set; }
-		public bool IsSelf { get; private set; }
 
-		public IrcNickEventArgs(IrcMessage message, string ownNickname)
+		public IrcNickEventArgs(IrcMessage message)
 			: base(message)
 		{
 			var peer = message.From as IrcPeer;
 			this.OldNickname = peer != null ? peer.Nickname : null;
 			this.NewNickname = message.Parameters.Count > 0 ? message.Parameters[0] : null;
-			this.IsSelf = string.Compare(this.OldNickname, ownNickname, StringComparison.OrdinalIgnoreCase) == 0;
 		}
 	}
 
-	public class IrcDialogEventArgs : IrcEventArgs
+	public class IrcMessageEventArgs : IrcEventArgs
 	{
 		public IrcPeer From { get; private set; }
 		public IrcTarget To { get; private set; }
 		public string Text { get; private set; }
 
-		public IrcDialogEventArgs(IrcMessage message)
+		public IrcMessageEventArgs(IrcMessage message)
 			: base(message)
 		{
 			this.From = message.From as IrcPeer;
@@ -69,22 +67,48 @@ namespace Floe.Net
 		}
 	}
 
-	public class IrcChannelEventArgs : IrcEventArgs
+    public class IrcJoinEventArgs : IrcEventArgs
+    {
+        public IrcPeer Who { get; private set; }
+        public IrcTarget Channel { get; private set; }
+
+        public IrcJoinEventArgs(IrcMessage message)
+            : base(message)
+        {
+            this.Who = message.From as IrcPeer;
+            this.Channel = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
+        }
+    }
+
+    public class IrcPartEventArgs : IrcEventArgs
 	{
 		public IrcPeer Who { get; private set; }
 		public IrcTarget Channel { get; private set; }
 		public string Text { get; private set; }
-		public bool IsSelf { get; private set; }
 
-		public IrcChannelEventArgs(IrcMessage message, string ownNick)
+		public IrcPartEventArgs(IrcMessage message)
 			: base(message)
 		{
 			this.Who = message.From as IrcPeer;
 			this.Channel = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
 			this.Text = message.Parameters.Count > 1 ? message.Parameters[1] : null;
-			this.IsSelf = this.Who != null ? string.Compare(this.Who.Nickname, ownNick, StringComparison.OrdinalIgnoreCase) == 0 : false;
 		}
 	}
+
+    public class IrcTopicEventArgs : IrcEventArgs
+    {
+        public IrcPeer Who { get; private set; }
+        public IrcTarget Channel { get; private set; }
+        public string Text { get; private set; }
+
+        public IrcTopicEventArgs(IrcMessage message)
+            : base(message)
+        {
+            this.Who = message.From as IrcPeer;
+            this.Channel = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
+            this.Text = message.Parameters.Count > 1 ? message.Parameters[1] : null;
+        }
+    }
 
 	public class IrcInviteEventArgs : IrcEventArgs
 	{
@@ -105,19 +129,14 @@ namespace Floe.Net
 		public IrcTarget Channel { get; private set; }
 		public string KickeeNickname { get; private set; }
 		public string Text { get; private set; }
-		public bool IsSelfKicker { get; private set; }
-		public bool IsSelfKicked { get; private set; }
 
-		public IrcKickEventArgs(IrcMessage message, string ownNickname)
+		public IrcKickEventArgs(IrcMessage message)
 			: base(message)
 		{
 			this.Kicker = message.From as IrcPeer;
 			this.Channel = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
 			this.KickeeNickname = message.Parameters.Count > 1 ? message.Parameters[1] : null;
 			this.Text = message.Parameters.Count > 2 ? message.Parameters[2] : null;
-			this.IsSelfKicker = this.Kicker != null && 
-				string.Compare(this.Kicker.Nickname, ownNickname, StringComparison.OrdinalIgnoreCase) == 0;
-			this.IsSelfKicked = string.Compare(this.KickeeNickname, ownNickname, StringComparison.OrdinalIgnoreCase) == 0;
 		}
 	}
 
@@ -139,15 +158,12 @@ namespace Floe.Net
 	public class IrcUserModeEventArgs : IrcEventArgs
 	{
 		public IrcTarget Who { get; private set; }
-		public bool IsSelf { get; private set; }
 		public ICollection<IrcUserMode> Modes { get; private set; }
 
-		public IrcUserModeEventArgs(IrcMessage message, string ownNickname)
+		public IrcUserModeEventArgs(IrcMessage message)
 			: base(message)
 		{
 			this.Who = message.Parameters.Count > 0 ? new IrcTarget(message.Parameters[0]) : null;
-			this.IsSelf = this.Who != null && this.Who.Type == IrcTargetType.Nickname &&
-				string.Compare(this.Who.Name, ownNickname, StringComparison.OrdinalIgnoreCase) == 0;
 			this.Modes = message.Parameters.Count > 1 ? IrcUserMode.ParseModes(message.Parameters.Skip(1)) : null;
 		}
 	}

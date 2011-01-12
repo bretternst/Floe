@@ -61,7 +61,7 @@ namespace Floe.UI
 			}
 		}
 
-		private void Session_Noticed(object sender, IrcDialogEventArgs e)
+		private void Session_Noticed(object sender, IrcMessageEventArgs e)
 		{
 			if (App.IsIgnoreMatch(e.From))
 			{
@@ -84,7 +84,7 @@ namespace Floe.UI
 			}
 		}
 
-		private void Session_PrivateMessaged(object sender, IrcDialogEventArgs e)
+		private void Session_PrivateMessaged(object sender, IrcMessageEventArgs e)
 		{
 			if (App.IsIgnoreMatch(e.From))
 			{
@@ -132,16 +132,23 @@ namespace Floe.UI
 		{
 			this.BeginInvoke(() =>
 				{
-					if (e.IsSelfKicked && this.IsServer)
-					{
-						this.Write("Kick", string.Format("You have been kicked from {0} by {1} ({2})",
-							e.Channel, e.Kicker.Nickname, e.Text));
-					}
-					else if (!this.IsServer && this.Target.Equals(e.Channel))
+					if (!this.IsServer && this.Target.Equals(e.Channel))
 					{
 						this.Write("Kick", string.Format("{0} has been kicked by {1} ({2})",
 							e.KickeeNickname, e.Kicker.Nickname, e.Text));
 						this.RemoveNick(e.KickeeNickname);
+					}
+				});
+		}
+
+		private void Session_SelfKicked(object sender, IrcKickEventArgs e)
+		{
+			this.BeginInvoke(() =>
+				{
+					if (this.IsServer)
+					{
+						this.Write("Kick", string.Format("You have been kicked from {0} by {1} ({2})",
+							e.Channel, e.Kicker.Nickname, e.Text));
 					}
 				});
 		}
@@ -304,11 +311,11 @@ namespace Floe.UI
 				});
 		}
 
-		private void Session_Joined(object sender, IrcChannelEventArgs e)
+		private void Session_Joined(object sender, IrcJoinEventArgs e)
 		{
 			bool isIgnored = App.IsIgnoreMatch(e.Who);
 
-			if (!e.IsSelf && !this.IsServer && this.Target.Equals(e.Channel))
+			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
 				this.BeginInvoke(() =>
 					{
@@ -322,11 +329,11 @@ namespace Floe.UI
 			}
 		}
 
-		private void Session_Parted(object sender, IrcChannelEventArgs e)
+		private void Session_Parted(object sender, IrcPartEventArgs e)
 		{
 			bool isIgnored = App.IsIgnoreMatch(e.Who);
 
-			if (!e.IsSelf && !this.IsServer && this.Target.Equals(e.Channel))
+			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
 				this.BeginInvoke(() =>
 					{
@@ -346,15 +353,7 @@ namespace Floe.UI
 
 			this.BeginInvoke(() =>
 				{
-					if (e.IsSelf)
-					{
-						if (this.IsServer || this.IsChannel)
-						{
-							this.Write("Nick", string.Format("You are now known as {0}", e.NewNickname));
-						}
-						this.SetTitle();
-					}
-					else if (this.IsChannel && this.IsPresent(e.OldNickname))
+					if (this.IsChannel && this.IsPresent(e.OldNickname))
 					{
 						if (!isIgnored)
 						{
@@ -369,7 +368,24 @@ namespace Floe.UI
 				});
 		}
 
-		private void Session_TopicChanged(object sender, IrcChannelEventArgs e)
+		private void Session_SelfNickChanged(object sender, IrcNickEventArgs e)
+		{
+			this.BeginInvoke(() =>
+			{
+				if (this.IsServer || this.IsChannel)
+				{
+					this.Write("Nick", string.Format("You are now known as {0}", e.NewNickname));
+				}
+				this.SetTitle();
+
+				if (this.IsChannel && this.IsPresent(e.OldNickname))
+				{
+					this.ChangeNick(e.OldNickname, e.NewNickname);
+				}
+			});
+		}
+
+		private void Session_TopicChanged(object sender, IrcTopicEventArgs e)
 		{
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
@@ -774,15 +790,17 @@ namespace Floe.UI
 		{
 			this.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			this.Session.ConnectionError += new EventHandler<ErrorEventArgs>(Session_ConnectionError);
-			this.Session.Noticed += new EventHandler<IrcDialogEventArgs>(Session_Noticed);
-			this.Session.PrivateMessaged += new EventHandler<IrcDialogEventArgs>(Session_PrivateMessaged);
+			this.Session.Noticed += new EventHandler<IrcMessageEventArgs>(Session_Noticed);
+			this.Session.PrivateMessaged += new EventHandler<IrcMessageEventArgs>(Session_PrivateMessaged);
 			this.Session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			this.Session.SelfKicked += new EventHandler<IrcKickEventArgs>(Session_SelfKicked);
 			this.Session.InfoReceived += new EventHandler<IrcInfoEventArgs>(Session_InfoReceived);
 			this.Session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
-			this.Session.Joined += new EventHandler<IrcChannelEventArgs>(Session_Joined);
-			this.Session.Parted += new EventHandler<IrcChannelEventArgs>(Session_Parted);
+			this.Session.Joined += new EventHandler<IrcJoinEventArgs>(Session_Joined);
+			this.Session.Parted += new EventHandler<IrcPartEventArgs>(Session_Parted);
 			this.Session.NickChanged += new EventHandler<IrcNickEventArgs>(Session_NickChanged);
-			this.Session.TopicChanged += new EventHandler<IrcChannelEventArgs>(Session_TopicChanged);
+			this.Session.SelfNickChanged += new EventHandler<IrcNickEventArgs>(Session_SelfNickChanged);
+			this.Session.TopicChanged += new EventHandler<IrcTopicEventArgs>(Session_TopicChanged);
 			this.Session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged += new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
@@ -802,15 +820,17 @@ namespace Floe.UI
 		private void UnsubscribeEvents()
 		{
 			this.Session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
-			this.Session.Noticed -= new EventHandler<IrcDialogEventArgs>(Session_Noticed);
-			this.Session.PrivateMessaged -= new EventHandler<IrcDialogEventArgs>(Session_PrivateMessaged);
+			this.Session.Noticed -= new EventHandler<IrcMessageEventArgs>(Session_Noticed);
+			this.Session.PrivateMessaged -= new EventHandler<IrcMessageEventArgs>(Session_PrivateMessaged);
 			this.Session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			this.Session.SelfKicked -= new EventHandler<IrcKickEventArgs>(Session_SelfKicked);
 			this.Session.InfoReceived -= new EventHandler<IrcInfoEventArgs>(Session_InfoReceived);
 			this.Session.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
-			this.Session.Joined -= new EventHandler<IrcChannelEventArgs>(Session_Joined);
-			this.Session.Parted -= new EventHandler<IrcChannelEventArgs>(Session_Parted);
+			this.Session.Joined -= new EventHandler<IrcJoinEventArgs>(Session_Joined);
+			this.Session.Parted -= new EventHandler<IrcPartEventArgs>(Session_Parted);
 			this.Session.NickChanged -= new EventHandler<IrcNickEventArgs>(Session_NickChanged);
-			this.Session.TopicChanged -= new EventHandler<IrcChannelEventArgs>(Session_TopicChanged);
+			this.Session.SelfNickChanged -= new EventHandler<IrcNickEventArgs>(Session_SelfNickChanged);
+			this.Session.TopicChanged -= new EventHandler<IrcTopicEventArgs>(Session_TopicChanged);
 			this.Session.UserModeChanged -= new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged -= new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit -= new EventHandler<IrcQuitEventArgs>(Session_UserQuit);

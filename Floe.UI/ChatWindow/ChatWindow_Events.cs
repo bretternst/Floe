@@ -11,55 +11,46 @@ namespace Floe.UI
 	{
 		private char[] _userModes = new char[0];
 
-		private void Session_Joined(object sender, IrcChannelEventArgs e)
+		private void Session_SelfJoined(object sender, IrcJoinEventArgs e)
 		{
-			if (e.IsSelf)
+			this.Invoke(() =>
 			{
-				this.Invoke(() =>
+				var context = new ChatContext((IrcSession)sender, e.Channel);
+				var state = App.Settings.Current.Windows.States[context.Key];
+				if (state.IsDetached)
 				{
-					var context = new ChatContext((IrcSession)sender, e.Channel);
-					var state = App.Settings.Current.Windows.States[context.Key];
-					if (state.IsDetached)
-					{
-						var window = new ChannelWindow(new ChatControl(context));
-						window.Show();
-					}
-					else
-					{
-						this.AddPage(context, true);
-					}
-				});
-			}
+					var window = new ChannelWindow(new ChatControl(context));
+					window.Show();
+				}
+				else
+				{
+					this.AddPage(context, true);
+				}
+			});
 		}
 
-		private void Session_Parted(object sender, IrcChannelEventArgs e)
+		private void Session_SelfParted(object sender, IrcPartEventArgs e)
 		{
-			if (e.IsSelf)
+			this.Invoke(() =>
 			{
-				this.Invoke(() =>
+				var context = this.FindPage((IrcSession)sender, e.Channel);
+				if (context != null)
 				{
-					var context = this.FindPage((IrcSession)sender, e.Channel);
-					if (context != null)
-					{
-						this.RemovePage(context);
-					}
-				});
-			}
+					this.RemovePage(context);
+				}
+			});
 		}
 
-		private void Session_Kicked(object sender, IrcKickEventArgs e)
+		private void Session_SelfKicked(object sender, IrcKickEventArgs e)
 		{
-			if (e.IsSelfKicked)
+			this.Invoke(() =>
 			{
-				this.Invoke(() =>
+				var context = this.FindPage((IrcSession)sender, e.Channel);
+				if (context != null)
 				{
-					var context = this.FindPage((IrcSession)sender, e.Channel);
-					if (context != null)
-					{
-						this.RemovePage(context);
-					}
-				});
-			}
+					this.RemovePage(context);
+				}
+			});
 		}
 
 		private void Session_StateChanged(object sender, EventArgs e)
@@ -205,9 +196,9 @@ namespace Floe.UI
 
 		private void SubscribeEvents(IrcSession session)
 		{
-			session.Joined += new EventHandler<IrcChannelEventArgs>(Session_Joined);
-			session.Parted += new EventHandler<IrcChannelEventArgs>(Session_Parted);
-			session.Kicked += new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			session.SelfJoined += new EventHandler<IrcJoinEventArgs>(Session_SelfJoined);
+			session.SelfParted += new EventHandler<IrcPartEventArgs>(Session_SelfParted);
+			session.SelfKicked += new EventHandler<IrcKickEventArgs>(Session_SelfKicked);
 			session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived += new EventHandler<IrcEventArgs>(session_RawMessageReceived);
@@ -215,9 +206,9 @@ namespace Floe.UI
 
 		public void UnsubscribeEvents(IrcSession session)
 		{
-			session.Joined -= new EventHandler<IrcChannelEventArgs>(Session_Joined);
-			session.Parted -= new EventHandler<IrcChannelEventArgs>(Session_Parted);
-			session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
+			session.SelfJoined -= new EventHandler<IrcJoinEventArgs>(Session_SelfJoined);
+			session.SelfParted -= new EventHandler<IrcPartEventArgs>(Session_SelfParted);
+			session.SelfKicked -= new EventHandler<IrcKickEventArgs>(Session_SelfKicked);
 			session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived -= new EventHandler<IrcEventArgs>(session_RawMessageReceived);

@@ -54,14 +54,18 @@ namespace Floe.Net
 		public event EventHandler<IrcEventArgs> RawMessageReceived;
 		public event EventHandler<IrcEventArgs> RawMessageSent;
 		public event EventHandler<IrcNickEventArgs> NickChanged;
-		public event EventHandler<IrcDialogEventArgs> PrivateMessaged;
-		public event EventHandler<IrcDialogEventArgs> Noticed;
+		public event EventHandler<IrcNickEventArgs> SelfNickChanged;
+		public event EventHandler<IrcMessageEventArgs> PrivateMessaged;
+		public event EventHandler<IrcMessageEventArgs> Noticed;
 		public event EventHandler<IrcQuitEventArgs> UserQuit;
-		public event EventHandler<IrcChannelEventArgs> Joined;
-		public event EventHandler<IrcChannelEventArgs> Parted;
-		public event EventHandler<IrcChannelEventArgs> TopicChanged;
+		public event EventHandler<IrcJoinEventArgs> Joined;
+		public event EventHandler<IrcJoinEventArgs> SelfJoined;
+		public event EventHandler<IrcPartEventArgs> Parted;
+		public event EventHandler<IrcPartEventArgs> SelfParted;
+        public event EventHandler<IrcTopicEventArgs> TopicChanged;
 		public event EventHandler<IrcInviteEventArgs> Invited;
 		public event EventHandler<IrcKickEventArgs> Kicked;
+		public event EventHandler<IrcKickEventArgs> SelfKicked;
 		public event EventHandler<IrcChannelModeEventArgs> ChannelModeChanged;
 		public event EventHandler<IrcUserModeEventArgs> UserModeChanged;
 		public event EventHandler<IrcInfoEventArgs> InfoReceived;
@@ -349,6 +353,11 @@ namespace Floe.Net
 			}
 		}
 
+        public bool IsSelf(string nick)
+        {
+            return string.Compare(this.Nickname, nick, StringComparison.OrdinalIgnoreCase) == 0;
+        }
+
 		private void OnStateChanged()
 		{
 			var handler = this.StateChanged;
@@ -412,11 +421,12 @@ namespace Floe.Net
 
 		private void OnNickChanged(IrcMessage message)
 		{
-			var args = new IrcNickEventArgs(message, this.Nickname);
+			var args = new IrcNickEventArgs(message);
 			var handler = this.NickChanged;
-			if (args.IsSelf)
+			if (this.IsSelf(args.OldNickname))
 			{
 				this.Nickname = args.NewNickname;
+				handler = this.SelfNickChanged;
 			}
 			if (handler != null)
 			{
@@ -435,7 +445,7 @@ namespace Floe.Net
 				var handler = this.PrivateMessaged;
 				if (handler != null)
 				{
-					handler(this, new IrcDialogEventArgs(message));
+					handler(this, new IrcMessageEventArgs(message));
 				}
 			}
 		}
@@ -451,7 +461,7 @@ namespace Floe.Net
 				var handler = this.Noticed;
 				if (handler != null)
 				{
-					handler(this, new IrcDialogEventArgs(message));
+					handler(this, new IrcMessageEventArgs(message));
 				}
 			}
 		}
@@ -468,18 +478,28 @@ namespace Floe.Net
 		private void OnJoin(IrcMessage message)
 		{
 			var handler = this.Joined;
+			var args = new IrcJoinEventArgs(message);
+			if (this.IsSelf(args.Who.Nickname))
+			{
+				handler = this.SelfJoined;
+			}
 			if (handler != null)
 			{
-				handler(this, new IrcChannelEventArgs(message, this.Nickname));
+				handler(this, args);
 			}
 		}
 
 		private void OnPart(IrcMessage message)
 		{
 			var handler = this.Parted;
+			var args = new IrcPartEventArgs(message);
+			if (this.IsSelf(args.Who.Nickname))
+			{
+				handler = this.SelfParted;
+			}
 			if (handler != null)
 			{
-				handler(this, new IrcChannelEventArgs(message, this.Nickname));
+				handler(this, args);
 			}
 		}
 
@@ -488,7 +508,7 @@ namespace Floe.Net
 			var handler = this.TopicChanged;
 			if (handler != null)
 			{
-				handler(this, new IrcChannelEventArgs(message, this.Nickname));
+				handler(this, new IrcTopicEventArgs(message));
 			}
 		}
 
@@ -504,9 +524,14 @@ namespace Floe.Net
 		private void OnKick(IrcMessage message)
 		{
 			var handler = this.Kicked;
+			var args = new IrcKickEventArgs(message);
+			if (this.IsSelf(args.KickeeNickname))
+			{
+				handler = this.SelfKicked;
+			}
 			if (handler != null)
 			{
-				handler(this, new IrcKickEventArgs(message, this.Nickname));
+				handler(this, args);
 			}
 		}
 
@@ -524,18 +549,15 @@ namespace Floe.Net
 				}
 				else
 				{
-					var e = new IrcUserModeEventArgs(message, this.Nickname);
-					if (e.IsSelf)
-					{
-						this.UserModes = (from m in e.Modes.Where((newMode) => newMode.Set).Select((newMode) => newMode.Mode).Union(this.UserModes).Distinct()
-										  where !e.Modes.Any((newMode) => !newMode.Set)
-										  select m).ToArray();
-					}
+					var e = new IrcUserModeEventArgs(message);
+					this.UserModes = (from m in e.Modes.Where((newMode) => newMode.Set).Select((newMode) => newMode.Mode).Union(this.UserModes).Distinct()
+									  where !e.Modes.Any((newMode) => !newMode.Set)
+									  select m).ToArray();
 
-					var handler = this.UserModeChanged;
+                    var handler = this.UserModeChanged;
 					if (handler != null)
 					{
-						handler(this, new IrcUserModeEventArgs(message, this.Nickname));
+						handler(this, new IrcUserModeEventArgs(message));
 					}
 				}
 			}
