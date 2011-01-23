@@ -54,7 +54,7 @@ namespace Floe.UI
 			if (this.IsChannel)
 			{
 				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
-				this.Session.AddHandler(new IrcCodeHandler(IrcCode.ChannelModes, true, (msg) =>
+				this.Session.AddHandler(new IrcCodeHandler(IrcCode.RPL_CHANNELMODES, true, (msg) =>
 					{
 						if (msg.Parameters.Count == 3 &&
 							this.Target.Equals(new IrcTarget(msg.Parameters[1])))

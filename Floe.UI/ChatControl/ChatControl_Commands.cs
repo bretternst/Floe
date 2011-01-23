@@ -195,7 +195,7 @@ namespace Floe.UI
 
 			for(int i = 0; i < nicks.Count(); i += 3)
 			{
-				this.Session.AddHandler(new IrcCodeHandler(IrcCode.UserHost, true, (msg) =>
+				this.Session.AddHandler(new IrcCodeHandler(IrcCode.RPL_USERHOST, true, (msg) =>
 					{
 						if (msg.Parameters.Count > 1)
 						{

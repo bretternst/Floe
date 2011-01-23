@@ -82,6 +82,7 @@ namespace Floe.UI.Interop
 	{
 		private const int SW_SHOWNORMAL = 1;
 		private const int SW_SHOWMINIMIZED = 2;
+		private const int SW_MAXIMIZED = 3;
 		private const int SW_SHOWMINNOACTIVE = 7;
 
 		[DllImport("user32")]
@@ -123,7 +124,17 @@ namespace Floe.UI.Interop
 					wp.showCmd = SW_SHOWMINNOACTIVE;
 				}
 				IntPtr hwnd = new WindowInteropHelper(window).Handle;
+
+				bool isMaximized = wp.showCmd == SW_MAXIMIZED;
+				if (isMaximized)
+				{
+					wp.showCmd = SW_SHOWNORMAL;
+				}
 				SetWindowPlacement(hwnd, ref wp);
+				if (isMaximized)
+				{
+					window.WindowState = WindowState.Maximized;
+				}
 			}
 			catch(Exception ex)
 			{

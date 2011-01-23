@@ -159,7 +159,7 @@ namespace Floe.UI
 				{
 					switch (e.Code)
 					{
-						case IrcCode.NicknameInUse:
+						case IrcCode.ERR_NICKNAMEINUSE:
 							if (this.IsServer && this.Session.State == IrcSessionState.Connecting)
 							{
 								if (_usingAlternateNick || string.IsNullOrEmpty(App.Settings.Current.User.AlternateNickname))
@@ -173,7 +173,7 @@ namespace Floe.UI
 								}
 							}
 							break;
-						case IrcCode.Topic:
+						case IrcCode.RPL_TOPIC:
 							if (e.Message.Parameters.Count == 3 && !this.IsServer &&
 								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
 							{
@@ -182,7 +182,7 @@ namespace Floe.UI
 								this.Write("Topic", string.Format("Topic is: {0}", _topic));
 							}
 							return;
-						case IrcCode.TopicSetBy:
+						case IrcCode.RPL_TOPICSETBY:
 							if (e.Message.Parameters.Count == 4 && !this.IsServer &&
 								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
 							{
@@ -190,24 +190,24 @@ namespace Floe.UI
 									this.FormatTime(e.Message.Parameters[3])));
 							}
 							return;
-						case IrcCode.ChannelCreatedOn:
+						case IrcCode.RPL_CHANNELCREATEDON:
 							if (e.Message.Parameters.Count == 3 && !this.IsServer &&
 								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
 							{
 								//this.Write("ServerInfo", string.Format("* Channel created on {0}", this.FormatTime(e.Message.Parameters[2])));
 							}
 							return;
-						case IrcCode.WhoisUser:
-						case IrcCode.WhoWas:
+						case IrcCode.RPL_WHOISUSER:
+						case IrcCode.RPL_WHOWASUSER:
 							if (e.Message.Parameters.Count == 6 && this.IsDefault)
 							{
 								this.Write("ServerInfo",
-									string.Format("{1} " + (e.Code == IrcCode.WhoWas ? "was" : "is") + " {2}@{3} {4} {5}",
+									string.Format("{1} " + (e.Code == IrcCode.RPL_WHOWASUSER ? "was" : "is") + " {2}@{3} {4} {5}",
 									(object[])e.Message.Parameters));
 								return;
 							}
 							break;
-						case IrcCode.WhoisChannels:
+						case IrcCode.RPL_WHOISCHANNELS:
 							if (e.Message.Parameters.Count == 3 && this.IsDefault)
 							{
 								this.Write("ServerInfo", string.Format("{1} is on {2}",
@@ -215,7 +215,7 @@ namespace Floe.UI
 								return;
 							}
 							break;
-						case IrcCode.WhoisServer:
+						case IrcCode.RPL_WHOISSERVER:
 							if (e.Message.Parameters.Count == 4 && this.IsDefault)
 							{
 								this.Write("ServerInfo", string.Format("{1} using {2} {3}",
@@ -223,7 +223,7 @@ namespace Floe.UI
 								return;
 							}
 							break;
-						case IrcCode.WhoisIdle:
+						case IrcCode.RPL_WHOISIDLE:
 							if (e.Message.Parameters.Count == 5 && this.IsDefault)
 							{
 								this.Write("ServerInfo", string.Format("{0} has been idle {1}, signed on {2}",
@@ -232,7 +232,7 @@ namespace Floe.UI
 								return;
 							}
 							break;
-						case IrcCode.Inviting:
+						case IrcCode.RPL_INVITING:
 							if (e.Message.Parameters.Count == 3 && this.IsDefault)
 							{
 								this.Write("ServerInfo", string.Format("Invited {0} to channel {1}",
@@ -482,7 +482,7 @@ namespace Floe.UI
 				var ircCode = (IrcCode)code;
 				switch(ircCode)
 				{
-					case IrcCode.NameReply:
+					case IrcCode.RPL_NAMEREPLY:
 						if (!_hasNames && e.Message.Parameters.Count >= 3 && this.IsChannel)
 						{
 							var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
@@ -499,7 +499,7 @@ namespace Floe.UI
 							}
 						}
 						break;
-					case IrcCode.EndOfNames:
+					case IrcCode.RPL_ENDOFNAMES:
 						if (!_hasNames && this.IsChannel)
 						{
 							_hasNames = true;
@@ -719,21 +719,34 @@ namespace Floe.UI
 						boxOutput.PageDown();
 						break;
 					case Key.Up:
-						if (_historyNode != null)
+						if (txtInput.GetLineIndexFromCharacterIndex(txtInput.CaretIndex) > 0)
 						{
-							if (_historyNode.Next != null)
+							e.Handled = false;
+							return;
+						}
+						else
+						{
+							if (_historyNode != null)
 							{
-								_historyNode = _historyNode.Next;
+								if (_historyNode.Next != null)
+								{
+									_historyNode = _historyNode.Next;
+									this.SetInputText(_historyNode.Value);
+								}
+							}
+							else if (_history.First != null)
+							{
+								_historyNode = _history.First;
 								this.SetInputText(_historyNode.Value);
 							}
 						}
-						else if (_history.First != null)
-						{
-							_historyNode = _history.First;
-							this.SetInputText(_historyNode.Value);
-						}
 						break;
 					case Key.Down:
+						if (txtInput.GetLineIndexFromCharacterIndex(txtInput.CaretIndex) < txtInput.LineCount - 1)
+						{
+							e.Handled = false;
+							return;
+						}
 						if (_historyNode != null)
 						{
 							_historyNode = _historyNode.Previous;

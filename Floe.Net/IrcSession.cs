@@ -569,7 +569,7 @@ namespace Floe.Net
 			if (int.TryParse(message.Command, out code))
 			{
 				var e = new IrcInfoEventArgs(message);
-				if (e.Code == IrcCode.Welcome)
+				if (e.Code == IrcCode.RPL_WELCOME)
 				{
 					if (e.Text.StartsWith("Welcome to the "))
 					{
