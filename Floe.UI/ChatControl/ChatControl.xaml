@@ -223,7 +223,7 @@
 					   MouseDoubleClick="boxOutput_MouseDoubleClick">
 				<local:ChatBox.Background>
 					<MultiBinding Converter="{StaticResource opacityConverter}">
-						<Binding Source="{StaticResource editBG}"/>
+						<Binding Source="{StaticResource ctrlBG}"/>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
 					</MultiBinding>
 				</local:ChatBox.Background>

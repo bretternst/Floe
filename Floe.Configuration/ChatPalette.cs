@@ -36,7 +36,6 @@ namespace Floe.UI
 			}
 		}
 
-
 		public bool ContainsKey(string key)
 		{
 			return _brushes.ContainsKey(key);

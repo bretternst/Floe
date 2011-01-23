@@ -285,8 +285,8 @@ namespace Floe.Configuration
 		{
 			get
 			{
-				var palette = new ChatPalette(Brushes.White);
 				var converter = new BrushConverter();
+				var palette = new ChatPalette(converter.ConvertFromString(this.Default) as SolidColorBrush);
 
 				palette.Add("Default", converter.ConvertFromString(this.Default) as SolidColorBrush);
 				palette.Add("Action", converter.ConvertFromString(this.Action) as SolidColorBrush);
