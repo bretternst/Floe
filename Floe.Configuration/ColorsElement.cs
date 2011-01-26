@@ -155,14 +155,14 @@ namespace Floe.Configuration
 			set { this["attention"] = value; OnPropertyChanged("Attention"); }
 		}
 
-		[ConfigurationProperty("noiseActivity", DefaultValue = "#425E8A")]
+		[ConfigurationProperty("noiseActivity", DefaultValue = "#647491")]
 		public string NoiseActivity
 		{
 			get { return (string)this["noiseActivity"]; }
 			set { this["noiseActivity"] = value; OnPropertyChanged("NoiseActivity"); }
 		}
 
-		[ConfigurationProperty("chatActivity", DefaultValue = "#AF8F5A")]
+		[ConfigurationProperty("chatActivity", DefaultValue = "#A58F5A")]
 		public string ChatActivity
 		{
 			get { return (string)this["chatActivity"]; }
