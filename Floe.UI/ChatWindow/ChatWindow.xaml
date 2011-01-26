@@ -270,7 +270,7 @@
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="TabItem">
-									<Border Background="Transparent">
+									<Border x:Name="border0" Background="Transparent">
 										<Border x:Name="border1">
 											<Border x:Name="border2" BorderThickness="0,0,1,0" BorderBrush="{StaticResource winTabSep}">
 												<Grid Height="25" HorizontalAlignment="Center" MinWidth="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinTabWidth}">
@@ -309,7 +309,7 @@
 										</Trigger>
 										<MultiTrigger>
 											<MultiTrigger.Conditions>
-												<Condition SourceName="border1" Property="Border.IsMouseOver" Value="True"/>
+												<Condition SourceName="border0" Property="Border.IsMouseOver" Value="True"/>
 												<Condition Property="IsSelected" Value="False"/>
 											</MultiTrigger.Conditions>
 											<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGdownGrad}"/>
