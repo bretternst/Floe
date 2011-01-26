@@ -309,7 +309,7 @@
 										</Trigger>
 										<MultiTrigger>
 											<MultiTrigger.Conditions>
-												<Condition Property="Border.IsMouseOver" Value="True"/>
+												<Condition SourceName="border1" Property="Border.IsMouseOver" Value="True"/>
 												<Condition Property="IsSelected" Value="False"/>
 											</MultiTrigger.Conditions>
 											<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGdownGrad}"/>

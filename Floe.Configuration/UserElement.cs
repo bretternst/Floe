@@ -57,6 +57,7 @@ namespace Floe.Configuration
 			set { this["fullName"] = value; }
 		}
 
+		// Deprecated
 		[ConfigurationProperty("hostName", DefaultValue = "")]
 		public string Hostname
 		{
@@ -69,6 +70,13 @@ namespace Floe.Configuration
 				return (string)this["hostName"];
 			}
 			set { this["hostName"] = value; }
+		}
+
+		[ConfigurationProperty("invisible", DefaultValue = false)]
+		public bool Invisible
+		{
+			get { return (bool)this["invisible"]; }
+			set { this["invisible"] = value; }
 		}
 	}
 }

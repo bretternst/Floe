@@ -26,8 +26,8 @@ namespace Floe.Net
 		public bool IsSecure { get; private set; }
 		public string Nickname { get; private set; }
 		public string Username { get; private set; }
-		public string Hostname { get; private set; }
 		public string FullName { get; private set; }
+		public bool Invisible { get; private set; }
 		public bool AutoReconnect { get; set; }
 		public string NetworkName { get; private set; }
 		public char[] UserModes { get; private set; }
@@ -78,7 +78,7 @@ namespace Floe.Net
 		}
 
 		public void Open(string server, int port, bool isSecure, string nickname,
-			string userName, string hostName, string fullname, string password, bool autoReconnect)
+			string userName, string fullname, bool invisible, string password, bool autoReconnect)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -90,8 +90,8 @@ namespace Floe.Net
 			this.Password = password;
 			this.IsSecure = isSecure;
 			this.Username = userName;
-			this.Hostname = hostName;
 			this.FullName = fullname;
+			this.Invisible = invisible;
 			this.NetworkName = this.Server;
 			this.UserModes = new char[0];
 			this.AutoReconnect = autoReconnect;
@@ -683,7 +683,7 @@ namespace Floe.Net
 			{
 				_conn.QueueMessage(new IrcMessage("PASS", this.Password));
 			}
-			_conn.QueueMessage(new IrcMessage("USER", this.Username, this.Hostname, "*", this.FullName));
+			_conn.QueueMessage(new IrcMessage("USER", this.Username, this.Invisible ? "4" : "0", "*", this.FullName));
 			_conn.QueueMessage(new IrcMessage("NICK", this.Nickname));
 		}
 
