@@ -12,6 +12,13 @@
 		<SolidColorBrush x:Key="winFGx0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0"/>
 		<SolidColorBrush x:Key="winFGx40" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.4"/>
 		<SolidColorBrush x:Key="winFGx80" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.8"/>
+		<SolidColorBrush x:Key="alertBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Alert}"/>
+		<SolidColorBrush x:Key="noiseBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NoiseActivity}"/>
+		<SolidColorBrush x:Key="chatBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.ChatActivity}"/>
+		<LinearGradientBrush x:Key="winFGdownGrad" StartPoint="0,0" EndPoint="0,1" Opacity="0.2">
+			<GradientStop Offset="0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
+			<GradientStop Offset="1" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
+		</LinearGradientBrush>
 		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
 
 		<Style x:Key="uiButtonStyle" TargetType="Button">

@@ -105,7 +105,11 @@ namespace Floe.UI
 								attn = true;
 								if (_window != null)
 								{
-									Interop.WindowHelper.FlashWindow(_window);
+									App.Alert(_window, string.Format("You received an alert from {0}", this.Target.Name));
+								}
+								if (this.VisualParent == null)
+								{
+									this.NotifyState = NotifyState.Alert;
 								}
 							}
 

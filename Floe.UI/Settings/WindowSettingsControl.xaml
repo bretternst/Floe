@@ -45,5 +45,8 @@
 				<Label Canvas.Left="13" Canvas.Top="49" Content="{Binding ElementName=sldChromeOpacity, Path=Value, Converter={StaticResource doubleToPercentConverter}}" Height="28" Name="label9" />
 			</Canvas>
 		</GroupBox>
+		<Slider Canvas.Left="16" Canvas.Top="149" Height="23" IsSnapToTickEnabled="True" LargeChange="10" Maximum="250" Minimum="0" Name="sldMinTabWidth" SmallChange="5" TickFrequency="5" TickPlacement="None" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinTabWidth, Mode=TwoWay}" Width="85" />
+		<Label Canvas.Left="16" Canvas.Top="127" Content="Min Tab Width" Height="28" Name="label10" />
+		<Label Canvas.Left="109" Canvas.Top="144" Content="{Binding ElementName=sldMinTabWidth, Path=Value}" Height="28" Name="label11" />
 	</Canvas>
 </UserControl>

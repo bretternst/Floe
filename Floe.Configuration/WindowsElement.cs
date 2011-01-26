@@ -62,6 +62,13 @@ namespace Floe.Configuration
 			set { this["tabStripPosition"] = value; this.OnPropertyChanged("TabStripPosition"); }
 		}
 
+		[ConfigurationProperty("minTabWidth", DefaultValue = 75.0)]
+		public double MinTabWidth
+		{
+			get { return (double)this["minTabWidth"]; }
+			set { this["minTabWidth"] = value; this.OnPropertyChanged("MinTabWidth"); }
+		}
+
 		[ConfigurationProperty("defaultQueryDetached", DefaultValue = false)]
 		public bool DefaultQueryDetached
 		{

@@ -130,6 +130,16 @@ namespace Floe.UI
 			return result;
 		}
 
+		public static void Alert(Window window, string text)
+		{
+			Interop.WindowHelper.FlashWindow(window);
+			var chatWindow = window as ChatWindow;
+			if (chatWindow != null)
+			{
+				chatWindow.Alert(text);
+			}
+		}
+
 		public static void BrowseTo(string url)
 		{
             try

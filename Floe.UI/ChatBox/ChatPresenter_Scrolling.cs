@@ -72,22 +72,18 @@ namespace Floe.UI
 
 		public void LineLeft()
 		{
-			throw new NotImplementedException();
 		}
 
 		public void LineRight()
 		{
-			throw new NotImplementedException();
 		}
 
 		public void PageLeft()
 		{
-			throw new NotImplementedException();
 		}
 
 		public void PageRight()
 		{
-			throw new NotImplementedException();
 		}
 
 		public void MouseWheelLeft()

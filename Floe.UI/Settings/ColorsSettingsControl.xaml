@@ -134,6 +134,9 @@
 				<Button Content="New Marker" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 				<Button Content="Old Marker" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 					<Button Content="Attention" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+					<Button Content="Noise Arrow" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NoiseActivity, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+					<Button Content="Chat Arrow" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.ChatActivity, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+					<Button Content="Alert Arrow" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Alert, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 					<Button Content="Color 0" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color0, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 					<Button Content="Color 1" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color1, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 					<Button Content="Color 2" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color2, Mode=TwoWay}" Style="{StaticResource ColorButton}" />

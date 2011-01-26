@@ -186,13 +186,20 @@ namespace Floe.UI
 
 			if (this.VisualParent == null)
 			{
-				if (!string.IsNullOrEmpty(nick))
+				if (this.IsNickname)
 				{
-					this.NotifyState = NotifyState.NewMessage;
+					// Activity in PM window
+					this.NotifyState = NotifyState.Alert;
+				}
+				else if (!string.IsNullOrEmpty(nick) && this.NotifyState != NotifyState.Alert)
+				{
+					// Chat activity in channel
+					this.NotifyState = NotifyState.ChatActivity;
 				}
 				else if (this.NotifyState == NotifyState.None)
 				{
-					this.NotifyState = NotifyState.NewActivity;
+					// Other activity in channel / server
+					this.NotifyState = NotifyState.NoiseActivity;
 				}
 			}
 

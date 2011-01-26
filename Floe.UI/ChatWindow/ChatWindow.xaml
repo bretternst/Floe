@@ -273,21 +273,22 @@
 									<Border Background="Transparent">
 										<Border x:Name="border1">
 											<Border x:Name="border2" BorderThickness="0,0,1,0" BorderBrush="{StaticResource winTabSep}">
-												<Grid Height="25" HorizontalAlignment="Center">
+												<Grid Height="25" HorizontalAlignment="Center" MinWidth="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinTabWidth}">
 													<Grid.RowDefinitions>
 														<RowDefinition x:Name="row1" Height="7"/>
 														<RowDefinition x:Name="row2" Height="*"/>
 													</Grid.RowDefinitions>
 													<Grid.ColumnDefinitions>
 														<ColumnDefinition/>
+														<ColumnDefinition Width="*"/>
 														<ColumnDefinition/>
 													</Grid.ColumnDefinitions>
-													<Polygon x:Name="arrow" Grid.ColumnSpan="2" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Points="0,0 10,6, 20,0"
-														 Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" Opacity="0"/>
+													<Polygon x:Name="arrow" Grid.ColumnSpan="3" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Points="0,0 10,6, 20,0"
+														 Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" Visibility="Hidden"/>
 													<ContentPresenter Grid.Column="0" Grid.Row="1" Margin="5,0,10,0" x:Name="ContentSite" VerticalAlignment="Bottom" HorizontalAlignment="Center"
 																  ContentSource="Header" RecognizesAccessKey="True"/>
-													<Button x:Name="btnTabClose" Margin="0,0,3,0" Style="{StaticResource tabCloseButtonStyle}"
-														Command="local:ChatWindow.CloseTabCommand" Grid.Column="1" Grid.Row="1"
+													<Button x:Name="btnTabClose" Margin="0,0,4,0" Style="{StaticResource tabCloseButtonStyle}"
+														Command="local:ChatWindow.CloseTabCommand" Grid.Column="2" Grid.Row="1"
 														Height="Auto" VerticalAlignment="Bottom"
 														CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Control.Context}"/>
 												</Grid>
@@ -304,45 +305,48 @@
 											<Setter Property="Points" TargetName="arrow" Value="0,6 10,0 20,6"/>
 										</DataTrigger>
 										<Trigger Property="IsSelected" Value="True">
-											<Setter Property="Opacity" TargetName="arrow" Value="1"/>
+											<Setter Property="Visibility" TargetName="arrow" Value="Visible"/>
 										</Trigger>
 										<MultiTrigger>
 											<MultiTrigger.Conditions>
 												<Condition Property="Border.IsMouseOver" Value="True"/>
 												<Condition Property="IsSelected" Value="False"/>
 											</MultiTrigger.Conditions>
-											<Setter Property="Opacity" TargetName="arrow" Value="0.4"/>
+											<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGdownGrad}"/>
 										</MultiTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NewActivity">
-											<DataTrigger.EnterActions>
-												<BeginStoryboard x:Name="animNewActivity">
-													<BeginStoryboard.Storyboard>
-														<Storyboard RepeatBehavior="Forever">
-															<DoubleAnimation Storyboard.TargetName="arrow"
-																			 Storyboard.TargetProperty="Opacity"
-																			 From="0" To="0.5" Duration="0:0:1" AutoReverse="True"/>
-														</Storyboard>
-													</BeginStoryboard.Storyboard>
-												</BeginStoryboard>
-											</DataTrigger.EnterActions>
-											<DataTrigger.ExitActions>
-												<RemoveStoryboard BeginStoryboardName="animNewActivity"/>
-											</DataTrigger.ExitActions>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NoiseActivity">
+											<DataTrigger.Setters>
+												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource noiseBrush}"/>
+												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource noiseBrush}"/>
+												<Setter TargetName="arrow" Property="Visibility" Value="Visible"/>
+											</DataTrigger.Setters>
 										</DataTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NewMessage">
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="ChatActivity">
+											<DataTrigger.Setters>
+												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource chatBrush}"/>
+												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource chatBrush}"/>
+												<Setter TargetName="arrow" Property="Visibility" Value="Visible"/>
+											</DataTrigger.Setters>
+										</DataTrigger>
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="Alert">
+											<DataTrigger.Setters>
+												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource alertBrush}"/>
+												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource alertBrush}"/>
+											</DataTrigger.Setters>
 											<DataTrigger.EnterActions>
-												<BeginStoryboard x:Name="animNewMessage">
+												<BeginStoryboard x:Name="animAlert">
 													<BeginStoryboard.Storyboard>
-														<Storyboard RepeatBehavior="Forever">
-															<DoubleAnimation Storyboard.TargetName="arrow"
-																			 Storyboard.TargetProperty="Opacity"
-																			 From="0" To="0.8" Duration="0:0:1" AutoReverse="True"/>
+														<Storyboard RepeatBehavior="Forever" AutoReverse="True" Storyboard.TargetName="arrow" Storyboard.TargetProperty="Visibility">
+															<ObjectAnimationUsingKeyFrames Duration="0:0:1" RepeatBehavior="Forever">
+																<DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}"/>
+																<DiscreteObjectKeyFrame KeyTime="0:0:0.5" Value="{x:Static Visibility.Hidden}"/>
+															</ObjectAnimationUsingKeyFrames>
 														</Storyboard>
 													</BeginStoryboard.Storyboard>
 												</BeginStoryboard>
 											</DataTrigger.EnterActions>
 											<DataTrigger.ExitActions>
-												<RemoveStoryboard BeginStoryboardName="animNewMessage"/>
+												<RemoveStoryboard BeginStoryboardName="animAlert"/>
 											</DataTrigger.ExitActions>
 										</DataTrigger>
 									</ControlTemplate.Triggers>

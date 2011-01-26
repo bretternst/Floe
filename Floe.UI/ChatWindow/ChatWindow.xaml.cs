@@ -113,6 +113,14 @@ namespace Floe.UI
 			this.BeginInvoke(() => this.SwitchToPage(control.Context));
 		}
 
+		public void Alert(string text)
+		{
+			if (_notifyIcon != null && _notifyIcon.IsVisible)
+			{
+				_notifyIcon.Show("IRC Alert", text);
+			}
+		}
+
 		private void QuitAllSessions()
 		{
 			foreach (var page in this.Items.Where((i) => i.Control.Context.Target == null).Select((i) => i.Control))

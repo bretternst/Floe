@@ -70,13 +70,16 @@ namespace Floe.UI
 			if (_isSelecting)
 			{
 				Mouse.OverrideCursor = Cursors.IBeam;
-				_selEnd = this.GetCharIndexAt(e.GetPosition(this));
-				this.InvalidateVisual();
+				int newSelEnd = this.GetCharIndexAt(e.GetPosition(this));
+				if (newSelEnd != _selEnd)
+				{
+					_selEnd = newSelEnd;
+					this.InvalidateVisual();
+				}
 				e.Handled = true;
 			}
 			else if (_isDragging)
 			{
-
 				this.ColumnWidth = Math.Max(0.0, Math.Min(this.ViewportWidth / 2.0, p.X));
 				this.InvalidateAll(false);
 			}
