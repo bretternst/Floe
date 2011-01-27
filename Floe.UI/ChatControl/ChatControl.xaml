@@ -77,6 +77,7 @@
 		</ContextMenu>
 		<ContextMenu x:Key="cmServer">
 			<MenuItem Header="Connect" Click="connect_Click" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name"/>
+			<MenuItem Command="local:ChatWindow.NewTabCommand" CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
