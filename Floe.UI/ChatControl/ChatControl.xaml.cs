@@ -146,7 +146,7 @@ namespace Floe.UI
 				!string.IsNullOrEmpty(this.Session.Nickname) ?
 					this.Session.Nickname : App.Settings.Current.User.Nickname,
 				App.Settings.Current.User.Username,
-				App.Settings.Current.User.Hostname,
+				App.Settings.Current.User.FullName,
 				App.Settings.Current.User.Invisible,
 				password,
 				autoReconnect);
