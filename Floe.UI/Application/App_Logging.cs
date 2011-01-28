@@ -37,7 +37,7 @@ namespace Floe.UI
 
 	public class LogFileHandle : IDisposable
 	{
-		FileStream _logFile;
+		private FileStream _logFile;
 
 		public Queue<ChatLine> Buffer { get; private set; }
 
@@ -94,30 +94,6 @@ namespace Floe.UI
 			}
 		}
 
-		private ChatLine Parse(string s)
-		{
-			string[] parts = s.Split('\t');
-			if (parts.Length != 5)
-			{
-				return null;
-			}
-
-			long dt;
-			if (!long.TryParse(parts[1], out dt))
-			{
-				return null;
-			}
-
-			int hashCode;
-			if (!int.TryParse(parts[2], out hashCode))
-			{
-				return null;
-			}
-
-			var time = DateTime.FromBinary(dt);
-			return new ChatLine(parts[0], time, hashCode, parts[3] == "*" ? null : parts[3], parts[4], ChatMarker.None);
-		}
-
 		public void WriteLine(ChatLine line)
 		{
 			if (_logFile != null)
@@ -148,6 +124,30 @@ namespace Floe.UI
 			{
 				_logFile.Dispose();
 			}
+		}
+
+		private ChatLine Parse(string s)
+		{
+			string[] parts = s.Split('\t');
+			if (parts.Length != 5)
+			{
+				return null;
+			}
+
+			long dt;
+			if (!long.TryParse(parts[1], out dt))
+			{
+				return null;
+			}
+
+			int hashCode;
+			if (!int.TryParse(parts[2], out hashCode))
+			{
+				return null;
+			}
+
+			var time = DateTime.FromBinary(dt);
+			return new ChatLine(parts[0], time, hashCode, parts[3] == "*" ? null : parts[3], parts[4], ChatMarker.None);
 		}
 	}
 }

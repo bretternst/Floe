@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -17,7 +17,7 @@ namespace Floe.Net
 
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
-		private Queue<IrcMessage> _writeQueue;
+		private ConcurrentQueue<IrcMessage> _writeQueue;
 		private ManualResetEvent _writeWaitHandle;
 
 		public event EventHandler Connected;
@@ -37,17 +37,16 @@ namespace Floe.Net
 			_server = server;
 			_port = port;
 			_isSecure = isSecure;
-			_writeQueue = new Queue<IrcMessage>();
 		}
 
 		public void Open()
 		{
-			if (_tcpClient != null && _tcpClient.Connected)
+			if (_socketThread != null && _socketThread.IsAlive)
 			{
-				throw new InvalidOperationException("The connection is already open.");
+				return;
 			}
 
-			_writeQueue.Clear();
+			_writeQueue = new ConcurrentQueue<IrcMessage>();
 			_socketThread = new Thread(new ThreadStart(this.SocketLoop));
 			_socketThread.IsBackground = true;
 			_socketThread.Start();
@@ -75,10 +74,12 @@ namespace Floe.Net
 
 		public void QueueMessage(IrcMessage message)
 		{
-			lock (_writeQueue)
+			if (_writeQueue == null)
 			{
-				_writeQueue.Enqueue(message);
+				throw new InvalidOperationException("The connection is not open.");
 			}
+
+			_writeQueue.Enqueue(message);
 			if (_writeWaitHandle != null)
 			{
 				_writeWaitHandle.Set();
@@ -128,7 +129,6 @@ namespace Floe.Net
 			}
 
 			_writeWaitHandle = new ManualResetEvent(false);
-			_writeQueue = new Queue<IrcMessage>();
 
 			this.OnConnected();
 
@@ -171,8 +171,7 @@ namespace Floe.Net
 											message = IrcMessage.Parse(input.ToString());
 											this.OnMessageReceived(message);
 
-											input.Length = 0;
-//											input.Clear();
+											input.Clear();
 										}
 									}
 									else if (c != 0xd && c != 0xa)
@@ -184,28 +183,24 @@ namespace Floe.Net
 							}
 							break;
 						case 1:
-							lock (_writeQueue)
-							{
-								while (_writeQueue.Count > 0)
-								{
-									message = _writeQueue.Dequeue();
-									if (message.Command == null)
-									{
-										_tcpClient.Close();
-										break;
-									}
-									string output = message.ToString();
-									count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
-									count = Math.Min(510, count);
-									writeBuffer[count] = 0xd;
-									writeBuffer[count + 1] = 0xa;
-
-									stream.Write(writeBuffer, 0, count + 2);
-
-									this.OnMessageSent(message);
-								}
-							}
 							_writeWaitHandle.Reset();
+							while (_writeQueue.TryDequeue(out message))
+							{
+								if (message.Command == null)
+								{
+									_tcpClient.Close();
+									break;
+								}
+								string output = message.ToString();
+								count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
+								count = Math.Min(510, count);
+								writeBuffer[count] = 0xd;
+								writeBuffer[count + 1] = 0xa;
+
+								stream.Write(writeBuffer, 0, count + 2);
+
+								this.OnMessageSent(message);
+							}
 							break;
                         case WaitHandle.WaitTimeout:
 							OnHeartbeat();

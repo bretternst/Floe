@@ -22,7 +22,7 @@ namespace Floe.UI
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
 			var control = tabsChat.SelectedContent as ChatControl;
-			this.BeginInvoke(() => App.Create(control.Session, new IrcTarget((string)e.Parameter), true));
+			App.Create(control.Session, new IrcTarget((string)e.Parameter), true);
 		}
 
 		private void ExecuteCloseTab(object sender, ExecutedRoutedEventArgs e)
@@ -63,7 +63,7 @@ namespace Floe.UI
 
 		private void ExecuteNewTab(object sender, ExecutedRoutedEventArgs e)
 		{
-			this.AddPage(new ChatContext(new IrcSession(), null), true);
+			this.AddPage(new ChatContext(new IrcSession(this.Dispatcher), null), true);
 		}
 
 		private void ExecuteDetach(object sender, ExecutedRoutedEventArgs e)

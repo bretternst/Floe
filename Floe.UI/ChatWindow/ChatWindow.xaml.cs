@@ -12,6 +12,9 @@ namespace Floe.UI
 {
 	public partial class ChatWindow : Window
 	{
+		public ObservableCollection<ChatTabItem> Items { get; private set; }
+		public ChatControl ActiveControl { get { return tabsChat.SelectedContent as ChatControl; } }
+
 		public class ChatTabItem : TabItem
 		{
 			public ChatControl Control { get { return this.Content as ChatControl; } }
@@ -21,9 +24,6 @@ namespace Floe.UI
 				this.Content = content;
 			}
 		}
-
-		public ObservableCollection<ChatTabItem> Items { get; private set; }
-		public ChatControl ActiveControl { get { return tabsChat.SelectedContent as ChatControl; } }
 
 		public ChatWindow()
 		{
@@ -110,7 +110,7 @@ namespace Floe.UI
 			}
 
 			this.SetBindings(control);
-			this.BeginInvoke(() => this.SwitchToPage(control.Context));
+			this.SwitchToPage(control.Context);
 		}
 
 		public void Alert(string text)

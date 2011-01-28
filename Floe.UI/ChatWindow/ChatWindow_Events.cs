@@ -13,59 +13,47 @@ namespace Floe.UI
 
 		private void Session_SelfJoined(object sender, IrcJoinEventArgs e)
 		{
-			this.Invoke(() =>
+			var context = new ChatContext((IrcSession)sender, e.Channel);
+			var state = App.Settings.Current.Windows.States[context.Key];
+			if (state.IsDetached)
 			{
-				var context = new ChatContext((IrcSession)sender, e.Channel);
-				var state = App.Settings.Current.Windows.States[context.Key];
-				if (state.IsDetached)
-				{
-					var window = new ChannelWindow(new ChatControl(context));
-					window.Show();
-				}
-				else
-				{
-					this.AddPage(context, true);
-				}
-			});
+				var window = new ChannelWindow(new ChatControl(context));
+				window.Show();
+			}
+			else
+			{
+				this.AddPage(context, true);
+			}
 		}
 
 		private void Session_SelfParted(object sender, IrcPartEventArgs e)
 		{
-			this.Invoke(() =>
+			var context = this.FindPage((IrcSession)sender, e.Channel);
+			if (context != null)
 			{
-				var context = this.FindPage((IrcSession)sender, e.Channel);
-				if (context != null)
-				{
-					this.RemovePage(context);
-				}
-			});
+				this.RemovePage(context);
+			}
 		}
 
 		private void Session_SelfKicked(object sender, IrcKickEventArgs e)
 		{
-			this.Invoke(() =>
+			var context = this.FindPage((IrcSession)sender, e.Channel);
+			if (context != null)
 			{
-				var context = this.FindPage((IrcSession)sender, e.Channel);
-				if (context != null)
-				{
-					this.RemovePage(context);
-				}
-			});
+				this.RemovePage(context);
+			}
 		}
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)
 			{
-				this.Invoke(() =>
-					{
-						foreach (var p in (from i in this.Items
-										   where i.Control.Context.Session == sender && i.Control.Context.Target != null
-										   select i.Control).ToArray())
-						{
-							this.RemovePage(p.Context);
-						}
-					});
+				foreach (var p in (from i in this.Items
+								   where i.Control.Context.Session == sender && i.Control.Context.Target != null
+								   select i.Control).ToArray())
+				{
+					this.RemovePage(p.Context);
+				}
 			}
 		}
 
@@ -115,21 +103,18 @@ namespace Floe.UI
 				var target = new IrcTarget(e.Message.Parameters[0]);
 				if (!target.IsChannel && e.Message.From is IrcPeer)
 				{
-					this.Invoke(() =>
-						{
-							if (App.Create(sender as IrcSession, new IrcTarget((IrcPeer)e.Message.From), false)
-								&& _notifyIcon != null && _notifyIcon.IsVisible)
-							{
-								_notifyIcon.Show("IRC Message", string.Format("You received a message from {0}.", ((IrcPeer)e.Message.From).Nickname));
-							}
-						});
+					if (App.Create(sender as IrcSession, new IrcTarget((IrcPeer)e.Message.From), false)
+						&& _notifyIcon != null && _notifyIcon.IsVisible)
+					{
+						_notifyIcon.Show("IRC Message", string.Format("You received a message from {0}.", ((IrcPeer)e.Message.From).Nickname));
+					}
 				}
 			}
 		}
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			this.AddPage(new ChatContext(new IrcSession(), null), true);
+			this.AddPage(new ChatContext(new IrcSession(this.Dispatcher), null), true);
 
 			if (Application.Current.MainWindow == this)
 			{
@@ -145,7 +130,7 @@ namespace Floe.UI
 				{
 					if (i++ > 0)
 					{
-						this.AddPage(new ChatContext(new IrcSession(), null), false);
+						this.AddPage(new ChatContext(new IrcSession(this.Dispatcher), null), false);
 					}
 					this.Items[this.Items.Count - 1].Control.Connect(server);
 				}

@@ -71,11 +71,8 @@ namespace Floe.UI
 						if (msg.Parameters.Count == 3 &&
 							this.Target.Equals(new IrcTarget(msg.Parameters[1])))
 						{
-							this.Invoke(() =>
-							{
-								_channelModes = msg.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
-								this.SetTitle();
-							});
+							_channelModes = msg.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
+							this.SetTitle();
 							return true;
 						}
 						return false;

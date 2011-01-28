@@ -60,13 +60,14 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
+    <ApplicationDefinition Include="Application\App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="App_Ignore.cs" />
-    <Compile Include="App_Logging.cs" />
-    <Compile Include="App_Patterns.cs" />
+    <Compile Include="Application\App_Ignore.cs" />
+    <Compile Include="Application\App_Logging.cs" />
+    <Compile Include="Application\App_Patterns.cs" />
+    <Compile Include="Application\App_Resources.cs" />
     <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
       <DependentUpon>ChannelWindow.xaml</DependentUpon>
     </Compile>
@@ -129,7 +130,7 @@
     <Compile Include="Settings\UserSettingsControl.xaml.cs">
       <DependentUpon>UserSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="App.xaml.cs">
+    <Compile Include="Application\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>

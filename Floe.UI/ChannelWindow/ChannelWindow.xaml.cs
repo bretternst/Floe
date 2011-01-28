@@ -77,7 +77,7 @@ namespace Floe.UI
 		{
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)
 			{
-				this.Invoke(() => this.Close());
+				this.Close();
 			}
 		}
 	}

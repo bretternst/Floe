@@ -153,25 +153,19 @@ namespace Floe.UI
 					_notifyIcon = new NotifyIcon(this, App.ApplicationIcon);
 					_notifyIcon.DoubleClicked += (sender, args) =>
 						{
-							this.BeginInvoke(() =>
-								{
-									this.Show();
-									this.WindowState = _oldWindowState;
-									this.Activate();
-									_notifyIcon.Hide();
-								});
+							this.Show();
+							this.WindowState = _oldWindowState;
+							this.Activate();
+							_notifyIcon.Hide();
 						};
 					_notifyIcon.RightClicked += (sender, args) =>
 						{
-							this.BeginInvoke(() =>
-								{
-									var menu = this.FindResource("NotifyMenu") as ContextMenu;
-									if (menu != null)
-									{
-										menu.IsOpen = true;
-										System.Windows.Input.CommandManager.InvalidateRequerySuggested();
-									}
-								});
+							var menu = this.FindResource("NotifyMenu") as ContextMenu;
+							if (menu != null)
+							{
+								menu.IsOpen = true;
+								System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+							}
 						};
 				}
 				this.Hide();

@@ -197,21 +197,19 @@ namespace Floe.UI
 		private void InvalidateAll(bool styleChanged)
 		{
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
-			// Surely there's a better way to measure the height of a font?
-			var sample = formatter.Format("|", null, this.ViewportWidth, this.Foreground, this.Background, TextWrapping.NoWrap);
-			_lineHeight = sample.First().Height;
+			_lineHeight = Math.Ceiling(this.FontSize * this.Typeface.FontFamily.LineSpacing);
 
 			if (styleChanged)
 			{
 				var offset = 0;
-				_blocks.ForEach((b) =>
+				foreach (var b in _blocks)
 				{
 					b.CharStart = offset;
 					b.TimeString = this.FormatTime(b.Source.Time);
 					b.NickString = this.FormatNick(b.Source.Nick);
 					offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
 					b.CharEnd = offset;
-				});
+				}
 			}
 
 			this.StartProcessingText();
