@@ -113,7 +113,7 @@ namespace Floe.UI
 					return;
 				}
 				var target = new IrcTarget(e.Message.Parameters[0]);
-				if (target.Type == IrcTargetType.Nickname && e.Message.From is IrcPeer)
+				if (!target.IsChannel && e.Message.From is IrcPeer)
 				{
 					this.Invoke(() =>
 						{

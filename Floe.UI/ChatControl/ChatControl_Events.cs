@@ -93,9 +93,8 @@ namespace Floe.UI
 
 			if (!this.IsServer)
 			{
-				if ((this.Target.Type == IrcTargetType.Channel && this.Target.Equals(e.To)) ||
-					(this.Target.Type == IrcTargetType.Nickname && this.Target.Equals(new IrcTarget(e.From)) &&
-                    e.To.Type == IrcTargetType.Nickname))
+				if ((this.Target.IsChannel && this.Target.Equals(e.To)) ||
+					(!this.Target.IsChannel && this.Target.Equals(new IrcTarget(e.From)) && !e.To.IsChannel))
 				{
 					this.BeginInvoke(() =>
 						{
@@ -114,17 +113,13 @@ namespace Floe.UI
 							}
 
 							this.Write("Default", e.From, e.Text, attn);
-							if (this.Target.Type == IrcTargetType.Nickname)
+							if (!this.Target.IsChannel)
 							{
 								if (e.From.Prefix != _prefix)
 								{
 									_prefix = e.From.Prefix;
 									this.SetTitle();
 								}
-							}
-
-							if (this.Target.Type == IrcTargetType.Nickname)
-							{
 								Interop.WindowHelper.FlashWindow(_window);
 							}
 						});
@@ -290,7 +285,7 @@ namespace Floe.UI
 			this.BeginInvoke(() =>
 				{
 					if (((this.IsChannel && this.Target.Equals(e.To)) ||
-						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From)) && e.To.Type == IrcTargetType.Nickname))
+						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From)) && !e.To.IsChannel))
 						&& e.Command.Command == "ACTION")
 					{
 						string text = string.Join(" ", e.Command.Arguments);

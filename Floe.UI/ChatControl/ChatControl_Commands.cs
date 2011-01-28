@@ -238,7 +238,14 @@ namespace Floe.UI
 				}
 				if (command.Length > 0)
 				{
-					this.Execute(command.ToUpperInvariant(), args);
+					try
+					{
+						this.Execute(command.ToUpperInvariant(), args);
+					}
+					catch (CommandException ex)
+					{
+						this.Write("Error", ex.Message);
+					}
 				}
 			}
 			else
@@ -375,8 +382,12 @@ namespace Floe.UI
 				case "MODE":
 					args = Split(command, arguments, 1, 2);
 					var target = new IrcTarget(args[0]);
-					if (target.Type == IrcTargetType.Nickname)
+					if (!target.IsChannel)
 					{
+						if (!this.Session.IsSelf(target))
+						{
+							throw new CommandException("Can't change modes for another user.");
+						}
 						if (args.Length > 1)
 						{
 							this.Session.Mode(args[1]);
@@ -425,7 +436,7 @@ namespace Floe.UI
 						this.Session.Quit("Changing servers");
 					}
 					this.Perform = "";
-					this.Connect(args[0], port, password, useSsl, false);
+					this.Connect(args[0], port, useSsl, false, password);
 					break;
 				case "ME":
 				case "ACTION":
@@ -566,17 +577,17 @@ namespace Floe.UI
 		private string[] Split(string command, string args, int minArgs, int maxArgs, bool isChannelRequired)
 		{
 			string[] parts = ChatControl.Split(args, maxArgs);
-			if (isChannelRequired && (parts.Length < 1 || !IrcTarget.IsChannel(parts[0])))
+			if (isChannelRequired && (parts.Length < 1 || !IrcTarget.IsChannelName(parts[0])))
 			{
 				if (!this.IsChannel)
 				{
-					throw new IrcException("Not on a channel.");
+					throw new CommandException("Not on a channel.");
 				}
 				parts = new[] { this.Target.Name }.Union(ChatControl.Split(args, maxArgs - 1)).ToArray();
 			}
 			if (parts.Length < minArgs)
 			{
-				throw new IrcException(string.Format("{0} requires {1} parameters.", command, minArgs));
+				throw new CommandException(string.Format("{0} requires {1} parameters.", command, minArgs));
 			}
 			return parts;
 		}

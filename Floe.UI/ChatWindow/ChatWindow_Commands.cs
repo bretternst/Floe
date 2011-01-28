@@ -52,7 +52,7 @@ namespace Floe.UI
 				}
 				else
 				{
-					if(context.Target.Type == IrcTargetType.Channel && context.Session.State != IrcSessionState.Disconnected)
+					if(context.Target.IsChannel && context.Session.State != IrcSessionState.Disconnected)
 					{
 						context.Session.Part(context.Target.Name);
 					}

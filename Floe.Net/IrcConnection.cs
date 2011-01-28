@@ -169,20 +169,8 @@ namespace Floe.Net
 										if (input.Length > 0)
 										{
 											message = IrcMessage.Parse(input.ToString());
-											try
-											{
-												this.OnMessageReceived(message);
-											}
-#if DEBUG
-											catch (IrcException ex)
-											{
-												System.Diagnostics.Debug.WriteLine("Unhandled IrcException: {0}", ex.Message);
-											}
-#else
-											catch(IrcException)
-											{
-											}
-#endif
+											this.OnMessageReceived(message);
+
 											input.Length = 0;
 //											input.Clear();
 										}

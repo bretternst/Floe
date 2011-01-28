@@ -224,13 +224,6 @@ namespace Floe.UI
 				{
 					LogUnhandledException(e.ExceptionObject);
 				};
-			this.Dispatcher.UnhandledException += (sender, e) =>
-				{
-					if (e.Exception is IrcException)
-					{
-						e.Handled = true;
-					}
-				};
 		}
 
 		private void OpenWindow()

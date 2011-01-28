@@ -12,6 +12,18 @@ namespace Floe.UI
 {
 	public partial class ChatControl : UserControl, IDisposable
 	{
+		#region Nested types
+
+		private class CommandException : Exception
+		{
+			public CommandException(string message)
+				: base(message)
+			{
+			}
+		}
+
+		#endregion
+
 		private const double MinNickListWidth = 50.0;
 
 		private LinkedList<string> _history;
@@ -89,8 +101,8 @@ namespace Floe.UI
 		public IrcSession Session { get { return this.Context.Session; } }
 		public IrcTarget Target { get { return this.Context.Target; } }
 		public bool IsServer { get { return this.Target == null; } }
-		public bool IsChannel { get { return this.Target != null && this.Target.Type == IrcTargetType.Channel; } }
-		public bool IsNickname { get { return this.Target != null && this.Target.Type == IrcTargetType.Nickname; } }
+		public bool IsChannel { get { return this.Target != null && this.Target.IsChannel; } }
+		public bool IsNickname { get { return this.Target != null && !this.Target.IsChannel; } }
 		public string Perform { get; set; }
 
 		public static readonly DependencyProperty HeaderProperty =
@@ -137,31 +149,24 @@ namespace Floe.UI
 		{
 			this.Session.AutoReconnect = false;
 			this.Perform = server.OnConnect;
-			this.Connect(server.Hostname, server.Port, server.Password, server.IsSecure, server.AutoReconnect);
+			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect, server.Password);
 		}
 
-		public void Connect(string hostname, int port, string password, bool useSsl, bool autoReconnect)
+		public void Connect(string server, int port, bool useSsl, bool autoReconnect, string password)
 		{
-			this.Session.Open(hostname, port, useSsl,
+			this.Session.Open(server, port, useSsl,
 				!string.IsNullOrEmpty(this.Session.Nickname) ?
 					this.Session.Nickname : App.Settings.Current.User.Nickname,
 				App.Settings.Current.User.Username,
-				App.Settings.Current.User.Hostname,
-				App.Settings.Current.User.Invisible,
+				App.Settings.Current.User.FullName,
+				autoReconnect,
 				password,
-				autoReconnect);
+				App.Settings.Current.User.Invisible);
 		}
 
 		private void ParseInput(string text)
 		{
-			try
-			{
-				this.Execute(text, (Keyboard.Modifiers & ModifierKeys.Shift) > 0);
-			}
-			catch (IrcException ex)
-			{
-				this.Write("Error", ex.Message);
-			}
+			this.Execute(text, (Keyboard.Modifiers & ModifierKeys.Shift) > 0);
 		}
 
 		private void Write(string styleKey, int nickHashCode, string nick, string text, bool attn)
@@ -247,12 +252,12 @@ namespace Floe.UI
 						userModes, this.Session.NetworkName);
 				}
 			}
-			else if (this.Target.Type == IrcTargetType.Nickname)
+			else if (!this.Target.IsChannel)
 			{
 				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4}", App.Product, this.Session.Nickname,
 					userModes, this.Session.NetworkName, _prefix);
 			}
-			else if (this.Target.Type == IrcTargetType.Channel)
+			else if (this.Target.IsChannel)
 			{
 				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4} ({5}) - {6}", App.Product, this.Session.Nickname,
 					userModes, this.Session.NetworkName, this.Target.ToString(), channelModes, _topic);
