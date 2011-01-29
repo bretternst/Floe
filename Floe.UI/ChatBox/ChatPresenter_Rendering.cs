@@ -13,8 +13,8 @@ namespace Floe.UI
 	{
 		private const double SeparatorPadding = 6.0;
 		private const int TextProcessingBatchSize = 50;
-		private const float MinNickBrightness = .3f;
-		private const float MinNickBrightnessDiff = .3f;
+		private const float MinNickBrightness = .2f;
+		private const float NickBrightnessBand = .2f;
 
 		private class Block
 		{
@@ -85,40 +85,10 @@ namespace Floe.UI
 
 		private Brush GetNickColor(int hashCode)
 		{
-			var rand = new Random(hashCode + this.NicknameColorSeed);
+			var rand = new Random(hashCode ^ this.NicknameColorSeed);
 			float bgv = (float)Math.Max(Math.Max(this.BackgroundColor.R, this.BackgroundColor.G), this.BackgroundColor.B) / 255f;
 
-			float v;
-			if (bgv < MinNickBrightness + MinNickBrightnessDiff)
-			{
-				bgv += MinNickBrightnessDiff;
-				v = bgv + (float)rand.NextDouble() * (1f - bgv);
-			}
-			else if (bgv >= 1f - MinNickBrightnessDiff)
-			{
-				bgv -= MinNickBrightnessDiff;
-				v = MinNickBrightness + (float)rand.NextDouble() * (bgv - MinNickBrightness + MinNickBrightnessDiff);
-			}
-			else
-			{
-				v = (float)rand.NextDouble();
-				float lowerBand = bgv - MinNickBrightness + MinNickBrightnessDiff;
-				float upperBand = 1f - (bgv + MinNickBrightnessDiff);
-				v *= (lowerBand + upperBand);
-				if (v <= lowerBand)
-				{
-					v = MinNickBrightness + v;
-				}
-				else
-				{
-					v = bgv + MinNickBrightnessDiff + (v - lowerBand);
-				}
-			}
-
-			if (v > 1f)
-			{
-				v -= 1f;
-			}
+			float v = (float)rand.NextDouble() * NickBrightnessBand + (bgv < 0.5f ? (1f - NickBrightnessBand) : MinNickBrightness);
 			float h = 360f * (float)rand.NextDouble();
 			float s = .4f + (.6f * (float)rand.NextDouble());
 			return new SolidColorBrush(new HsvColor(1f, h, s, v).ToColor());
