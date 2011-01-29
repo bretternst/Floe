@@ -34,7 +34,7 @@ namespace Floe.UI
 		{
 			get
 			{
-				return _isSelecting && this.SelectionEnd > this.SelectionStart;
+				return _isSelecting && this.SelectionEnd >= this.SelectionStart && _selStart >= 0 && _selEnd >= 0;
 			}
 		}
 
@@ -128,6 +128,11 @@ namespace Floe.UI
 				_isSelecting = false;
 				_selStart = -1;
 				_selEnd = -1;
+
+				if (_isAutoScrolling)
+				{
+					this.ScrollToEnd();
+				}
 
 				this.InvalidateVisual();
 			}
@@ -272,7 +277,7 @@ namespace Floe.UI
 		private void DrawSelectionHighlight(DrawingContext dc, Block block)
 		{
 			if (this.SelectionEnd < block.CharStart || this.SelectionStart >= block.CharEnd ||
-				this.SelectionStart >= this.SelectionEnd)
+				this.SelectionStart > this.SelectionEnd)
 			{
 				return;
 			}
@@ -295,7 +300,7 @@ namespace Floe.UI
 				this.FindSelectedArea(idx, block.Text[i].Length, txtOffset, block.TextX, block.Text[i], ref start, ref end);
 				txtOffset += block.Text[i].Length;
 
-				if (end > start)
+				if (end >= start)
 				{
 					dc.DrawRectangle(_selectBrush.Value, null,
 						new Rect(new Point(start, y), new Point(end, y + _lineHeight)));
