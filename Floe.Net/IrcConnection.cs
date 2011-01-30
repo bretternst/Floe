@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
@@ -19,6 +20,7 @@ namespace Floe.Net
 		private Thread _socketThread;
 		private ConcurrentQueue<IrcMessage> _writeQueue;
 		private ManualResetEvent _writeWaitHandle;
+		private ManualResetEvent _endWaitHandle;
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
@@ -27,43 +29,38 @@ namespace Floe.Net
 		public event EventHandler<IrcEventArgs> MessageReceived;
 		public event EventHandler<IrcEventArgs> MessageSent;
 
-		public IrcConnection(string server, int port, bool isSecure)
+		public IPAddress ExternalAddress { get { return ((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address; } }
+
+		public void Open(string server, int port, bool isSecure)
 		{
 			if (string.IsNullOrEmpty(server))
 				throw new ArgumentNullException("server");
 			if (port <= 0 || port > 65535)
 				throw new ArgumentOutOfRangeException("port");
 
+			if (_socketThread != null)
+			{
+				this.Close();
+			}
+
 			_server = server;
 			_port = port;
 			_isSecure = isSecure;
-		}
-
-		public void Open()
-		{
-			if (_socketThread != null && _socketThread.IsAlive)
-			{
-				return;
-			}
-
 			_writeQueue = new ConcurrentQueue<IrcMessage>();
-			_socketThread = new Thread(new ThreadStart(this.SocketLoop));
+			_writeWaitHandle = new ManualResetEvent(false);
+			_endWaitHandle = new ManualResetEvent(false);
+			_socketThread = new Thread(new ThreadStart(this.SocketMain));
 			_socketThread.IsBackground = true;
 			_socketThread.Start();
 		}
 
 		public void Close()
 		{
-			if (_socketThread == null || _socketThread.ThreadState != ThreadState.Running)
+			if (_socketThread != null)
 			{
-				return;
-			}
-
-			this.QueueMessage(new IrcMessage(null));
-
-			if (!_socketThread.Join(1000))
-			{
-				_socketThread.Abort();
+				_endWaitHandle.Set();
+				this.OnDisconnected();
+				_socketThread = null;
 			}
 		}
 
@@ -88,7 +85,24 @@ namespace Floe.Net
 
 		public void Dispose()
 		{
-			if (_tcpClient != null && _tcpClient.Connected)
+			this.Close();
+		}
+
+		private void SocketMain()
+		{
+			try
+			{
+				this.SocketLoop();
+			}
+			catch (IOException ex)
+			{
+				this.OnConnectionError(ex);
+			}
+			catch (SocketException ex)
+			{
+				this.OnConnectionError(ex);
+			}
+			if (_tcpClient.Connected)
 			{
 				_tcpClient.Close();
 			}
@@ -96,39 +110,29 @@ namespace Floe.Net
 
 		private void SocketLoop()
 		{
-			_tcpClient = new TcpClient();
 			Stream stream = null;
-			try
-			{
-				_tcpClient.Connect(_server, _port);
-				stream = _tcpClient.GetStream();
+			_tcpClient = new TcpClient();
 
-				if (_isSecure)
-				{
-					var sslStream = new SslStream(stream, true,
-						(sender, cert, chain, sslPolicyErrors) =>
-						{
-							// Just accept all server certs for now; we'll take advantage of the encryption
-							// but not the authentication unless users ask for it.
-							return true;
-						});
-					sslStream.AuthenticateAsClient(_server);
-					stream = sslStream;
-				}
-			}
-			catch (Exception ex)
+			IAsyncResult ar = _tcpClient.BeginConnect(_server, _port, null, null);
+			if (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endWaitHandle }) == 1)
 			{
-				if (_tcpClient.Connected)
-				{
-					_tcpClient.Close();
-				}
-				_tcpClient = null;
-				this.OnConnectionError(ex);
-				this.OnDisconnected();
 				return;
 			}
+			_tcpClient.EndConnect(ar);
+			stream = _tcpClient.GetStream();
 
-			_writeWaitHandle = new ManualResetEvent(false);
+			if (_isSecure)
+			{
+				var sslStream = new SslStream(stream, true,
+					(sender, cert, chain, sslPolicyErrors) =>
+					{
+						// Just accept all server certs for now; we'll take advantage of the encryption
+						// but not the authentication unless users ask for it.
+						return true;
+					});
+				sslStream.AuthenticateAsClient(_server);
+				stream = sslStream;
+			}
 
 			this.OnConnected();
 
@@ -137,83 +141,69 @@ namespace Floe.Net
 			var input = new StringBuilder();
 			IrcMessage message;
 			char last = '\u0000';
-			IAsyncResult ar = null;
 
-			try
+			while (_tcpClient.Connected)
 			{
-				while (_tcpClient.Connected)
+				if (handleIdx == 0)
 				{
-					if (handleIdx == 0)
-					{
-						ar = stream.BeginRead(readBuffer, 0, 512, null, null);
-					}
-					handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle }, HeartbeatInterval);
-					if (!_tcpClient.Connected)
-					{
-						break;
-					}
-					switch (handleIdx)
-					{
-						case 0:
-							count = stream.EndRead(ar);
-							if (count == 0)
-							{
-								_tcpClient.Close();
-							}
-							else
-							{
-								foreach (char c in Encoding.UTF8.GetChars(readBuffer, 0, count))
-								{
-									if (c == 0xa && last == 0xd)
-									{
-										if (input.Length > 0)
-										{
-											message = IrcMessage.Parse(input.ToString());
-											this.OnMessageReceived(message);
-
-											input.Clear();
-										}
-									}
-									else if (c != 0xd && c != 0xa)
-									{
-										input.Append(c);
-									}
-									last = c;
-								}
-							}
-							break;
-						case 1:
-							_writeWaitHandle.Reset();
-							while (_writeQueue.TryDequeue(out message))
-							{
-								if (message.Command == null)
-								{
-									_tcpClient.Close();
-									break;
-								}
-								string output = message.ToString();
-								count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
-								count = Math.Min(510, count);
-								writeBuffer[count] = 0xd;
-								writeBuffer[count + 1] = 0xa;
-
-								stream.Write(writeBuffer, 0, count + 2);
-
-								this.OnMessageSent(message);
-							}
-							break;
-                        case WaitHandle.WaitTimeout:
-							OnHeartbeat();
-                            break;
-					}
+					ar = stream.BeginRead(readBuffer, 0, 512, null, null);
 				}
-			}
-			catch (System.IO.IOException ex)
-			{
-				this.OnConnectionError(ex);
-				if (_tcpClient.Connected)
+				handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle, _endWaitHandle }, HeartbeatInterval);
+				if (!_tcpClient.Connected)
 				{
-					_tcpClient.Close();
+					break;
+				}
+
+				switch (handleIdx)
+				{
+					case 0:
+						count = stream.EndRead(ar);
+						if (count == 0)
+						{
+							_tcpClient.Close();
+						}
+						else
+						{
+							foreach (char c in Encoding.UTF8.GetChars(readBuffer, 0, count))
+							{
+								if (c == 0xa && last == 0xd)
+								{
+									if (input.Length > 0)
+									{
+										message = IrcMessage.Parse(input.ToString());
+										this.OnMessageReceived(message);
+
+										input.Clear();
+									}
+								}
+								else if (c != 0xd && c != 0xa)
+								{
+									input.Append(c);
+								}
+								last = c;
+							}
+						}
+						break;
+					case 1:
+						_writeWaitHandle.Reset();
+						while (_writeQueue.TryDequeue(out message))
+						{
+							string output = message.ToString();
+							count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
+							count = Math.Min(510, count);
+							writeBuffer[count] = 0xd;
+							writeBuffer[count + 1] = 0xa;
+
+							stream.Write(writeBuffer, 0, count + 2);
+
+							this.OnMessageSent(message);
+						}
+						break;
+					case 2:
+						return;
+					case WaitHandle.WaitTimeout:
+						OnHeartbeat();
+						break;
 				}
 			}
 			this.OnDisconnected();

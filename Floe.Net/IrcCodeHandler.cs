@@ -8,29 +8,20 @@ namespace Floe.Net
 	/// </summary>
 	public sealed class IrcCodeHandler
 	{
-		/// <summary>
-		/// Gets the IRC code that will be handled.
-		/// </summary>
-		public IrcCode Code { get; private set; }
-
-		/// <summary>
-		/// Gets a value indicating whether the handler will be automatically removed after its first invocation.
-		/// </summary>
-		public bool AutoRemove { get; private set; }
-
-		internal Func<IrcMessage, bool> Handler { get; private set; }
+		internal IrcCode[] Codes { get; private set; }
+		internal Func<IrcInfoEventArgs, bool> Handler { get; private set; }
 
 		/// <summary>
 		/// Primary constructor.
 		/// </summary>
 		/// <param name="code">The IRC code to handle.</param>
 		/// <param name="autoRemove">Whether to automatically remove the handler after first invocation.</param>
-		/// <param name="handler">The function to handle the message.</param>
-		public IrcCodeHandler(IrcCode code, bool autoRemove, Func<IrcMessage, bool> handler)
+		/// <param name="handler">The function to handle the message. If the function returns true, the handler is removed.</param>
+		/// <param name="errorHandler">The function to handle an error response. If the function returns true, the handler is removed.</param>
+		public IrcCodeHandler(Func<IrcInfoEventArgs, bool> handler, params IrcCode[] codes)
 		{
-			this.Code = code;
-			this.AutoRemove = autoRemove;
 			this.Handler = handler;
+			this.Codes = codes;
 		}
 	}
 }

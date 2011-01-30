@@ -195,18 +195,18 @@ namespace Floe.UI
 
 			for(int i = 0; i < nicks.Count(); i += 3)
 			{
-				this.Session.AddHandler(new IrcCodeHandler(IrcCode.RPL_USERHOST, true, (msg) =>
+				this.Session.AddHandler(new IrcCodeHandler((ee) =>
 					{
-						if (msg.Parameters.Count > 1)
+						if (ee.Message.Parameters.Count > 1)
 						{
-							var modes = from user in msg.Parameters[1].Split(' ')
+							var modes = from user in ee.Message.Parameters[1].Split(' ')
 										let parts = user.Split('@')
 										where parts.Length == 2
 										select new IrcChannelMode(banSet, 'b', "*!*@" + parts[1]);
 							this.Session.Mode(this.Target.Name, modes);
 						}
 						return true;
-					}));
+					}, IrcCode.RPL_USERHOST));
 				var chunk = nicks.Skip(i).Take(3).ToArray();
 				this.Session.UserHost(chunk);
 			}

@@ -140,6 +140,27 @@ namespace Floe.UI
 		{
 			switch (e.Code)
 			{
+				case IrcCode.RPL_NAMEREPLY:
+					if (!_hasNames && e.Message.Parameters.Count >= 3 && this.IsChannel)
+					{
+						var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
+						if (this.Target.Equals(target))
+						{
+							foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
+							{
+								this.AddNick(nick);
+							}
+							e.Handled = true;
+						}
+					}
+					break;
+				case IrcCode.RPL_ENDOFNAMES:
+					if (!_hasNames && this.IsChannel)
+					{
+						_hasNames = true;
+						e.Handled = true;
+					}
+					break;
 				case IrcCode.ERR_NICKNAMEINUSE:
 					if (this.IsServer && this.Session.State == IrcSessionState.Connecting)
 					{
@@ -223,7 +244,7 @@ namespace Floe.UI
 					break;
 			}
 
-			if ((int)e.Code < 200 && this.IsServer || this.IsDefault)
+			if (!e.Handled && ((int)e.Code < 200 && this.IsServer || this.IsDefault))
 			{
 				this.Write("ServerInfo", e.Text);
 			}
@@ -424,39 +445,6 @@ namespace Floe.UI
 			}
 		}
 
-		private void Session_RawMessageReceived(object sender, IrcEventArgs e)
-		{
-			int code;
-			if(int.TryParse(e.Message.Command, out code))
-			{
-				var ircCode = (IrcCode)code;
-				switch(ircCode)
-				{
-					case IrcCode.RPL_NAMEREPLY:
-						if (!_hasNames && e.Message.Parameters.Count >= 3 && this.IsChannel)
-						{
-							var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
-							if (this.Target.Equals(target))
-							{
-								foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
-								{
-									this.AddNick(nick);
-								}
-								e.Handled = true;
-							}
-						}
-						break;
-					case IrcCode.RPL_ENDOFNAMES:
-						if (!_hasNames && this.IsChannel)
-						{
-							_hasNames = true;
-							e.Handled = true;
-						}
-						break;
-				}
-			}
-		}
-
 		private void txtInput_KeyDown(object sender, KeyEventArgs e)
 		{
 			if ((Keyboard.Modifiers & ModifierKeys.Control) > 0)
@@ -507,17 +495,29 @@ namespace Floe.UI
 					var parts = text.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0).ToArray();
 					if (parts.Length > App.Settings.Current.Buffer.MaximumPasteLines)
 					{
-						if (!App.Confirm(_window, string.Format("Are you sure you want to paste more than {0} lines?",
-							App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warning"))
-						{
-							return;
-						}
+						Dispatcher.BeginInvoke((Action)(() =>
+							{
+								if (!App.Confirm(_window, string.Format("Are you sure you want to paste more than {0} lines?",
+									App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warning"))
+								{
+									return;
+								}
+								foreach (var part in parts)
+								{
+									txtInput.Text = txtInput.Text.Substring(0, txtInput.SelectionStart);
+									txtInput.Text += part;
+									this.SubmitInput();
+								}
+							}));
 					}
-					foreach (var part in parts)
+					else
 					{
-						txtInput.Text = txtInput.Text.Substring(0, txtInput.SelectionStart);
-						txtInput.Text += part;
-						this.SubmitInput();
+						foreach (var part in parts)
+						{
+							txtInput.Text = txtInput.Text.Substring(0, txtInput.SelectionStart);
+							txtInput.Text += part;
+							this.SubmitInput();
+						}
 					}
 				}
 			}
@@ -761,7 +761,6 @@ namespace Floe.UI
 			this.Session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged += new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
-			this.Session.RawMessageReceived += new EventHandler<IrcEventArgs>(Session_RawMessageReceived);
             this.Session.Invited += new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
@@ -777,6 +776,7 @@ namespace Floe.UI
 		private void UnsubscribeEvents()
 		{
 			this.Session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
+			this.Session.ConnectionError -= new EventHandler<ErrorEventArgs>(Session_ConnectionError);
 			this.Session.Noticed -= new EventHandler<IrcMessageEventArgs>(Session_Noticed);
 			this.Session.PrivateMessaged -= new EventHandler<IrcMessageEventArgs>(Session_PrivateMessaged);
 			this.Session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
@@ -791,6 +791,7 @@ namespace Floe.UI
 			this.Session.UserModeChanged -= new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged -= new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit -= new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
+			this.Session.Invited -= new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.RemovePastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
 			if (_window != null)

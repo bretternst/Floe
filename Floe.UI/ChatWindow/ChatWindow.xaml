@@ -131,7 +131,7 @@
 			</Grid.ColumnDefinitions>
 			
 			<Border Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="0">
-				<TextBlock Margin="4,0,0,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
+				<TextBlock Margin="4,0,10,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
 			</Border>
 			<StackPanel Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
 				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Command="local:ChatWindow.SettingsCommand">

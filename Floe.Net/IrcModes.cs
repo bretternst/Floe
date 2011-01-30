@@ -232,6 +232,9 @@ namespace Floe.Net
 								case 'b':
 								case 'e':
 								case 'I':
+								case 'f':
+								case 'j':
+								case 'q':
 									paramSetList.Add(set);
 									paramModeList.Add(c);
 									break;

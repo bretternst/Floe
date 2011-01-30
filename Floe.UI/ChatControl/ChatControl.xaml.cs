@@ -66,17 +66,17 @@ namespace Floe.UI
 			if (this.IsChannel)
 			{
 				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
-				this.Session.AddHandler(new IrcCodeHandler(IrcCode.RPL_CHANNELMODES, true, (msg) =>
+				this.Session.AddHandler(new IrcCodeHandler((e) =>
 					{
-						if (msg.Parameters.Count == 3 &&
-							this.Target.Equals(new IrcTarget(msg.Parameters[1])))
+						if (e.Message.Parameters.Count == 3 &&
+							this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
 						{
-							_channelModes = msg.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
+							_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
 							this.SetTitle();
 							return true;
 						}
 						return false;
-					}));
+					}, IrcCode.RPL_CHANNELMODEIS));
 				this.Session.Mode(this.Target);
 				splitter.IsEnabled = true;
 				colNickList.MinWidth = MinNickListWidth;

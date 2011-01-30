@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Windows.Threading;
 
@@ -42,11 +43,7 @@ namespace Floe.Net
 		private IrcSessionState _state;
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
-
 		private Dispatcher _dispatcher;
-		private Action<IrcEventArgs> _onMessageSent;
-		private Action<IrcEventArgs> _onMessageReceived;
-		private Action<ErrorEventArgs> _onConnectionError;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -93,6 +90,13 @@ namespace Floe.Net
 		/// Gets the current set of user modes that apply to the session.
 		/// </summary>
 		public char[] UserModes { get; private set; }
+
+		/// <summary>
+		/// Gets the external IP address of the computer running the session. The IRC server is queried to retrieve the address or hostname.
+		/// If a hostname is returned, the IP address is retrieved via DNS. If no external address can be found, the local IP address
+		/// is provided.
+		/// </summary>
+		public IPAddress ExternalAddress { get; private set; }
 
 		/// <summary>
 		/// Gets the current state of the session.
@@ -228,12 +232,7 @@ namespace Floe.Net
 		{
 			this.State = IrcSessionState.Disconnected;
 			this.UserModes = new char[0];
-			if ((_dispatcher = dispatcher) != null)
-			{
-				_onMessageReceived = new Action<IrcEventArgs>(this.OnMessageReceived);
-				_onMessageSent = new Action<IrcEventArgs>(this.OnMessageSent);
-				_onConnectionError = new Action<ErrorEventArgs>(this.OnConnectionError);
-			}
+			_dispatcher = dispatcher;
 		}
 
 		/// <summary>
@@ -267,26 +266,24 @@ namespace Floe.Net
 			this.UserModes = new char[0];
 			this.AutoReconnect = autoReconnect;
 
-			if (_conn != null)
+			if (_conn == null)
 			{
-				_conn.Connected -= new EventHandler(_conn_Connected);
-				_conn.Disconnected -= new EventHandler(_conn_Disconnected);
-				_conn.MessageReceived -= new EventHandler<IrcEventArgs>(_conn_MessageReceived);
-				_conn.MessageSent -= new EventHandler<IrcEventArgs>(_conn_MessageSent);
-				_conn.ConnectionError -= new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
+				_conn = new IrcConnection();
+				_conn.Connected += new EventHandler(_conn_Connected);
+				_conn.Disconnected += new EventHandler(_conn_Disconnected);
+				_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
+				_conn.MessageReceived += new EventHandler<IrcEventArgs>(_conn_MessageReceived);
+				_conn.MessageSent += new EventHandler<IrcEventArgs>(_conn_MessageSent);
+				_conn.ConnectionError += new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
+			}
+			else
+			{
 				_conn.Close();
 			}
 
-			_captures = new List<IrcCodeHandler>();
 			this.State = IrcSessionState.Connecting;
-			_conn = new IrcConnection(server, port, isSecure);
-			_conn.Connected += new EventHandler(_conn_Connected);
-			_conn.Disconnected += new EventHandler(_conn_Disconnected);
-			_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
-			_conn.MessageReceived += new EventHandler<IrcEventArgs>(_conn_MessageReceived);
-			_conn.MessageSent += new EventHandler<IrcEventArgs>(_conn_MessageSent);
-			_conn.ConnectionError += new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
-			_conn.Open();
+			_captures = new List<IrcCodeHandler>();
+			_conn.Open(server, port, isSecure);
 		}
 
 		/// <summary>
@@ -722,20 +719,74 @@ namespace Floe.Net
 			}
 		}
 
-		private void OnStateChanged()
+		private void RaiseEvent<T>(EventHandler<T> evt, T e) where T : EventArgs
 		{
-			var handler = this.StateChanged;
-			if (handler != null)
+			this.RaiseEvent(evt, e, false);
+		}
+
+		private void RaiseEvent<T>(EventHandler<T> evt, T e, bool wait) where T : EventArgs
+		{
+			if (evt != null)
 			{
-				if (_dispatcher != null)
+				if (_dispatcher != null && _dispatcher.Thread != Thread.CurrentThread)
 				{
-					_dispatcher.BeginInvoke(handler, this, EventArgs.Empty);
+					if (wait)
+					{
+						_dispatcher.Invoke(evt, this, e);
+					}
+					else
+					{
+						_dispatcher.BeginInvoke(evt, this, e);
+					}
 				}
 				else
 				{
-					handler(this, EventArgs.Empty);
+					evt(this, e);
 				}
 			}
+		}
+
+		private void OnStateChanged()
+		{
+			if (this.State == IrcSessionState.Connected)
+			{
+				this.AddHandler(new IrcCodeHandler((e) =>
+					{
+						if (e.IsError || e.Message.Parameters.Count < 2)
+						{
+							return true;
+						}
+
+						var parts = e.Message.Parameters[1].Split('@');
+						if (parts.Length > 0)
+						{
+							IPAddress external;
+							if (!IPAddress.TryParse(parts[1], out external))
+							{
+								Dns.BeginGetHostEntry(parts[1], (ar) =>
+									{
+										try
+										{
+											var host = Dns.EndGetHostEntry(ar);
+											if (host.AddressList.Length > 0)
+											{
+												this.ExternalAddress = host.AddressList[0];
+											}
+										}
+										catch { }
+									}, null);
+							}
+							else
+							{
+								this.ExternalAddress = external;
+							}
+						}
+						return true;
+					}, IrcCode.RPL_USERHOST));
+				this.UserHost(this.Nickname);
+			}
+
+			this.RaiseEvent(this.StateChanged, EventArgs.Empty, true);
 
 			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
 			{
@@ -743,7 +794,7 @@ namespace Floe.Net
 				{
 					if (this.State == IrcSessionState.Disconnected)
 					{
-						_conn.Open();
+						_conn.Open(this.Server, this.Port, this.IsSecure);
 					}
 				}));
 			}
@@ -751,11 +802,7 @@ namespace Floe.Net
 
 		private void OnConnectionError(ErrorEventArgs e)
 		{
-			var handler = this.ConnectionError;
-			if (handler != null)
-			{
-				handler(this, e);
-			}
+			this.RaiseEvent(this.ConnectionError, e);
 		}
 
 		private void OnMessageReceived(IrcEventArgs e)
@@ -769,16 +816,7 @@ namespace Floe.Net
 			}
 #endif
 
-			var handler = this.RawMessageReceived;
-			if (handler != null)
-			{
-				handler(this, e);
-			}
-
-			if (e.Handled)
-			{
-				return;
-			}
+			this.RaiseEvent(this.RawMessageReceived, e);
 
 			switch (e.Message.Command)
 			{
@@ -830,11 +868,7 @@ namespace Floe.Net
 
 		private void OnMessageSent(IrcEventArgs e)
 		{
-			var handler = this.RawMessageSent;
-			if (handler != null)
-			{
-				handler(this, e);
-			}
+			this.RaiseEvent(this.RawMessageSent, e);
 
 #if DEBUG
 			if (System.Diagnostics.Debugger.IsAttached)
@@ -846,17 +880,14 @@ namespace Floe.Net
 
 		private void OnNickChanged(IrcMessage message)
 		{
-			var args = new IrcNickEventArgs(message);
+			var e = new IrcNickEventArgs(message);
 			var handler = this.NickChanged;
-			if (this.IsSelf(args.OldNickname))
+			if (this.IsSelf(e.OldNickname))
 			{
-				this.Nickname = args.NewNickname;
+				this.Nickname = e.NewNickname;
 				handler = this.SelfNickChanged;
 			}
-			if (handler != null)
-			{
-				handler(this, args);
-			}
+			this.RaiseEvent(handler, e);
 		}
 
 		private void OnPrivateMessage(IrcMessage message)
@@ -867,11 +898,7 @@ namespace Floe.Net
 			}
 			else
 			{
-				var handler = this.PrivateMessaged;
-				if (handler != null)
-				{
-					handler(this, new IrcMessageEventArgs(message));
-				}
+				this.RaiseEvent(this.PrivateMessaged, new IrcMessageEventArgs(message));
 			}
 		}
 
@@ -883,81 +910,56 @@ namespace Floe.Net
 			}
 			else
 			{
-				var handler = this.Noticed;
-				if (handler != null)
-				{
-					handler(this, new IrcMessageEventArgs(message));
-				}
+				this.RaiseEvent(this.Noticed, new IrcMessageEventArgs(message));
 			}
 		}
 
 		private void OnQuit(IrcMessage message)
 		{
-			var handler = this.UserQuit;
-			if (handler != null)
-			{
-				handler(this, new IrcQuitEventArgs(message));
-			}
+			this.RaiseEvent(this.UserQuit, new IrcQuitEventArgs(message));
 		}
 
 		private void OnJoin(IrcMessage message)
 		{
 			var handler = this.Joined;
-			var args = new IrcJoinEventArgs(message);
-			if (this.IsSelf(args.Who.Nickname))
+			var e = new IrcJoinEventArgs(message);
+			if (this.IsSelf(e.Who.Nickname))
 			{
 				handler = this.SelfJoined;
 			}
-			if (handler != null)
-			{
-				handler(this, args);
-			}
+			this.RaiseEvent(handler, e);
 		}
 
 		private void OnPart(IrcMessage message)
 		{
 			var handler = this.Parted;
-			var args = new IrcPartEventArgs(message);
-			if (this.IsSelf(args.Who.Nickname))
+			var e = new IrcPartEventArgs(message);
+			if (this.IsSelf(e.Who.Nickname))
 			{
 				handler = this.SelfParted;
 			}
-			if (handler != null)
-			{
-				handler(this, args);
-			}
+			this.RaiseEvent(handler, e);
 		}
 
 		private void OnTopic(IrcMessage message)
 		{
-			var handler = this.TopicChanged;
-			if (handler != null)
-			{
-				handler(this, new IrcTopicEventArgs(message));
-			}
+			this.RaiseEvent(this.TopicChanged, new IrcTopicEventArgs(message));
 		}
 
 		private void OnInvite(IrcMessage message)
 		{
-			var handler = this.Invited;
-			if (handler != null)
-			{
-				handler(this, new IrcInviteEventArgs(message));
-			}
+			this.RaiseEvent(this.Invited, new IrcInviteEventArgs(message));
 		}
 
 		private void OnKick(IrcMessage message)
 		{
 			var handler = this.Kicked;
-			var args = new IrcKickEventArgs(message);
-			if (this.IsSelf(args.KickeeNickname))
+			var e = new IrcKickEventArgs(message);
+			if (this.IsSelf(e.KickeeNickname))
 			{
 				handler = this.SelfKicked;
 			}
-			if (handler != null)
-			{
-				handler(this, args);
-			}
+			this.RaiseEvent(handler, e);
 		}
 
 		private void OnMode(IrcMessage message)
@@ -966,11 +968,7 @@ namespace Floe.Net
 			{
 				if (IrcTarget.IsChannelName(message.Parameters[0]))
 				{
-					var handler = this.ChannelModeChanged;
-					if (handler != null)
-					{
-						handler(this, new IrcChannelModeEventArgs(message));
-					}
+					this.RaiseEvent(this.ChannelModeChanged, new IrcChannelModeEventArgs(message));
 				}
 				else
 				{
@@ -979,11 +977,7 @@ namespace Floe.Net
 									  where !e.Modes.Any((newMode) => !newMode.Set && newMode.Mode == m)
 									  select m).ToArray();
 
-                    var handler = this.UserModeChanged;
-					if (handler != null)
-					{
-						handler(this, new IrcUserModeEventArgs(message));
-					}
+					this.RaiseEvent(this.UserModeChanged, new IrcUserModeEventArgs(message));
 				}
 			}
 		}
@@ -1008,75 +1002,56 @@ namespace Floe.Net
 				{
 					lock (_captures)
 					{
-						foreach (var capture in _captures)
+						var capture = _captures.Where((c) => c.Codes.Contains(e.Code)).FirstOrDefault();
+						if(capture != null)
 						{
-							if (capture.Code == e.Code && capture.Handler(message))
+							if(_dispatcher != null)
 							{
-								if (capture.AutoRemove)
+								if((bool)_dispatcher.Invoke(capture.Handler, e))
 								{
 									_captures.Remove(capture);
+									return;
 								}
-								return;
+							}
+							else
+							{
+								if(capture.Handler(e))
+								{
+									_captures.Remove(capture);
+									return;
+								}
 							}
 						}
 					}
 				}
 
-				var handler = this.InfoReceived;
-				if (handler != null)
-				{
-					handler(this, e);
-				}
+				this.RaiseEvent(this.InfoReceived, e);
 			}
 		}
 
 		private void OnCtcpCommand(IrcMessage message)
 		{
-			var handler = this.CtcpCommandReceived;
-			if (handler != null)
-			{
-				handler(this, new CtcpEventArgs(message));
-			}
+			this.RaiseEvent(this.CtcpCommandReceived, new CtcpEventArgs(message));
 		}
 
 		private void _conn_ConnectionError(object sender, ErrorEventArgs e)
 		{
-			if (_dispatcher != null)
-			{
-				_dispatcher.BeginInvoke(_onConnectionError, e);
-			}
-			else
-			{
-				this.OnConnectionError(e);
-			}
+			this.OnConnectionError(e);
 		}
 
 		private void _conn_MessageSent(object sender, IrcEventArgs e)
 		{
-			if (_dispatcher != null)
-			{
-				_dispatcher.BeginInvoke(_onMessageSent, e);
-			}
-			else
-			{
-				this.OnMessageSent(e);
-			}
+			this.OnMessageSent(e);
 		}
 
 		private void _conn_MessageReceived(object sender, IrcEventArgs e)
 		{
-			if (_dispatcher != null)
-			{
-				_dispatcher.BeginInvoke(_onMessageReceived, e);
-			}
-			else
-			{
-				this.OnMessageReceived(e);
-			}
+			this.OnMessageReceived(e);
 		}
 
 		private void _conn_Connected(object sender, EventArgs e)
 		{
+			this.ExternalAddress = _conn.ExternalAddress;
 			if (!string.IsNullOrEmpty(_password))
 			{
 				_conn.QueueMessage(new IrcMessage("PASS", _password));
