@@ -68,14 +68,14 @@ namespace Floe.UI
 				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
 				this.Session.AddHandler(new IrcCodeHandler((e) =>
 					{
-						if (e.Message.Parameters.Count == 3 &&
+						if (e.Message.Parameters.Count > 2 &&
 							this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
 						{
 							_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
 							this.SetTitle();
-							return true;
 						}
-						return false;
+						e.Handled = true;
+						return true;
 					}, IrcCode.RPL_CHANNELMODEIS));
 				this.Session.Mode(this.Target);
 				splitter.IsEnabled = true;
@@ -95,12 +95,14 @@ namespace Floe.UI
 								}
 							}
 						}
+						e.Handled = true;
 						return false;
 					}, IrcCode.RPL_NAMEREPLY);
 				this.Session.AddHandler(nameHandler);
 				this.Session.AddHandler(new IrcCodeHandler((e) =>
 					{
 						this.Session.RemoveHandler(nameHandler);
+						e.Handled = true;
 						return true;
 					}, IrcCode.RPL_ENDOFNAMES));
 			}

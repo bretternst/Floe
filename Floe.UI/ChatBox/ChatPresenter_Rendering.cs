@@ -85,7 +85,7 @@ namespace Floe.UI
 
 		private Brush GetNickColor(int hashCode)
 		{
-			var rand = new Random(hashCode ^ this.NicknameColorSeed);
+			var rand = new Random(hashCode * (this.NicknameColorSeed + 1));
 			float bgv = (float)Math.Max(Math.Max(this.BackgroundColor.R, this.BackgroundColor.G), this.BackgroundColor.B) / 255f;
 
 			float v = (float)rand.NextDouble() * NickBrightnessBand + (bgv < 0.5f ? (1f - NickBrightnessBand) : MinNickBrightness);

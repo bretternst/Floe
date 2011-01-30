@@ -6,6 +6,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Windows.Threading;
 
 namespace Floe.Net
 {
@@ -21,15 +22,21 @@ namespace Floe.Net
 		private ConcurrentQueue<IrcMessage> _writeQueue;
 		private ManualResetEvent _writeWaitHandle;
 		private ManualResetEvent _endWaitHandle;
+		private Dispatcher _dispatcher;
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
         public event EventHandler Heartbeat;
-		public event EventHandler<ErrorEventArgs> ConnectionError;
+		public event EventHandler<ErrorEventArgs> Error;
 		public event EventHandler<IrcEventArgs> MessageReceived;
 		public event EventHandler<IrcEventArgs> MessageSent;
 
 		public IPAddress ExternalAddress { get { return ((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address; } }
+
+		public IrcConnection(Dispatcher dispatcher = null)
+		{
+			_dispatcher = dispatcher;
+		}
 
 		public void Open(string server, int port, bool isSecure)
 		{
@@ -96,11 +103,11 @@ namespace Floe.Net
 			}
 			catch (IOException ex)
 			{
-				this.OnConnectionError(ex);
+				this.Dispatch(this.OnError, ex);
 			}
 			catch (SocketException ex)
 			{
-				this.OnConnectionError(ex);
+				this.Dispatch(this.OnError, ex);
 			}
 			if (_tcpClient.Connected)
 			{
@@ -134,7 +141,7 @@ namespace Floe.Net
 				stream = sslStream;
 			}
 
-			this.OnConnected();
+			this.Dispatch(this.OnConnected);
 
 			byte[] readBuffer = new byte[512], writeBuffer = new byte[Encoding.UTF8.GetMaxByteCount(512)];
 			int count = 0, handleIdx = 0;
@@ -171,8 +178,7 @@ namespace Floe.Net
 									if (input.Length > 0)
 									{
 										message = IrcMessage.Parse(input.ToString());
-										this.OnMessageReceived(message);
-
+										this.Dispatch(this.OnMessageReceived, message);
 										input.Clear();
 									}
 								}
@@ -196,17 +202,42 @@ namespace Floe.Net
 
 							stream.Write(writeBuffer, 0, count + 2);
 
-							this.OnMessageSent(message);
+							this.Dispatch(this.OnMessageSent, message);
 						}
 						break;
 					case 2:
 						return;
 					case WaitHandle.WaitTimeout:
-						OnHeartbeat();
+						this.Dispatch(this.OnHeartbeat);
 						break;
 				}
 			}
-			this.OnDisconnected();
+
+			this.Dispatch(this.OnDisconnected);
+		}
+
+		private void Dispatch<T>(Action<T> action, T arg)
+		{
+			if (_dispatcher != null)
+			{
+				_dispatcher.BeginInvoke(action, arg);
+			}
+			else
+			{
+				action(arg);
+			}
+		}
+
+		private void Dispatch(Action action)
+		{
+			if (_dispatcher != null)
+			{
+				_dispatcher.BeginInvoke(action);
+			}
+			else
+			{
+				action();
+			}
 		}
 
 		private void OnConnected()
@@ -236,9 +267,9 @@ namespace Floe.Net
             }
         }
 
-		private void OnConnectionError(Exception ex)
+		private void OnError(Exception ex)
 		{
-			var handler = this.ConnectionError;
+			var handler = this.Error;
 			if (handler != null)
 			{
 				handler(this, new ErrorEventArgs(ex));

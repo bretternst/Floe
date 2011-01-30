@@ -43,11 +43,6 @@ namespace Floe.Net
 		private IrcSessionState _state;
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
-		private Dispatcher _dispatcher;
-		private Action<ErrorEventArgs> _onConnectionError;
-		private Action<IrcEventArgs> _onMessageSent;
-		private Action<IrcEventArgs> _onMessageReceived;
-		private Action _onStateChanged;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -116,14 +111,7 @@ namespace Floe.Net
 				if (_state != value)
 				{
 					_state = value;
-					if (_dispatcher != null)
-					{
-						_dispatcher.Invoke(_onStateChanged);
-					}
-					else
-					{
-						this.OnStateChanged();
-					}
+					this.OnStateChanged();
 				}
 			}
 		}
@@ -243,13 +231,14 @@ namespace Floe.Net
 		{
 			this.State = IrcSessionState.Disconnected;
 			this.UserModes = new char[0];
-			if ((_dispatcher = dispatcher) != null)
-			{
-				_onConnectionError = this.OnConnectionError;
-				_onMessageReceived = this.OnMessageReceived;
-				_onMessageSent = this.OnMessageSent;
-				_onStateChanged = this.OnStateChanged;
-			}
+
+			_conn = new IrcConnection(dispatcher);
+			_conn.Connected += new EventHandler(_conn_Connected);
+			_conn.Disconnected += new EventHandler(_conn_Disconnected);
+			_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
+			_conn.MessageReceived += new EventHandler<IrcEventArgs>(_conn_MessageReceived);
+			_conn.MessageSent += new EventHandler<IrcEventArgs>(_conn_MessageSent);
+			_conn.Error += new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
 		}
 
 		/// <summary>
@@ -283,24 +272,9 @@ namespace Floe.Net
 			this.UserModes = new char[0];
 			this.AutoReconnect = autoReconnect;
 
-			if (_conn == null)
-			{
-				_conn = new IrcConnection();
-				_conn.Connected += new EventHandler(_conn_Connected);
-				_conn.Disconnected += new EventHandler(_conn_Disconnected);
-				_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
-				_conn.MessageReceived += new EventHandler<IrcEventArgs>(_conn_MessageReceived);
-				_conn.MessageSent += new EventHandler<IrcEventArgs>(_conn_MessageSent);
-				_conn.ConnectionError += new EventHandler<ErrorEventArgs>(_conn_ConnectionError);
-			}
-			else
-			{
-				_conn.Close();
-			}
-
-			this.State = IrcSessionState.Connecting;
 			_captures = new List<IrcCodeHandler>();
 			_conn.Open(server, port, isSecure);
+			this.State = IrcSessionState.Connecting;
 		}
 
 		/// <summary>
@@ -750,7 +724,8 @@ namespace Floe.Net
 			{
 				this.AddHandler(new IrcCodeHandler((e) =>
 					{
-						if (e.IsError || e.Message.Parameters.Count < 2)
+						e.Handled = true;
+						if (e.Message.Parameters.Count < 2)
 						{
 							return true;
 						}
@@ -1010,6 +985,9 @@ namespace Floe.Net
 							if (capture.Handler(e))
 							{
 								_captures.Remove(capture);
+							}
+							if (e.Handled)
+							{
 								return;
 							}
 						}
@@ -1027,38 +1005,17 @@ namespace Floe.Net
 
 		private void _conn_ConnectionError(object sender, ErrorEventArgs e)
 		{
-			if (_dispatcher != null)
-			{
-				_dispatcher.Invoke(_onConnectionError, e);
-			}
-			else
-			{
-				this.OnConnectionError(e);
-			}
+			this.OnConnectionError(e);
 		}
 
 		private void _conn_MessageSent(object sender, IrcEventArgs e)
 		{
-			if (_dispatcher != null)
-			{
-				_dispatcher.BeginInvoke(_onMessageSent, e);
-			}
-			else
-			{
-				this.OnMessageSent(e);
-			}
+			this.OnMessageSent(e);
 		}
 
 		private void _conn_MessageReceived(object sender, IrcEventArgs e)
 		{
-			if (_dispatcher != null)
-			{
-				_dispatcher.BeginInvoke(_onMessageReceived, e);
-			}
-			else
-			{
-				this.OnMessageReceived(e);
-			}
+			this.OnMessageReceived(e);
 		}
 
 		private void _conn_Connected(object sender, EventArgs e)
