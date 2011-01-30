@@ -81,6 +81,28 @@ namespace Floe.UI
 				splitter.IsEnabled = true;
 				colNickList.MinWidth = MinNickListWidth;
 				colNickList.Width = new GridLength(state.NickListWidth);
+
+				var nameHandler = new IrcCodeHandler((e) =>
+					{
+						if (e.Message.Parameters.Count >= 3)
+						{
+							var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
+							if (this.Target.Equals(target))
+							{
+								foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
+								{
+									this.AddNick(nick);
+								}
+							}
+						}
+						return false;
+					}, IrcCode.RPL_NAMEREPLY);
+				this.Session.AddHandler(nameHandler);
+				this.Session.AddHandler(new IrcCodeHandler((e) =>
+					{
+						this.Session.RemoveHandler(nameHandler);
+						return true;
+					}, IrcCode.RPL_ENDOFNAMES));
 			}
 			else if (this.IsNickname)
 			{

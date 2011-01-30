@@ -44,6 +44,10 @@ namespace Floe.Net
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
 		private Dispatcher _dispatcher;
+		private Action<ErrorEventArgs> _onConnectionError;
+		private Action<IrcEventArgs> _onMessageSent;
+		private Action<IrcEventArgs> _onMessageReceived;
+		private Action _onStateChanged;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -112,7 +116,14 @@ namespace Floe.Net
 				if (_state != value)
 				{
 					_state = value;
-					this.OnStateChanged();
+					if (_dispatcher != null)
+					{
+						_dispatcher.Invoke(_onStateChanged);
+					}
+					else
+					{
+						this.OnStateChanged();
+					}
 				}
 			}
 		}
@@ -232,7 +243,13 @@ namespace Floe.Net
 		{
 			this.State = IrcSessionState.Disconnected;
 			this.UserModes = new char[0];
-			_dispatcher = dispatcher;
+			if ((_dispatcher = dispatcher) != null)
+			{
+				_onConnectionError = this.OnConnectionError;
+				_onMessageReceived = this.OnMessageReceived;
+				_onMessageSent = this.OnMessageSent;
+				_onStateChanged = this.OnStateChanged;
+			}
 		}
 
 		/// <summary>
@@ -721,28 +738,9 @@ namespace Floe.Net
 
 		private void RaiseEvent<T>(EventHandler<T> evt, T e) where T : EventArgs
 		{
-			this.RaiseEvent(evt, e, false);
-		}
-
-		private void RaiseEvent<T>(EventHandler<T> evt, T e, bool wait) where T : EventArgs
-		{
 			if (evt != null)
 			{
-				if (_dispatcher != null && _dispatcher.Thread != Thread.CurrentThread)
-				{
-					if (wait)
-					{
-						_dispatcher.Invoke(evt, this, e);
-					}
-					else
-					{
-						_dispatcher.BeginInvoke(evt, this, e);
-					}
-				}
-				else
-				{
-					evt(this, e);
-				}
+				evt(this, e);
 			}
 		}
 
@@ -786,7 +784,7 @@ namespace Floe.Net
 				this.UserHost(this.Nickname);
 			}
 
-			this.RaiseEvent(this.StateChanged, EventArgs.Empty, true);
+			this.RaiseEvent(this.StateChanged, EventArgs.Empty);
 
 			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
 			{
@@ -817,6 +815,10 @@ namespace Floe.Net
 #endif
 
 			this.RaiseEvent(this.RawMessageReceived, e);
+			if (e.Handled)
+			{
+				return;
+			}
 
 			switch (e.Message.Command)
 			{
@@ -1003,23 +1005,12 @@ namespace Floe.Net
 					lock (_captures)
 					{
 						var capture = _captures.Where((c) => c.Codes.Contains(e.Code)).FirstOrDefault();
-						if(capture != null)
+						if (capture != null)
 						{
-							if(_dispatcher != null)
+							if (capture.Handler(e))
 							{
-								if((bool)_dispatcher.Invoke(capture.Handler, e))
-								{
-									_captures.Remove(capture);
-									return;
-								}
-							}
-							else
-							{
-								if(capture.Handler(e))
-								{
-									_captures.Remove(capture);
-									return;
-								}
+								_captures.Remove(capture);
+								return;
 							}
 						}
 					}
@@ -1036,17 +1027,38 @@ namespace Floe.Net
 
 		private void _conn_ConnectionError(object sender, ErrorEventArgs e)
 		{
-			this.OnConnectionError(e);
+			if (_dispatcher != null)
+			{
+				_dispatcher.Invoke(_onConnectionError, e);
+			}
+			else
+			{
+				this.OnConnectionError(e);
+			}
 		}
 
 		private void _conn_MessageSent(object sender, IrcEventArgs e)
 		{
-			this.OnMessageSent(e);
+			if (_dispatcher != null)
+			{
+				_dispatcher.BeginInvoke(_onMessageSent, e);
+			}
+			else
+			{
+				this.OnMessageSent(e);
+			}
 		}
 
 		private void _conn_MessageReceived(object sender, IrcEventArgs e)
 		{
-			this.OnMessageReceived(e);
+			if (_dispatcher != null)
+			{
+				_dispatcher.BeginInvoke(_onMessageReceived, e);
+			}
+			else
+			{
+				this.OnMessageReceived(e);
+			}
 		}
 
 		private void _conn_Connected(object sender, EventArgs e)

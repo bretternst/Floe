@@ -140,27 +140,6 @@ namespace Floe.UI
 		{
 			switch (e.Code)
 			{
-				case IrcCode.RPL_NAMEREPLY:
-					if (!_hasNames && e.Message.Parameters.Count >= 3 && this.IsChannel)
-					{
-						var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
-						if (this.Target.Equals(target))
-						{
-							foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
-							{
-								this.AddNick(nick);
-							}
-							e.Handled = true;
-						}
-					}
-					break;
-				case IrcCode.RPL_ENDOFNAMES:
-					if (!_hasNames && this.IsChannel)
-					{
-						_hasNames = true;
-						e.Handled = true;
-					}
-					break;
 				case IrcCode.ERR_NICKNAMEINUSE:
 					if (this.IsServer && this.Session.State == IrcSessionState.Connecting)
 					{
