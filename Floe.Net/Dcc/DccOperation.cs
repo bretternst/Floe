@@ -5,7 +5,6 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using System.Windows.Threading;
 
 namespace Floe.Net
 {
@@ -26,7 +25,7 @@ namespace Floe.Net
 		private TcpListener _listener;
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
-		private Dispatcher _dispatcher;
+		private Action<Action> _callback;
 
 		public EventHandler Connected;
 		public EventHandler Disconnected;
@@ -37,9 +36,9 @@ namespace Floe.Net
 
 		protected NetworkStream Stream { get; private set; }
 
-		public DccOperation(Dispatcher dispatcher = null)
+		public DccOperation(Action<Action> callback)
 		{
-			_dispatcher = dispatcher;
+			_callback = callback;
 		}
 
 		/// <summary>
@@ -48,8 +47,7 @@ namespace Floe.Net
 		/// </summary>
 		/// <param name="startPort">The lowest available port to listen on.</param>
 		/// <param name="startPort">The highest available port to listen on.</param>
-		/// <param name="dispatcher">An optional dispatcher used to route events to the main thread.</param>
-		public int Listen(int lowPort, int highPort, Dispatcher dispatcher = null)
+		public int Listen(int lowPort, int highPort)
 		{
 			if (lowPort > ushort.MaxValue || lowPort < MinPort)
 			{
@@ -124,8 +122,7 @@ namespace Floe.Net
 		/// </summary>
 		/// <param name="address">The remote IP address.</param>
 		/// <param name="port">The remote port.</param>
-		/// <param name="dispatcher">An optional dispatcher used to route events to the main thread.</param>
-		public void Connect(IPAddress address, int port, Dispatcher dispatcher = null)
+		public void Connect(IPAddress address, int port)
 		{
 			if (port <= 0 || port > ushort.MaxValue)
 			{
@@ -212,9 +209,9 @@ namespace Floe.Net
 
 		protected void Dispatch<T>(Action<T> handler, T arg)
 		{
-			if (_dispatcher != null)
+			if (_callback != null)
 			{
-				_dispatcher.BeginInvoke(handler, arg);
+				_callback(() => handler(arg));
 			}
 			else
 			{
@@ -224,9 +221,9 @@ namespace Floe.Net
 
 		protected void Dispatch(Action handler)
 		{
-			if (_dispatcher != null)
+			if (_callback != null)
 			{
-				_dispatcher.BeginInvoke(handler);
+				_callback(handler);
 			}
 			else
 			{

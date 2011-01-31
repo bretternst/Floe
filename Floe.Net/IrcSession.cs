@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Windows.Threading;
 
 namespace Floe.Net
 {
@@ -43,7 +42,7 @@ namespace Floe.Net
 		private IrcSessionState _state;
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
-		private Dispatcher _dispatcher;
+		private Action<Action> _callback;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -226,15 +225,15 @@ namespace Floe.Net
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		/// <param name="dispatcher">An optional dispatcher used to route events to the main thread. If no dispatcher
-		/// is supplied, events may not be fired on the thread that created the session.</param>
-		public IrcSession(Dispatcher dispatcher = null)
+		/// <param name="dispatcher">An optional callback function that may be used to route events to an appropriate
+		/// thread. The typical usage will be to call Dispatcher.BeginInvoke.</param>
+		public IrcSession(Action<Action> callback = null)
 		{
 			this.State = IrcSessionState.Disconnected;
 			this.UserModes = new char[0];
-			_dispatcher = dispatcher;
+			_callback = callback;
 
-			_conn = new IrcConnection(dispatcher);
+			_conn = new IrcConnection(callback);
 			_conn.Connected += new EventHandler(_conn_Connected);
 			_conn.Disconnected += new EventHandler(_conn_Disconnected);
 			_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
@@ -771,9 +770,9 @@ namespace Floe.Net
 				}
 				_reconnectTimer = new Timer(new TimerCallback((obj) =>
 				{
-					if (_dispatcher != null)
+					if (_callback != null)
 					{
-						_dispatcher.BeginInvoke((Action)this.OnReconnect);
+						_callback(this.OnReconnect);
 					}
 					else
 					{

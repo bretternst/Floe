@@ -6,7 +6,6 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Windows.Threading;
 
 namespace Floe.Net
 {
@@ -22,7 +21,7 @@ namespace Floe.Net
 		private ConcurrentQueue<IrcMessage> _writeQueue;
 		private ManualResetEvent _writeWaitHandle;
 		private ManualResetEvent _endWaitHandle;
-		private Dispatcher _dispatcher;
+		private Action<Action> _callback;
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
@@ -33,9 +32,9 @@ namespace Floe.Net
 
 		public IPAddress ExternalAddress { get { return ((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address; } }
 
-		public IrcConnection(Dispatcher dispatcher = null)
+		public IrcConnection(Action<Action> callback)
 		{
-			_dispatcher = dispatcher;
+			_callback = callback;
 		}
 
 		public void Open(string server, int port, bool isSecure)
@@ -218,9 +217,9 @@ namespace Floe.Net
 
 		private void Dispatch<T>(Action<T> action, T arg)
 		{
-			if (_dispatcher != null)
+			if (_callback != null)
 			{
-				_dispatcher.BeginInvoke(action, arg);
+				_callback(() => action(arg));
 			}
 			else
 			{
@@ -230,9 +229,9 @@ namespace Floe.Net
 
 		private void Dispatch(Action action)
 		{
-			if (_dispatcher != null)
+			if (_callback != null)
 			{
-				_dispatcher.BeginInvoke(action);
+				_callback(action);
 			}
 			else
 			{
