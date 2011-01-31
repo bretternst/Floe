@@ -43,6 +43,7 @@ namespace Floe.Net
 		private IrcSessionState _state;
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
+		private Dispatcher _dispatcher;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -231,6 +232,7 @@ namespace Floe.Net
 		{
 			this.State = IrcSessionState.Disconnected;
 			this.UserModes = new char[0];
+			_dispatcher = dispatcher;
 
 			_conn = new IrcConnection(dispatcher);
 			_conn.Connected += new EventHandler(_conn_Connected);
@@ -763,13 +765,32 @@ namespace Floe.Net
 
 			if (this.State == IrcSessionState.Disconnected && this.AutoReconnect)
 			{
-				var wait = new Timer(new TimerCallback((obj) =>
+				if (_reconnectTimer != null)
 				{
-					if (this.State == IrcSessionState.Disconnected)
+					_reconnectTimer.Dispose();
+				}
+				_reconnectTimer = new Timer(new TimerCallback((obj) =>
+				{
+					if (_dispatcher != null)
 					{
-						_conn.Open(this.Server, this.Port, this.IsSecure);
+						_dispatcher.BeginInvoke((Action)this.OnReconnect);
 					}
-				}));
+					else
+					{
+						this.OnReconnect();
+					}
+				}), null, ReconnectWaitTime, System.Threading.Timeout.Infinite);
+			}
+		}
+
+		Timer _reconnectTimer;
+
+		private void OnReconnect()
+		{
+			if (this.State == IrcSessionState.Disconnected)
+			{
+				this.State = IrcSessionState.Connecting;
+				_conn.Open(this.Server, this.Port, this.IsSecure);
 			}
 		}
 

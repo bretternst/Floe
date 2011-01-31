@@ -250,7 +250,7 @@ namespace Floe.UI
 			}
 			else
 			{
-				if (text.Trim().Length > 0)
+				if (text.Trim().Length > 0 && this.IsConnected)
 				{
 					if (!this.IsServer)
 					{
@@ -444,10 +444,13 @@ namespace Floe.UI
 					{
 						this.Write("Error", "Can't talk in this window.");
 					}
-					args = Split(command, arguments, 1, int.MaxValue);
-					this.Session.SendCtcp(this.Target,
-						new CtcpCommand("ACTION", args), false);
-					this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
+					if (this.IsConnected)
+					{
+						args = Split(command, arguments, 1, int.MaxValue);
+						this.Session.SendCtcp(this.Target,
+							new CtcpCommand("ACTION", args), false);
+						this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
+					}
 					break;
 				case "SETUP":
 					App.ShowSettings();
@@ -456,9 +459,12 @@ namespace Floe.UI
 					boxOutput.Clear();
 					break;
 				case "MSG":
-					args = Split(command, arguments, 2, 2);
-					this.Session.PrivateMessage(new IrcTarget(args[0]), args[1]);
-					this.Write("Own", string.Format("-> [{0}] {1}", args[0], args[1]));
+					if (this.IsConnected)
+					{
+						args = Split(command, arguments, 2, 2);
+						this.Session.PrivateMessage(new IrcTarget(args[0]), args[1]);
+						this.Write("Own", string.Format("-> [{0}] {1}", args[0], args[1]));
+					}
 					break;
 				case "LIST":
 					args = Split(command, arguments, 1, 2);

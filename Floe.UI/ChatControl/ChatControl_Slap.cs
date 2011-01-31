@@ -90,8 +90,11 @@ namespace Floe.UI
 				AquaticLifeForms[_slapRandom.Next(AquaticLifeForms.Length)]
 				);
 
-			this.Session.SendCtcp(this.Target, new CtcpCommand("ACTION", slapString.Split(' ')), false);
-			this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, slapString));
+			if (this.IsConnected)
+			{
+				this.Session.SendCtcp(this.Target, new CtcpCommand("ACTION", slapString.Split(' ')), false);
+				this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, slapString));
+			}
 		}
 	}
 }

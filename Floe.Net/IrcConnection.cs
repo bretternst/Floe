@@ -274,6 +274,7 @@ namespace Floe.Net
 			{
 				handler(this, new ErrorEventArgs(ex));
 			}
+			this.Close();
 		}
 
 		private void OnMessageReceived(IrcMessage message)
