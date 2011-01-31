@@ -15,7 +15,7 @@ namespace Floe.UI
 {
     public partial class App : Application
     {
-		public static ChatControl ActiveChatControl
+		public static ChatPage ActiveChatPage
 		{
 			get
 			{
@@ -114,10 +114,11 @@ namespace Floe.UI
 			}
 			else
 			{
-				var context = new ChatContext(session, target);
-				if (App.Settings.Current.Windows.States.Exists(context.Key) ? App.Settings.Current.Windows.States[context.Key].IsDetached : App.Settings.Current.Windows.DefaultQueryDetached)
+				page = new ChatControl(session, target);
+				if (App.Settings.Current.Windows.States.Exists(page.Id) ? 
+					App.Settings.Current.Windows.States[page.Id].IsDetached : App.Settings.Current.Windows.DefaultQueryDetached)
 				{
-					var newWin = new ChannelWindow(new ChatControl(context));
+					var newWin = new ChannelWindow(page);
 					if (!makeActive)
 					{
 						newWin.ShowActivated = false;
@@ -136,7 +137,7 @@ namespace Floe.UI
 				}
 				else
 				{
-					window.AddPage(new ChatContext(session, target), makeActive);
+					window.AddPage(page, makeActive);
 					if (!window.IsActive)
 					{
 						Interop.WindowHelper.FlashWindow(window);

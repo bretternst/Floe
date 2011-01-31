@@ -9,7 +9,7 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl
+	public partial class ChatControl : ChatPage
 	{
 		private const string SlapStringFormat = "slaps {0} around a bit with {1} {2} {3}!";
 		private static Random _slapRandom = new Random((int)DateTime.Now.Ticks);

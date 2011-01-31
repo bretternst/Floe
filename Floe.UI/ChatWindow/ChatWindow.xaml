@@ -9,8 +9,8 @@
 	<Window.InputBindings>
 		<KeyBinding Command="local:ChatWindow.PreviousTabCommand" Gesture="Alt+Left"/>
 		<KeyBinding Command="local:ChatWindow.NextTabCommand" Gesture="Alt+Right"/>
-        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+F4" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
-        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+W" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
+        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+F4" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Page}"/>
+        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+W" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Page}"/>
     </Window.InputBindings>
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
@@ -254,7 +254,7 @@
 				<TabControl.ItemContainerStyle>
 					<Style TargetType="TabItem">
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.IsServer}" Value="False">
+							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.IsServer}" Value="False">
 								<Setter Property="ContextMenu">
 									<Setter.Value>
 										<ContextMenu>
@@ -264,7 +264,7 @@
 								</Setter>
 							</DataTrigger>
 						</Style.Triggers>
-						<Setter Property="Header" Value="{Binding RelativeSource={RelativeSource Self}, Path=Control.Header}"/>
+						<Setter Property="Header" Value="{Binding RelativeSource={RelativeSource Self}, Path=Page.Header}"/>
 						<Setter Property="Content" Value="{Binding Content}"/>
 						<Setter Property="Foreground" Value="{StaticResource winFG}"/>
 						<Setter Property="Template">
@@ -290,7 +290,7 @@
 													<Button x:Name="btnTabClose" Margin="0,0,4,0" Style="{StaticResource tabCloseButtonStyle}"
 														Command="local:ChatWindow.CloseTabCommand" Grid.Column="2" Grid.Row="1"
 														Height="Auto" VerticalAlignment="Bottom"
-														CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Control.Context}"/>
+														CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Page}"/>
 												</Grid>
 											</Border>
 										</Border>
@@ -314,21 +314,21 @@
 											</MultiTrigger.Conditions>
 											<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGdownGrad}"/>
 										</MultiTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NoiseActivity">
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.NotifyState}" Value="NoiseActivity">
 											<DataTrigger.Setters>
 												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource noiseBrush}"/>
 												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource noiseBrush}"/>
 												<Setter TargetName="arrow" Property="Visibility" Value="Visible"/>
 											</DataTrigger.Setters>
 										</DataTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="ChatActivity">
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.NotifyState}" Value="ChatActivity">
 											<DataTrigger.Setters>
 												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource chatBrush}"/>
 												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource chatBrush}"/>
 												<Setter TargetName="arrow" Property="Visibility" Value="Visible"/>
 											</DataTrigger.Setters>
 										</DataTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="Alert">
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.NotifyState}" Value="Alert">
 											<DataTrigger.Setters>
 												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource alertBrush}"/>
 												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource alertBrush}"/>

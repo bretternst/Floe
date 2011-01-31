@@ -27,66 +27,66 @@ namespace Floe.UI
 
 		private void ExecuteCloseTab(object sender, ExecutedRoutedEventArgs e)
 		{
-			var context = e.Parameter as ChatContext;
-			if (context != null)
+			var page = e.Parameter as ChatPage;
+			if (page != null)
 			{
-				if (context.Target == null)
+				if (page.Target == null)
 				{
-					if (context.Session.State == IrcSessionState.Disconnected || 
+					if (page.Session.State == IrcSessionState.Disconnected || 
 						App.Settings.Current.Windows.SuppressWarningOnQuit ||
-						this.ConfirmQuit(string.Format("Are you sure you want to disconnect from {0}?", context.Session.NetworkName),
+						this.ConfirmQuit(string.Format("Are you sure you want to disconnect from {0}?", page.Session.NetworkName),
 						"Close Server Tab"))
 					{
-						if(context.Session.State != IrcSessionState.Disconnected)
+						if(page.Session.State != IrcSessionState.Disconnected)
 						{
-							context.Session.Quit("Leaving");
+							page.Session.Quit("Leaving");
 						}
 						var itemsToRemove = (from i in this.Items
-											 where i.Control.Session == context.Session
-											 select i.Control.Context).ToArray();
-						foreach(var item in itemsToRemove)
+											 where i.Page.Session == page.Session
+											 select i.Page).ToArray();
+						foreach(var p in itemsToRemove)
 						{
-							this.RemovePage(item);
+							this.RemovePage(p);
 						}
 					}
 				}
 				else
 				{
-					if(context.Target.IsChannel && context.Session.State != IrcSessionState.Disconnected)
+					if(page.Target.IsChannel && page.Session.State != IrcSessionState.Disconnected)
 					{
-						context.Session.Part(context.Target.Name);
+						page.Session.Part(page.Target.Name);
 					}
-					this.RemovePage(context);
+					this.RemovePage(page);
 				}
 			}
 		}
 
 		private void ExecuteNewTab(object sender, ExecutedRoutedEventArgs e)
 		{
-			this.AddPage(new ChatContext(new IrcSession(this.Dispatcher), null), true);
+			this.AddPage(new ChatControl(new IrcSession(this.Dispatcher), null), true);
 		}
 
 		private void ExecuteDetach(object sender, ExecutedRoutedEventArgs e)
 		{
 			var item = e.Parameter as ChatTabItem;
-			if (item != null && !item.Control.IsServer)
+			if (item != null && item.Page.Type != ChatPageType.Server)
 			{
 				this.Items.Remove(item);
-				var ctrl = item.Control;
+				var ctrl = item.Content;
 				item.Content = null;
-				var window = new ChannelWindow(ctrl);
+				var window = new ChannelWindow(item.Page);
 				window.Show();
 			}
 		}
 
 		private void CanExecuteCloseTab(object sender, CanExecuteRoutedEventArgs e)
 		{
-			var context = e.Parameter as ChatContext;
-			if (context != null)
+			var page = e.Parameter as ChatPage;
+			if (page != null)
 			{
-				if (context.Target == null)
+				if (page.Target == null)
 				{
-					e.CanExecute = this.Items.Count((i) => i.Control.IsServer) > 1;
+					e.CanExecute = this.Items.Count((i) => i.Page.Type == ChatPageType.Server) > 1;
 				}
 				else
 				{

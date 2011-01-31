@@ -1,0 +1,52 @@
+Microsoft (R) Build Engine Version 4.0.30319.1
+[Microsoft .NET Framework, Version 4.0.30319.1]
+Copyright (C) Microsoft Corporation 2007. All rights reserved.
+
+Build started 1/30/2011 9:30:32 PM.
+Project "C:\Users\brett\Code\Floe\Floe.UI\Floe.UI.csproj" on node 1 (default targets).
+Project "C:\Users\brett\Code\Floe\Floe.UI\Floe.UI.csproj" (1) is building "C:\Users\brett\Code\Floe\Floe.Configuration\Floe.Configuration.csproj" (2) on node 1 (default targets).
+ResolveAssemblyReferences:
+  A TargetFramework profile exclusion list will be generated.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Floe.Configuration -> C:\Users\brett\Code\Floe\Floe.Configuration\bin\Debug\Floe.Configuration.dll
+Done Building Project "C:\Users\brett\Code\Floe\Floe.Configuration\Floe.Configuration.csproj" (default targets).
+Project "C:\Users\brett\Code\Floe\Floe.UI\Floe.UI.csproj" (1) is building "C:\Users\brett\Code\Floe\Floe.Net\Floe.Net.csproj" (3) on node 1 (default targets).
+ResolveAssemblyReferences:
+  A TargetFramework profile exclusion list will be generated.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Floe.Net -> C:\Users\brett\Code\Floe\Floe.Net\bin\Debug\Floe.Net.dll
+Done Building Project "C:\Users\brett\Code\Floe\Floe.Net\Floe.Net.csproj" (default targets).
+ResolveAssemblyReferences:
+  A TargetFramework profile exclusion list will be generated.
+Project "C:\Users\brett\Code\Floe\Floe.UI\Floe.UI.csproj" (1) is building "C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj" (4) on node 1 (_CompileTemporaryAssembly target(s)).
+CoreCompile:
+  c:\Windows\Microsoft.NET\Framework\v4.0.30319\Csc.exe /noconfig /nowarn:1701,1702 /nostdlib+ /platform:x86 /errorreport:prompt /warn:4 /define:DEBUG;TRACE /reference:C:\Users\brett\Code\Floe\Floe.Configuration\bin\Debug\Floe.Configuration.dll /reference:C:\Users\brett\Code\Floe\Floe.Net\bin\Debug\Floe.Net.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\mscorlib.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\PresentationCore.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\PresentationFramework.Aero.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\PresentationFramework.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.configuration.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Core.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Data.DataSetExtensions.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Data.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Drawing.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Xaml.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Xml.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\System.Xml.Linq.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\WindowsBase.dll" /debug+ /debug:full /filealign:512 /keyfile:..\Floe.snk /optimize- /out:obj\x86\Debug\Floe.exe /target:winexe /win32icon:Resources\App.ico Application\App_Ignore.cs Application\App_Logging.cs Application\App_Patterns.cs Application\App_Resources.cs ChannelWindow\ChannelWindow.xaml.cs ChannelWindow\ChannelWindow_Commands.cs ChannelWindow\ChannelWindow_WndProc.cs ChatBox\ChatBox.cs ChatBox\ChatBoxBase.cs ChatBox\ChatDecoration.cs ChatBox\ChatFormatter.cs ChatBox\ChatLine.cs ChatBox\ChatPresenter.cs ChatBox\ChatPresenter_Rendering.cs ChatBox\ChatPresenter_Scrolling.cs ChatBox\ChatPresenter_Searching.cs ChatBox\ChatPresenter_Selecting.cs ChatBox\Constants.cs ChatBox\Enums.cs ChatControl\ChatControl.xaml.cs ChatControl\ChatControl_Commands.cs ChatControl\ChatControl_Events.cs ChatControl\ChatControl_NickList.cs ChatControl\ChatControl_Slap.cs ChatControl\NotifyState.cs ChatWindow\ChatPage.cs ChatWindow\ChatTabItem.cs ChatWindow\ChatWindow_Commands.cs ChatWindow\ChatWindow_Events.cs ChatWindow\ChatWindow.xaml.cs ChatWindow\ChatWindow_WndProc.cs Converters.cs Dialogs\ConfirmDialog.xaml.cs HsvColor.cs Interop\ColorPickerHelper.cs Interop\FolderBrowser.cs Interop\NotifyIcon.cs Interop\WindowConstants.cs Interop\WindowHelper.cs Settings\BufferSettingsControl.xaml.cs Settings\ColorsSettingsControl.xaml.cs Settings\DccSettingsControl.xaml.cs Settings\WindowSettingsControl.xaml.cs Settings\FormattingSettingsControl.xaml.cs Settings\ServerSettingsControl.xaml.cs Settings\SettingsWindow.xaml.cs Settings\UserSettingsControl.xaml.cs Application\App.xaml.cs Properties\AssemblyInfo.cs Properties\Resources.Designer.cs Properties\Settings.Designer.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\ChannelWindow\ChannelWindow.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\ChatControl\ChatControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\ChatWindow\ChatWindow.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Dialogs\ConfirmDialog.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\BufferSettingsControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\ColorsSettingsControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\DccSettingsControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\WindowSettingsControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\FormattingSettingsControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\ServerSettingsControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\SettingsWindow.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Settings\UserSettingsControl.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\Application\App.g.cs C:\Users\brett\Code\Floe\Floe.UI\obj\x86\Debug\GeneratedInternalTypeHelper.g.cs
+ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+Done Building Project "C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj" (_CompileTemporaryAssembly target(s)) -- FAILED.
+Done Building Project "C:\Users\brett\Code\Floe\Floe.UI\Floe.UI.csproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Users\brett\Code\Floe\Floe.UI\Floe.UI.csproj" (default target) (1) ->
+"C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj" (_CompileTemporaryAssembly target) (4) ->
+(CoreCompile target) -> 
+  ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+  ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+  ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+  ChatControl\ChatControl.xaml.cs(13,23): error CS0263: Partial declarations of 'Floe.UI.ChatControl' must not specify different base classes [C:\Users\brett\Code\Floe\Floe.UI\uhajljr0.tmp_proj]
+
+    0 Warning(s)
+    4 Error(s)
+
+Time Elapsed 00:00:01.33

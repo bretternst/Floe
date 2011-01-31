@@ -10,34 +10,35 @@ namespace Floe.UI
 {
 	public partial class ChannelWindow : Window
 	{
-		public ChatControl Control { get; private set; }
+		public ChatPage Control { get; private set; }
 
-		public ChannelWindow(ChatControl control)
+		public IrcSession Session { get { return this.Control.Session; } }
+
+		public ChannelWindow(ChatPage page)
 		{
 			InitializeComponent();
 			this.DataContext = this;
 
-			this.Control = control;
+			this.Control = page;
 			var bgBinding = new Binding();
 			bgBinding.Source = this;
 			bgBinding.Path = new PropertyPath("UIBackground");
-			control.SetBinding(ChatControl.UIBackgroundProperty, bgBinding);
-
-			control.SetValue(Grid.RowProperty, 1);
-			control.SetValue(Grid.ColumnSpanProperty, 2);
-			grdRoot.Children.Add(control);
-			control.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
+			page.SetBinding(ChatPage.UIBackgroundProperty, bgBinding);
+			page.SetValue(Grid.RowProperty, 1);
+			page.SetValue(Grid.ColumnSpanProperty, 2);
+			grdRoot.Children.Add((Control)page);
+			page.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 		}
 
 		protected override void OnClosing(CancelEventArgs e)
 		{
 			this.Control.Session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
 
-			var state = App.Settings.Current.Windows.States[this.Control.Context.Key];
+			var state = App.Settings.Current.Windows.States[this.Control.Id];
 
 			if (this.Control.Parent != null)
 			{
-				if (this.Control.IsConnected && this.Control.IsChannel)
+				if (this.Control.Session.State == IrcSessionState.Connected && this.Control.Target.IsChannel)
 				{
 					this.Control.Session.Part(this.Control.Target.Name);
 				}

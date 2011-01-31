@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Floe.UI.ChatControl"
+﻿<local:ChatPage x:Class="Floe.UI.ChatControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -6,7 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="699" Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
+             d:DesignHeight="400" d:DesignWidth="699" x:Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
 			 FontFamily="Segoe UI" FontSize="12">
 	<UserControl.InputBindings>
 		<KeyBinding Command="local:ChatControl.ClearCommand" Gesture="Alt+C"/>
@@ -253,4 +253,4 @@
 			<GridSplitter Grid.Column="1" Name="splitter" IsEnabled="false" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent"/>
 		</Grid>
 	</DockPanel>
-</UserControl>
+</local:ChatPage>

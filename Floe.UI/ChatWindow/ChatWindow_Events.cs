@@ -13,16 +13,16 @@ namespace Floe.UI
 
 		private void Session_SelfJoined(object sender, IrcJoinEventArgs e)
 		{
-			var context = new ChatContext((IrcSession)sender, e.Channel);
-			var state = App.Settings.Current.Windows.States[context.Key];
+			var page = new ChatControl((IrcSession)sender, e.Channel);
+			var state = App.Settings.Current.Windows.States[page.Id];
 			if (state.IsDetached)
 			{
-				var window = new ChannelWindow(new ChatControl(context));
+				var window = new ChannelWindow(page);
 				window.Show();
 			}
 			else
 			{
-				this.AddPage(context, true);
+				this.AddPage(page, true);
 			}
 		}
 
@@ -49,10 +49,10 @@ namespace Floe.UI
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)
 			{
 				foreach (var p in (from i in this.Items
-								   where i.Control.Context.Session == sender && i.Control.Context.Target != null
-								   select i.Control).ToArray())
+								   where i.Page.Session == sender && i.Page.Target != null
+								   select i).ToArray())
 				{
-					this.RemovePage(p.Context);
+					this.RemovePage(p.Page);
 				}
 			}
 		}
@@ -114,7 +114,7 @@ namespace Floe.UI
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			this.AddPage(new ChatContext(new IrcSession(this.Dispatcher), null), true);
+			this.AddPage(new ChatControl(new IrcSession(this.Dispatcher), null), true);
 
 			if (Application.Current.MainWindow == this)
 			{
@@ -130,9 +130,13 @@ namespace Floe.UI
 				{
 					if (i++ > 0)
 					{
-						this.AddPage(new ChatContext(new IrcSession(this.Dispatcher), null), false);
+						this.AddPage(new ChatControl(new IrcSession(this.Dispatcher), null), false);
 					}
-					this.Items[this.Items.Count - 1].Control.Connect(server);
+					var page = this.Items[this.Items.Count - 1] as ChatTabItem;
+					if (page != null)
+					{
+						((ChatControl)page.Content).Connect(server);
+					}
 				}
 			}
 		}
@@ -146,7 +150,8 @@ namespace Floe.UI
 		{
 			base.OnClosing(e);
 
-			if (!_isShuttingDown && !App.Settings.Current.Windows.SuppressWarningOnQuit && this.Items.Any((i) => i.Control.IsConnected))
+			if (!_isShuttingDown && !App.Settings.Current.Windows.SuppressWarningOnQuit &&
+				this.Items.Any((i) => i.Page.Session.State == IrcSessionState.Connected))
 			{
 				if (!this.ConfirmQuit("Are you sure you want to exit?", "Confirm Exit"))
 				{
@@ -159,7 +164,7 @@ namespace Floe.UI
 
 			foreach (var page in this.Items)
 			{
-				page.Control.Dispose();
+				page.Dispose();
 			}
 
 			foreach (var win in App.Current.Windows)

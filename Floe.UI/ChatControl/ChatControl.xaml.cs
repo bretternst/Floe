@@ -10,7 +10,7 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl, IDisposable
+	public partial class ChatControl : Floe.UI.ChatPage
 	{
 		#region Nested types
 
@@ -31,27 +31,20 @@ namespace Floe.UI
 		private LogFileHandle _logFile;
 		private ChatLine _markerLine;
 
-		public readonly static DependencyProperty UIBackgroundProperty = DependencyProperty.Register("UIBackground",
-			typeof(SolidColorBrush), typeof(ChatControl));
-		public SolidColorBrush UIBackground
-		{
-			get { return (SolidColorBrush)this.GetValue(UIBackgroundProperty); }
-			set { this.SetValue(UIBackgroundProperty, value); }
-		}
-
-		public ChatControl(ChatContext context)
+		public ChatControl(IrcSession session, IrcTarget target)
+			: base(target == null ? ChatPageType.Server : ChatPageType.Chat, session, target,
+			target == null ? "server" : string.Format("{0}.{1}", session.NetworkName, target.Name).ToLowerInvariant())
 		{
 			_history = new LinkedList<string>();
 			this.Nicknames = new ObservableCollection<NicknameItem>();
-			this.Context = context;
-			this.Header = context.Target == null ? "Server" : context.Target.ToString();
+			this.Header = this.Target == null ? "Server" : this.Target.ToString();
 
 			InitializeComponent();
 			this.SubscribeEvents();
 
 			if (!this.IsServer)
 			{
-				_logFile = App.OpenLogFile(context.Key);
+				_logFile = App.OpenLogFile(this.Id);
 				var logLines = new List<ChatLine>();
 				while (_logFile.Buffer.Count > 0)
 				{
@@ -62,7 +55,7 @@ namespace Floe.UI
 				boxOutput.AppendBulkLines(logLines);
 			}
 
-			var state = App.Settings.Current.Windows.States[context.Key];
+			var state = App.Settings.Current.Windows.States[this.Id];
 			if (this.IsChannel)
 			{
 				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
@@ -86,8 +79,8 @@ namespace Floe.UI
 					{
 						if (e.Message.Parameters.Count >= 3)
 						{
-							var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
-							if (this.Target.Equals(target))
+							var to = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
+							if (this.Target.Equals(to))
 							{
 								foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
 								{
@@ -118,29 +111,10 @@ namespace Floe.UI
 			boxOutput.ContextMenu = this.GetDefaultContextMenu();
 		}
 
-		public ChatContext Context { get; private set; }
-		public IrcSession Session { get { return this.Context.Session; } }
-		public IrcTarget Target { get { return this.Context.Target; } }
 		public bool IsServer { get { return this.Target == null; } }
 		public bool IsChannel { get { return this.Target != null && this.Target.IsChannel; } }
 		public bool IsNickname { get { return this.Target != null && !this.Target.IsChannel; } }
 		public string Perform { get; set; }
-
-		public static readonly DependencyProperty HeaderProperty =
-			DependencyProperty.Register("Header", typeof(string), typeof(ChatControl));
-		public string Header
-		{
-			get { return (string)this.GetValue(HeaderProperty); }
-			set { this.SetValue(HeaderProperty, value); }
-		}
-
-		public static readonly DependencyProperty TitleProperty =
-			DependencyProperty.Register("Title", typeof(string), typeof(ChatControl));
-		public string Title
-		{
-			get { return (string)this.GetValue(TitleProperty); }
-			set { this.SetValue(TitleProperty, value); }
-		}
 
 		public static readonly DependencyProperty IsConnectedProperty =
 			DependencyProperty.Register("IsConnected", typeof(bool), typeof(ChatControl));
@@ -156,14 +130,6 @@ namespace Floe.UI
 		{
 			get { return (string)this.GetValue(SelectedLinkProperty); }
 			set { this.SetValue(SelectedLinkProperty, value); }
-		}
-
-		public static readonly DependencyProperty NotifyStateProperty =
-			DependencyProperty.Register("NotifyState", typeof(NotifyState), typeof(ChatControl));
-		public NotifyState NotifyState
-		{
-			get { return (NotifyState)this.GetValue(NotifyStateProperty); }
-			set { this.SetValue(NotifyStateProperty, value); }
 		}
 
 		public void Connect(Floe.Configuration.ServerElement server)
@@ -320,9 +286,9 @@ namespace Floe.UI
 			}
 		}
 
-		public void Dispose()
+		public override void Dispose()
 		{
-			var state = App.Settings.Current.Windows.States[this.Context.Key];
+			var state = App.Settings.Current.Windows.States[this.Id];
 			state.NickListWidth = colNickList.ActualWidth;
 			state.ColumnWidth = boxOutput.ColumnWidth;
 			this.UnsubscribeEvents();

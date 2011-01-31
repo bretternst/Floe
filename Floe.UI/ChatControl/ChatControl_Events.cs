@@ -7,7 +7,7 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl
+	public partial class ChatControl : ChatPage
 	{
 		private char[] _channelModes = new char[0];
 		private string _topic = "", _prefix;
@@ -245,8 +245,8 @@ namespace Floe.UI
 					}
 
 					if(this.IsServer &&
-						!((ChatWindow)_window).Items.Any((item) => item.IsVisible && item.Control.Session == this.Session) &&
-						!App.Current.Windows.OfType<ChannelWindow>().Any((cw) => cw.Control.Session == this.Session && cw.IsActive))
+						!((ChatWindow)_window).Items.Any((item) => item.IsVisible && item.Page.Session == this.Session) &&
+						!App.Current.Windows.OfType<ChannelWindow>().Any((cw) => cw.Session == this.Session && cw.IsActive))
 					{
 						return true;
 					}
