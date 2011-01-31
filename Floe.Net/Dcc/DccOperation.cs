@@ -18,12 +18,15 @@ namespace Floe.Net
 	/// </remarks>
 	public abstract class DccOperation : IDisposable
 	{
-		private const int ConnectionTimeout = 60 * 1000;
+		private const int ConnectTimeout = 60 * 1000;
+		private const int ListenTimeout = 5 * 60 * 1000;
 		private const int BufferSize = 2048;
+		private const int MinPort = 1024;
 
 		private TcpListener _listener;
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
+		private Dispatcher _dispatcher;
 
 		public EventHandler Connected;
 		public EventHandler Disconnected;
@@ -33,29 +36,51 @@ namespace Floe.Net
 		public int Port { get; private set; }
 
 		protected NetworkStream Stream { get; private set; }
-		protected Dispatcher Dispatcher { get; private set; }
+
+		public DccOperation(Dispatcher dispatcher = null)
+		{
+			_dispatcher = dispatcher;
+		}
 
 		/// <summary>
-		/// Create a DCC session that listens on the specified port. Once a connection is established, there is no difference
+		/// Open a DCC session that listens on the specified port. Once a connection is established, there is no difference
 		/// between this session and one that started with an outgoing connection.
 		/// </summary>
-		/// <param name="port">The port to listen on.</param>
+		/// <param name="startPort">The lowest available port to listen on.</param>
+		/// <param name="startPort">The highest available port to listen on.</param>
 		/// <param name="dispatcher">An optional dispatcher used to route events to the main thread.</param>
-		public DccOperation(int port, Dispatcher dispatcher = null)
+		public int Listen(int lowPort, int highPort, Dispatcher dispatcher = null)
 		{
-			if (port <= 0 || port > ushort.MaxValue)
+			if (lowPort > ushort.MaxValue || lowPort < MinPort)
 			{
-				throw new ArgumentException("port");
+				throw new ArgumentException("lowPort");
 			}
-			this.Dispatcher = dispatcher;
+			if (highPort > ushort.MaxValue || highPort < lowPort)
+			{
+				throw new ArgumentException("highPort");
+			}
 
-			_listener = new TcpListener(IPAddress.Any, port);
-			_listener.Start();
+			while(true)
+			{
+				_listener = new TcpListener(IPAddress.Any, lowPort);
+				try
+				{
+					_listener.Start();
+					break;
+				}
+				catch (SocketException)
+				{
+					if (++lowPort > ushort.MaxValue)
+					{
+						throw new InvalidOperationException("No available ports.");
+					}
+				}
+			}
 
 			_socketThread = new Thread(new ThreadStart(() =>
 				{
 					var ar = _listener.BeginAcceptTcpClient(null, null);
-					if (ar.AsyncWaitHandle.WaitOne(ConnectionTimeout))
+					if (ar.AsyncWaitHandle.WaitOne(ListenTimeout))
 					{
 						try
 						{
@@ -91,21 +116,21 @@ namespace Floe.Net
 				}));
 			_socketThread.IsBackground = true;
 			_socketThread.Start();
+			return lowPort;
 		}
 
 		/// <summary>
-		/// Creates a DCC connection that connets to another host.
+		/// Open a DCC connection that connets to another host.
 		/// </summary>
 		/// <param name="address">The remote IP address.</param>
 		/// <param name="port">The remote port.</param>
 		/// <param name="dispatcher">An optional dispatcher used to route events to the main thread.</param>
-		public DccOperation(IPAddress address, int port, Dispatcher dispatcher = null)
+		public void Connect(IPAddress address, int port, Dispatcher dispatcher = null)
 		{
 			if (port <= 0 || port > ushort.MaxValue)
 			{
 				throw new ArgumentException("port");
 			}
-			this.Dispatcher = dispatcher;
 			this.Address = address;
 			this.Port = port;
 
@@ -113,7 +138,7 @@ namespace Floe.Net
 			_socketThread = new Thread(new ThreadStart(() =>
 				{
 					var ar = _tcpClient.BeginConnect(address, port, null, null);
-					if (ar.AsyncWaitHandle.WaitOne(ConnectionTimeout))
+					if (ar.AsyncWaitHandle.WaitOne(ConnectTimeout))
 					{
 						try
 						{
@@ -168,55 +193,61 @@ namespace Floe.Net
 		protected virtual void OnConnected()
 		{
 			this.Stream = _tcpClient.GetStream();
-
-			var handler = this.Connected;
-			if (handler != null)
-			{
-				if (this.Dispatcher != null)
-				{
-					this.Dispatcher.BeginInvoke(handler, this, EventArgs.Empty);
-				}
-				else
-				{
-					handler(this, EventArgs.Empty);
-				}
-			}
+			this.RaiseEvent(this.Connected);
 		}
 
 		protected virtual void OnDisconnected()
 		{
-			var handler = this.Disconnected;
-			if (handler != null)
-			{
-				if (this.Dispatcher != null)
-				{
-					this.Dispatcher.BeginInvoke(handler, this, EventArgs.Empty);
-				}
-				else
-				{
-					handler(this, EventArgs.Empty);
-				}
-			}
+			this.RaiseEvent(this.Disconnected);
 		}
 
 		protected virtual void OnError(Exception ex)
 		{
-			var handler = this.Error;
-			if (handler != null)
-			{
-				if (this.Dispatcher != null)
-				{
-					this.Dispatcher.BeginInvoke(handler, this, new ErrorEventArgs(ex));
-				}
-				else
-				{
-					handler(this, new ErrorEventArgs(ex));
-				}
-			}
+			this.RaiseEvent(this.Error, new ErrorEventArgs(ex));
 		}
 
 		protected virtual void OnReceived(byte[] buffer, int count)
 		{
+		}
+
+		protected void Dispatch<T>(Action<T> handler, T arg)
+		{
+			if (_dispatcher != null)
+			{
+				_dispatcher.BeginInvoke(handler, arg);
+			}
+			else
+			{
+				handler(arg);
+			}
+		}
+
+		protected void Dispatch(Action handler)
+		{
+			if (_dispatcher != null)
+			{
+				_dispatcher.BeginInvoke(handler);
+			}
+			else
+			{
+				handler();
+			}
+		}
+
+		protected void RaiseEvent<T>(EventHandler<T> evt, T arg) where T : EventArgs
+		{
+			if (evt != null)
+			{
+				evt(this, arg);
+			}
+		}
+
+		protected void RaiseEvent(EventHandler evt)
+		{
+			if (evt != null)
+			{
+				evt(this, EventArgs.Empty);
+			}
 		}
 
 		private void SocketLoop()

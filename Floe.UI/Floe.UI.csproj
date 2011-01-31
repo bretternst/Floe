@@ -106,6 +106,7 @@
     </Compile>
     <Compile Include="HsvColor.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
+    <Compile Include="Interop\FolderBrowser.cs" />
     <Compile Include="Interop\NotifyIcon.cs" />
     <Compile Include="Interop\WindowConstants.cs" />
     <Compile Include="Interop\WindowHelper.cs" />
@@ -114,6 +115,9 @@
     </Compile>
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\DccSettingsControl.xaml.cs">
+      <DependentUpon>DccSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\WindowSettingsControl.xaml.cs">
       <DependentUpon>WindowSettingsControl.xaml</DependentUpon>
@@ -157,6 +161,10 @@
     <Page Include="Settings\ColorsSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\DccSettingsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\WindowSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>

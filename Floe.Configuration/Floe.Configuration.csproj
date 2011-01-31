@@ -50,6 +50,7 @@
     <Compile Include="ChannelStateElement.cs" />
     <Compile Include="ChatPalette.cs" />
     <Compile Include="ColorsElement.cs" />
+    <Compile Include="DccElement.cs" />
     <Compile Include="FormattingElement.cs" />
     <Compile Include="PersistentSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
