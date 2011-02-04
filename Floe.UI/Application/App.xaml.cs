@@ -29,7 +29,7 @@ namespace Floe.UI
 					var channelWindow = Application.Current.Windows.OfType<ChannelWindow>().FirstOrDefault((w) => w.IsActive);
 					if (channelWindow != null)
 					{
-						return channelWindow.Control;
+						return channelWindow.Page;
 					}
 				}
 
@@ -84,8 +84,8 @@ namespace Floe.UI
 
 		public static bool Create(IrcSession session, IrcTarget target, bool makeActive)
 		{
-			var detached = App.Current.Windows.OfType<ChannelWindow>().Where((cw) => cw.Control.Session == session
-				&& target.Equals(cw.Control.Target)).FirstOrDefault();
+			var detached = App.Current.Windows.OfType<ChannelWindow>().Where((cw) => cw.Page.Session == session
+				&& target.Equals(cw.Page.Target)).FirstOrDefault();
 			if (detached != null)
 			{
 				if (makeActive)

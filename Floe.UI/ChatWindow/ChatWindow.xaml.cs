@@ -28,11 +28,6 @@ namespace Floe.UI
 		{
 			var item = new ChatTabItem(page);
 
-			if (page.Type == ChatPageType.Server || page.Type == ChatPageType.Chat)
-			{
-				this.SetBindings(page);
-			}
-
 			if (page.Type == ChatPageType.Server)
 			{
 				this.Items.Add(item);
@@ -94,7 +89,6 @@ namespace Floe.UI
 				}
 			}
 
-			this.SetBindings(page);
 			this.SwitchToPage(page);
 		}
 
@@ -116,14 +110,6 @@ namespace Floe.UI
 					i.Page.Session.Quit("Leaving");
 				}
 			}
-		}
-
-		private void SetBindings(ChatPage control)
-		{
-			var bgBinding = new Binding();
-			bgBinding.Source = this;
-			bgBinding.Path = new PropertyPath("UIBackground");
-			control.SetBinding(ChatPage.UIBackgroundProperty, bgBinding);
 		}
 	}
 }

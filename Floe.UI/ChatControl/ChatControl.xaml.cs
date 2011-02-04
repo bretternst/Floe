@@ -111,9 +111,8 @@ namespace Floe.UI
 			boxOutput.ContextMenu = this.GetDefaultContextMenu();
 		}
 
-		public bool IsServer { get { return this.Target == null; } }
-		public bool IsChannel { get { return this.Target != null && this.Target.IsChannel; } }
-		public bool IsNickname { get { return this.Target != null && !this.Target.IsChannel; } }
+		public bool IsChannel { get { return this.Type == ChatPageType.Chat && this.Target.IsChannel; } }
+		public bool IsNickname { get { return this.Type == ChatPageType.Chat && !this.Target.IsChannel; } }
 		public string Perform { get; set; }
 
 		public static readonly DependencyProperty IsConnectedProperty =

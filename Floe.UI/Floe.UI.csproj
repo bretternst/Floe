@@ -96,6 +96,7 @@
     <Compile Include="ChatWindow\ChatPage.cs" />
     <Compile Include="ChatWindow\ChatTabItem.cs" />
     <Compile Include="ChatWindow\ChatWindow_Commands.cs" />
+    <Compile Include="ChatWindow\ChatWindow_Dcc.cs" />
     <Compile Include="ChatWindow\ChatWindow_Events.cs" />
     <Compile Include="ChatWindow\ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
@@ -104,6 +105,9 @@
     <Compile Include="Converters.cs" />
     <Compile Include="Dialogs\ConfirmDialog.xaml.cs">
       <DependentUpon>ConfirmDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FileControl\FileControl.xaml.cs">
+      <DependentUpon>FileControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="HsvColor.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
@@ -152,6 +156,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialogs\ConfirmDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FileControl\FileControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Data;
 using Floe.Net;
 
 namespace Floe.UI
@@ -22,11 +23,12 @@ namespace Floe.UI
 		public IrcTarget Target { get; protected set; }
 		public ChatPageType Type { get; protected set; }
 		public string Id { get; protected set; }
+		public bool IsServer { get { return this.Type == ChatPageType.Server; } }
 
 		public virtual void Dispose() { }
 
 		public readonly static DependencyProperty UIBackgroundProperty = DependencyProperty.Register("UIBackground",
-			typeof(SolidColorBrush), typeof(ChatControl));
+			typeof(SolidColorBrush), typeof(ChatPage));
 		public SolidColorBrush UIBackground
 		{
 			get { return (SolidColorBrush)this.GetValue(UIBackgroundProperty); }
@@ -69,6 +71,17 @@ namespace Floe.UI
 			this.Session = session;
 			this.Target = target;
 			this.Id = id;
+		}
+
+		protected override void OnVisualParentChanged(DependencyObject oldParent)
+		{
+			base.OnVisualParentChanged(oldParent);
+
+			var bgBinding = new Binding();
+			bgBinding.Source = Window.GetWindow(this);
+			bgBinding.Path = new PropertyPath("UIBackground");
+			bgBinding.Mode = BindingMode.OneWay;
+			this.SetBinding(ChatPage.UIBackgroundProperty, bgBinding);
 		}
 	}
 }

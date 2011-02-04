@@ -30,7 +30,7 @@ namespace Floe.UI
 			var page = e.Parameter as ChatPage;
 			if (page != null)
 			{
-				if (page.Target == null)
+				if (page.Type == ChatPageType.Server)
 				{
 					if (page.Session.State == IrcSessionState.Disconnected || 
 						App.Settings.Current.Windows.SuppressWarningOnQuit ||
@@ -42,7 +42,7 @@ namespace Floe.UI
 							page.Session.Quit("Leaving");
 						}
 						var itemsToRemove = (from i in this.Items
-											 where i.Page.Session == page.Session
+											 where i.Page.Session == page.Session && (i.Page.Type == ChatPageType.Chat || i.Page.Type == ChatPageType.Server)
 											 select i.Page).ToArray();
 						foreach(var p in itemsToRemove)
 						{
@@ -50,7 +50,7 @@ namespace Floe.UI
 						}
 					}
 				}
-				else
+				else if (page.Type == ChatPageType.Chat)
 				{
 					if(page.Target.IsChannel && page.Session.State != IrcSessionState.Disconnected)
 					{

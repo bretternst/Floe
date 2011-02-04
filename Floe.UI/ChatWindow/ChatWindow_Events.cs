@@ -86,6 +86,10 @@ namespace Floe.UI
 							"CLIENTINFO",
 							"VERSION", "PING", "CLIENTINFO", "ACTION"), true);
 						break;
+					case "DCC":
+						var args = e.Command.Arguments;
+						this.HandleDcc(session, new IrcTarget(e.From), args);
+						break;
 				}
 			}
 		}
@@ -114,7 +118,8 @@ namespace Floe.UI
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			this.AddPage(new ChatControl(new IrcSession((a) => this.Dispatcher.BeginInvoke(a)), null), true);
+			var session = new IrcSession((a) => this.Dispatcher.BeginInvoke(a));
+			this.AddPage(new ChatControl(session, null), true);
 
 			if (Application.Current.MainWindow == this)
 			{

@@ -4,7 +4,7 @@
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="{Binding ElementName=grdRoot, Path=Children[2].Title}" Height="399" Width="722" 
 		xmlns:local="clr-namespace:Floe.UI"
-		MinWidth="300"  MinHeight="250" WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True"
+		MinWidth="300"  MinHeight="205" WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True"
 		Background="Transparent" Icon="{Binding Source={x:Static local:App.ApplicationImage}}" x:Name="window">
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>

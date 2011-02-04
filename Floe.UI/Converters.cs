@@ -43,6 +43,33 @@ namespace Floe.UI
 		}
 	}
 
+	public class BytesToFriendlyStringConverter : IValueConverter
+	{
+		private static readonly string[] _suffixes = new[] { "B", "KB", "MB", "GB", "TB" };
+		private static readonly string[] _formats = new[] { "F0", "F0", "F1", "F2", "F2" };
+
+		private string _format = "{0} {1}";
+
+		public string Format { get { return _format; } set { _format = value; } }
+
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var bytes = (double)value;
+			int i = 0;
+			while (bytes > 1024 && i < _suffixes.Length - 1)
+			{
+				bytes /= 1024.0;
+				i++;
+			}
+			return string.Format(_format, bytes.ToString(_formats[i]), _suffixes[i]);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
 	public class BrushAlphaConverter : IMultiValueConverter
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
