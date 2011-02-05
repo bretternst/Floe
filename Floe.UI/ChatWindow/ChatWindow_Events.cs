@@ -121,6 +121,13 @@ namespace Floe.UI
 			var session = new IrcSession((a) => this.Dispatcher.BeginInvoke(a));
 			this.AddPage(new ChatControl(session, null), true);
 
+			this.Dispatcher.BeginInvoke((Action)(() =>
+				{
+					var page2 = new FileControl(session, new IrcTarget("Nedry"));
+					page2.StartReceive(System.Net.IPAddress.Loopback, 57000, "test.txt", 50);
+					App.Create(session, page2, false);
+				}));
+
 			if (Application.Current.MainWindow == this)
 			{
 				if (App.Settings.IsFirstLaunch)

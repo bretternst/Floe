@@ -44,8 +44,11 @@ namespace Floe.UI
 						long.TryParse(args[5], out size);
 					}
 
-
+					var page = new FileControl(session, target);
+					page.StartReceive(addr, port, name, size);
+					App.Create(session, new FileControl(session, target), false);
 					break;
+
 				default:
 					session.SendCtcp(target, new CtcpCommand("ERRMSG", "DCC", args[0], "unavailable"), true);
 					break;

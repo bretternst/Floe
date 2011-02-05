@@ -54,7 +54,7 @@ namespace Floe.UI
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			var bytes = (double)value;
+			var bytes = System.Convert.ToDouble(value);
 			int i = 0;
 			while (bytes > 1024 && i < _suffixes.Length - 1)
 			{

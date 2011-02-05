@@ -82,6 +82,39 @@ namespace Floe.UI
             }
 		}
 
+		public static void Create(IrcSession session, ChatPage page, bool makeActive)
+		{
+			if (App.Settings.Current.Windows.States.Exists(page.Id) ?
+				App.Settings.Current.Windows.States[page.Id].IsDetached : App.Settings.Current.Windows.DefaultQueryDetached)
+			{
+				var newWin = new ChannelWindow(page);
+				if (!makeActive)
+				{
+					newWin.ShowActivated = false;
+					newWin.WindowState = WindowState.Minimized;
+				}
+				newWin.Show();
+
+				if (makeActive)
+				{
+					newWin.Activate();
+				}
+				else
+				{
+					Interop.WindowHelper.FlashWindow(newWin);
+				}
+			}
+			else
+			{
+				var window = App.Current.MainWindow as ChatWindow;
+				window.AddPage(page, makeActive);
+				if (!window.IsActive)
+				{
+					Interop.WindowHelper.FlashWindow(window);
+				}
+			}
+		}
+
 		public static bool Create(IrcSession session, IrcTarget target, bool makeActive)
 		{
 			var detached = App.Current.Windows.OfType<ChannelWindow>().Where((cw) => cw.Page.Session == session
@@ -96,7 +129,6 @@ namespace Floe.UI
 			}
 
 			var window = App.Current.MainWindow as ChatWindow;
-
 			var page = window.FindPage(session, target);
 			if (page != null)
 			{
@@ -115,34 +147,7 @@ namespace Floe.UI
 			else
 			{
 				page = new ChatControl(session, target);
-				if (App.Settings.Current.Windows.States.Exists(page.Id) ? 
-					App.Settings.Current.Windows.States[page.Id].IsDetached : App.Settings.Current.Windows.DefaultQueryDetached)
-				{
-					var newWin = new ChannelWindow(page);
-					if (!makeActive)
-					{
-						newWin.ShowActivated = false;
-						newWin.WindowState = WindowState.Minimized;
-					}
-					newWin.Show();
-
-					if (makeActive)
-					{
-						newWin.Activate();
-					}
-					else
-					{
-						Interop.WindowHelper.FlashWindow(newWin);
-					}
-				}
-				else
-				{
-					window.AddPage(page, makeActive);
-					if (!window.IsActive)
-					{
-						Interop.WindowHelper.FlashWindow(window);
-					}
-				}
+				Create(session, page, makeActive);
 				return true;
 			}
 		}

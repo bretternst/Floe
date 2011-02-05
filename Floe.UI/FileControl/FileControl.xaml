@@ -46,21 +46,81 @@
 			</Border>
 			<ProgressBar Name="prgProgress" Margin="0,20,0,10" Height="15" Maximum="{Binding ElementName=fileControl, Path=FileSize}" Value="{Binding ElementName=fileControl, Path=BytesTransferred}"/>
 			<StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-				<Button Name="btnCancel" Content="Cancel" MinWidth="75" Click="btnCancel_Click" IsEnabled="False">
-					<Button.Triggers>
-						<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Working">
-							<Setter Property="Button.IsEnabled" Value="True"/>
-						</DataTrigger>
-					</Button.Triggers>
+				<Button Margin="7,0,0,0" Name="btnSave" Content="Save" MinWidth="75" Click="btnSave_Click">
+					<Button.Style>
+						<Style TargetType="Button">
+							<Setter Property="Visibility" Value="Collapsed"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Asking">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
 				</Button>
-				<Button Margin="7,0,0,0" Name="btnOpen" Content="Open" IsEnabled="False" MinWidth="75" Click="btnOpen_Click">
-					<Button.Triggers>
-						<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Finished">
-							<Setter Property="Button.IsEnabled" Value="True"/>
-						</DataTrigger>
-					</Button.Triggers>
+				<Button Margin="7,0,0,0" Name="btnSaveAs" Content="Save As..." MinWidth="75" Click="btnSaveAs_Click">
+					<Button.Style>
+						<Style TargetType="Button">
+							<Setter Property="Visibility" Value="Collapsed"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Asking">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
 				</Button>
-				<Button Margin="7,0,0,0" Name="btnOpenFolder" Content="Open Folder" MinWidth="75" Click="btnOpenFolder_Click"/>
+				<Button Margin="7,0,0,0" Name="btnDecline" Content="Decline" MinWidth="75" Click="btnDecline_Click">
+					<Button.Style>
+						<Style TargetType="Button">
+							<Setter Property="Visibility" Value="Collapsed"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Asking">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+				</Button>
+				<Button Margin="7,0,0,0" Name="btnCancel" Content="Cancel" MinWidth="75" Click="btnCancel_Click">
+					<Button.Style>
+						<Style TargetType="Button">
+							<Setter Property="Visibility" Value="Collapsed"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Working">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+				</Button>
+				<Button Margin="7,0,0,0" Name="btnOpen" Content="Open" MinWidth="75" Click="btnOpen_Click">
+					<Button.Style>
+						<Style TargetType="Button">
+							<Setter Property="Visibility" Value="Collapsed"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Finished">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+				</Button>
+				<Button Margin="7,0,0,0" Name="btnOpenFolder" Content="Open Folder" MinWidth="75" Click="btnOpenFolder_Click">
+					<Button.Style>
+						<Style TargetType="Button">
+							<Setter Property="Visibility" Value="Collapsed"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Finished">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Working">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+				</Button>
 			</StackPanel>
 		</StackPanel>
 	</Border>

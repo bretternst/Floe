@@ -48,6 +48,8 @@
   <ItemGroup>
     <Compile Include="CtcpCommand.cs" />
     <Compile Include="Dcc\DccOperation.cs" />
+    <Compile Include="Dcc\DccXmitReceiver.cs" />
+    <Compile Include="Dcc\DccXmitSender.cs" />
     <Compile Include="IrcCode.cs" />
     <Compile Include="IrcCodeHandler.cs" />
     <Compile Include="IrcModes.cs" />

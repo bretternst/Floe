@@ -25,7 +25,9 @@ namespace Floe.Net
 		private TcpListener _listener;
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
+		private ManualResetEvent _endHandle;
 		private Action<Action> _callback;
+		private long _bytesTransferred;
 
 		public EventHandler Connected;
 		public EventHandler Disconnected;
@@ -33,12 +35,24 @@ namespace Floe.Net
 
 		public IPAddress Address { get; private set; }
 		public int Port { get; private set; }
+		public long BytesTransferred
+		{
+			get
+			{
+				return Interlocked.Read(ref _bytesTransferred);
+			}
+			set
+			{
+				Interlocked.Exchange(ref _bytesTransferred, value);
+			}
+		}
 
 		protected NetworkStream Stream { get; private set; }
 
-		public DccOperation(Action<Action> callback)
+		public DccOperation(Action<Action> callback = null)
 		{
 			_callback = callback;
+			_endHandle = new ManualResetEvent(false);
 		}
 
 		/// <summary>
@@ -47,6 +61,7 @@ namespace Floe.Net
 		/// </summary>
 		/// <param name="startPort">The lowest available port to listen on.</param>
 		/// <param name="startPort">The highest available port to listen on.</param>
+		/// <returns>Returns the actual port number the session is listening on.</returns>
 		public int Listen(int lowPort, int highPort)
 		{
 			if (lowPort > ushort.MaxValue || lowPort < MinPort)
@@ -164,6 +179,11 @@ namespace Floe.Net
 				}));
 		}
 
+		public void Close()
+		{
+			_endHandle.Set();
+		}
+
 		/// <summary>
 		/// Closes an active DCC session or cancels the listener.
 		/// </summary>
@@ -251,19 +271,37 @@ namespace Floe.Net
 		{
 			var readBuffer = new byte[BufferSize];
 
-			while (_tcpClient.Connected)
+			try
 			{
-				var ar = this.Stream.BeginRead(readBuffer, 0, BufferSize, null, null);
-				ar.AsyncWaitHandle.WaitOne();
-				int count = this.Stream.EndRead(ar);
-				if (count == 0)
+				while (_tcpClient.Connected)
 				{
-					break;
-				}
+					var ar = this.Stream.BeginRead(readBuffer, 0, BufferSize, null, null);
+					int idx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle });
+					switch (idx)
+					{
+						case 0:
+							int count = this.Stream.EndRead(ar);
+							if (count <= 0)
+							{
+								return;
+							}
+							this.OnReceived(readBuffer, count);
+							break;
+						case 1:
+							return;
 
-				this.OnReceived(readBuffer, count);
+					}
+				}
 			}
-			_tcpClient.Close();
+			catch (Exception ex)
+			{
+				this.OnError(ex);
+			}
+			finally
+			{
+				_tcpClient.Close();
+				this.OnDisconnected();
+			}
 			return;
 		}
 	}
