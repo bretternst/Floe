@@ -21,6 +21,8 @@ namespace Floe.UI
 		private FileInfo _fileInfo;
 		private DccOperation _dcc;
 		private Timer _pollTimer;
+		private IPAddress _address;
+		private int _port;
 
 		public static readonly DependencyProperty DescriptionProperty =
 			DependencyProperty.Register("Description", typeof(string), typeof(FileControl));
@@ -78,17 +80,36 @@ namespace Floe.UI
 			this.Header = this.Title = string.Format("DCC [{0}]", target.Name);
 		}
 
-		public void StartSend(IPAddress address, FileInfo file)
+		public int StartSend(FileInfo file)
 		{
 			_fileInfo = file;
 			this.Description = string.Format("Sending {0}...", file.Name);
 			this.FileSize = file.Length;
 			this.StatusText = "Listening for connection";
+			this.Status = FileStatus.Working;
+
+			_dcc = new DccXmitSender(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action));
+			_dcc.Connected += dcc_Connected;
+			_dcc.Disconnected += dcc_Disconnected;
+			_dcc.Error += dcc_Error;
+			try
+			{
+				_port = _dcc.Listen(App.Settings.Current.Dcc.LowPort, App.Settings.Current.Dcc.HighPort);
+			}
+			catch (InvalidOperationException)
+			{
+				this.Status = FileStatus.Cancelled;
+				this.StatusText = "Error: No ports available";
+				_port = 0;
+			}
+			return _port;
 		}
 
 		public void StartReceive(IPAddress address, int port, string name, long size)
 		{
 			_fileInfo = new FileInfo(Path.Combine(App.Settings.Current.Dcc.DownloadFolder, name));
+			_address = address;
+			_port = port;
 			this.Description = string.Format("Receiving {0}...", name);
 			this.FileSize = size;
 			this.StatusText = "Waiting for confirmation";
@@ -105,6 +126,7 @@ namespace Floe.UI
 			this.Status = FileStatus.Working;
 			this.StatusText = "Connecting";
 			_dcc = new DccXmitReceiver(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action));
+			_dcc.Connect(_address, _port);
 			_dcc.Connected += dcc_Connected;
 			_dcc.Disconnected += dcc_Disconnected;
 			_dcc.Error += dcc_Error;
@@ -190,6 +212,14 @@ namespace Floe.UI
 			this.Status = FileStatus.Cancelled;
 			this.StatusText = "Declined";
 			this.Session.SendCtcp(this.Target, new CtcpCommand("ERRMSG", "DCC", "XMIT", "declined"), true);
+		}
+
+		public void Dispose()
+		{
+			if (_dcc != null)
+			{
+				_dcc.Close();
+			}
 		}
 	}
 }

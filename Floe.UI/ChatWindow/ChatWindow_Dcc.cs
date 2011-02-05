@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Net;
+using System.IO;
 
 using Floe.Configuration;
 using Floe.Net;
@@ -46,12 +47,23 @@ namespace Floe.UI
 
 					var page = new FileControl(session, target);
 					page.StartReceive(addr, port, name, size);
-					App.Create(session, new FileControl(session, target), false);
+					App.Create(session, page, false);
 					break;
 
 				default:
 					session.SendCtcp(target, new CtcpCommand("ERRMSG", "DCC", args[0], "unavailable"), true);
 					break;
+			}
+		}
+
+		private void DccSend(IrcSession session, IrcTarget target, FileInfo file)
+		{
+			var page = new FileControl(session, target);
+			int port = page.StartSend(file);
+			App.Create(session, page, true);
+			if (port > 0)
+			{
+				session.SendCtcp(target, new CtcpCommand("DCC", "XMIT", "CLEAR", session.ExternalAddress.ToString(), port.ToString(), file.Name, file.Length.ToString()), false);
 			}
 		}
 	}

@@ -23,6 +23,7 @@
 		<CommandBinding Command="local:ChatWindow.MinimizeCommand" Executed="ExecuteMinimize"/>
 		<CommandBinding Command="local:ChatWindow.MaximizeCommand" Executed="ExecuteMaximize"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose"/>
+		<CommandBinding Command="local:ChatWindow.DccSendCommand" Executed="ExecuteDccSend"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<ContextMenu Placement="MousePoint" x:Key="NotifyMenu">

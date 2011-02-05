@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Win32;
 using Floe.Net;
 
 namespace Floe.UI
@@ -18,10 +19,11 @@ namespace Floe.UI
 		public readonly static RoutedUICommand MinimizeCommand = new RoutedUICommand("Minimize", "Minimize", typeof(ChatWindow));
 		public readonly static RoutedUICommand MaximizeCommand = new RoutedUICommand("Maximize", "Maximize", typeof(ChatWindow));
 		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Quit", "Close", typeof(ChatWindow));
+		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("DCC Send...", "DccSend", typeof(ChatWindow));
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
-			var control = tabsChat.SelectedContent as ChatControl;
+			var control = tabsChat.SelectedContent as ChatPage;
 			App.Create(control.Session, new IrcTarget((string)e.Parameter), true);
 		}
 
@@ -141,6 +143,19 @@ namespace Floe.UI
 		private void ExecuteClose(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.Close();
+		}
+
+		private void ExecuteDccSend(object sender, ExecutedRoutedEventArgs e)
+		{
+			var control = tabsChat.SelectedContent as ChatPage;
+			var dialog = new OpenFileDialog();
+			dialog.CheckFileExists = true;
+			dialog.Multiselect = false;
+			dialog.InitialDirectory = App.Settings.Current.Dcc.DownloadFolder;
+			if (dialog.ShowDialog(this) == true)
+			{
+				this.DccSend(control.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(dialog.FileName));
+			}
 		}
 	}
 }

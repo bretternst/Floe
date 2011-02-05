@@ -93,38 +93,46 @@ namespace Floe.Net
 			_socketThread = new Thread(new ThreadStart(() =>
 				{
 					var ar = _listener.BeginAcceptTcpClient(null, null);
-					if (ar.AsyncWaitHandle.WaitOne(ListenTimeout))
+					int index = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle }, ListenTimeout);
+					switch (index)
 					{
-						try
-						{
-							_tcpClient = _listener.EndAcceptTcpClient((IAsyncResult)ar);
-							return;
-						}
-						catch (SocketException ex)
-						{
-							this.OnError(ex);
-						}
-						finally
-						{
-							_listener.Stop();
-						}
-						var endpoint = (IPEndPoint)_tcpClient.Client.RemoteEndPoint;
-						this.Address = endpoint.Address;
-						this.Port = endpoint.Port;
-						this.OnConnected();
+						case 0:
+							try
+							{
+								_tcpClient = _listener.EndAcceptTcpClient((IAsyncResult)ar);
+							}
+							catch (SocketException)
+							{
+								return;
+							}
+							finally
+							{
+								_listener.Stop();
+							}
 
-						try
-						{
-							this.SocketLoop();
-						}
-						catch(Exception ex)
-						{
-							this.OnError(ex);
-						}
-					}
-					else
-					{
-						this.OnError(new TimeoutException());
+							var endpoint = (IPEndPoint)_tcpClient.Client.RemoteEndPoint;
+							this.Address = endpoint.Address;
+							this.Port = endpoint.Port;
+							this.OnConnected();
+
+							try
+							{
+								this.SocketLoop();
+							}
+							catch(Exception ex)
+							{
+								this.OnError(ex);
+							}
+							break;
+
+						case 1:
+							_listener.Stop();
+							return;
+
+						case WaitHandle.WaitTimeout:
+							_listener.Stop();
+							this.OnError(new TimeoutException());
+							break;
 					}
 				}));
 			_socketThread.IsBackground = true;
@@ -182,6 +190,10 @@ namespace Floe.Net
 		public void Close()
 		{
 			_endHandle.Set();
+			if (_listener != null)
+			{
+				_listener.Stop();
+			}
 		}
 
 		/// <summary>
