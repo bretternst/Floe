@@ -20,6 +20,23 @@ namespace Floe.Net
 		private int _handshakeBytesReceived;
 
 		/// <summary>
+		/// Gets or sets a value indicating whether the specified file will be overwritten if it already exists and a resume is not possible. If this is set to false,
+		/// the file will be renamed.
+		/// </summary>
+		public bool ForceOverwrite { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether a resume will be forced even if the transferred file does not appear to be the same as the existing file.
+		/// If there is no existing file to resume, this property does nothing.
+		/// </summary>
+		public bool ForceResume { get; set; }
+
+		/// <summary>
+		/// Gets the path to the file that was created. This may differ from the initial file path if it has been automatically renamed to avoid overwriting a file.
+		/// </summary>
+		public string FileSavedAs { get; private set; }
+
+		/// <summary>
 		/// Construct a new DccXmitReceiver.
 		/// </summary>
 		/// <param name="fileInfo">A reference to the file to save. If the file exists, a resume will be attempted. If the resume fails, the file will be renamed.</param>
@@ -28,6 +45,7 @@ namespace Floe.Net
 			: base(callback)
 		{
 			_fileInfo = fileInfo;
+			this.FileSavedAs = fileInfo.FullName;
 		}
 
 		protected override void OnReceived(byte[] buffer, int count)
@@ -43,21 +61,24 @@ namespace Floe.Net
 				if (_handshakeBytesReceived >= 4)
 				{
 					_timeStamp = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(_timeStampBytes, 0));
-					if (_timeStamp > 0 && _fileInfo.Exists && _fileInfo.Length < int.MaxValue && _timeStamp == (_fileInfo.LastWriteTimeUtc - new DateTime(1970, 1, 1)).TotalSeconds)
+					if (_fileInfo.Exists && _fileInfo.Length < int.MaxValue &&
+						(this.ForceResume || (_timeStamp > 0 && _timeStamp == (int)(_fileInfo.LastWriteTimeUtc - new DateTime(1970, 1, 1)).TotalSeconds)))
 					{
 						_fileStream = new FileStream(_fileInfo.FullName, FileMode.Append, FileAccess.Write, FileShare.Read);
 						resumeBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((int)_fileInfo.Length));
+						this.BytesTransferred = _fileInfo.Length;
 					}
 					else
 					{
 						int i = 1;
 						string fileName = Path.GetFileNameWithoutExtension(_fileInfo.Name);
-						while (_fileInfo.Exists)
+						while (_fileInfo.Exists && !this.ForceOverwrite)
 						{
 							_fileInfo = new FileInfo(
 								Path.Combine(_fileInfo.DirectoryName,
 								string.Format("{0} ({1}).{2}", fileName, i++, _fileInfo.Extension)));
 						}
+						this.FileSavedAs = _fileInfo.FullName;
 						_fileStream = new FileStream(_fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.Read);
 					}
 					this.Stream.Write(resumeBytes, 0, 4);
@@ -71,28 +92,28 @@ namespace Floe.Net
 			}
 		}
 
-		protected override void OnDisconnected()
+		private void CloseFile()
 		{
-			base.OnDisconnected();
-
 			if (_fileStream != null)
 			{
 				_fileStream.Dispose();
-				if (_timeStamp > 0)
+				if (_timeStamp > 0 && File.Exists(_fileInfo.FullName))
 				{
 					File.SetLastWriteTimeUtc(_fileInfo.FullName, new DateTime(1970, 1, 1) + TimeSpan.FromSeconds(_timeStamp));
 				}
 			}
 		}
 
+		protected override void OnDisconnected()
+		{
+			base.OnDisconnected();
+			this.CloseFile();
+		}
+
 		protected override void OnError(Exception ex)
 		{
 			base.OnError(ex);
-
-			if (_fileStream != null)
-			{
-				_fileStream.Dispose();
-			}
+			this.CloseFile();
 		}
 	}
 }

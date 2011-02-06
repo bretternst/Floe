@@ -11,11 +11,22 @@ namespace Floe.UI
 {
 	public partial class ChatWindow : Window
 	{
-		private void HandleDcc(IrcSession session, IrcTarget target, string[] args)
+		public void DccSend(IrcSession session, IrcTarget target, FileInfo file)
+		{
+			var page = new FileControl(session, target);
+			int port = page.StartSend(file);
+			App.Create(session, page, true);
+			if (port > 0)
+			{
+				session.SendCtcp(target, new CtcpCommand("DCC", "XMIT", "CLEAR", session.ExternalAddress.ToString(), port.ToString(), file.Name, file.Length.ToString()), false);
+			}
+		}
+
+		private bool HandleDcc(IrcSession session, IrcTarget target, string[] args)
 		{
 			if (args.Length < 1)
 			{
-				return;
+				return false;
 			}
 
 			string type = args[0].ToUpperInvariant();
@@ -25,7 +36,7 @@ namespace Floe.UI
 				case "XMIT":
 					if (args.Length < 4)
 					{
-						return;
+						return false;
 					}
 
 					IPAddress addr;
@@ -35,7 +46,7 @@ namespace Floe.UI
 						!int.TryParse(args[3], out port))
 					{
 						session.SendCtcp(target, new CtcpCommand("ERRMSG", "DCC", args[0], args[1], "unavailable"), true);
-						return;
+						return true;
 					}
 
 					string name = args.Length > 4 ? args[4] : null;
@@ -47,24 +58,16 @@ namespace Floe.UI
 
 					var page = new FileControl(session, target);
 					page.StartReceive(addr, port, name, size);
+					page.NotifyState = NotifyState.Alert;
 					App.Create(session, page, false);
+					App.Alert(Window.GetWindow(page), string.Format("{0} wants to send you a file.", target.Name));
 					break;
 
 				default:
 					session.SendCtcp(target, new CtcpCommand("ERRMSG", "DCC", args[0], "unavailable"), true);
 					break;
 			}
-		}
-
-		private void DccSend(IrcSession session, IrcTarget target, FileInfo file)
-		{
-			var page = new FileControl(session, target);
-			int port = page.StartSend(file);
-			App.Create(session, page, true);
-			if (port > 0)
-			{
-				session.SendCtcp(target, new CtcpCommand("DCC", "XMIT", "CLEAR", session.ExternalAddress.ToString(), port.ToString(), file.Name, file.Length.ToString()), false);
-			}
+			return true;
 		}
 	}
 }

@@ -36,7 +36,7 @@ namespace Floe.UI
 		}
 
 		public static readonly DependencyProperty HeaderProperty =
-			DependencyProperty.Register("Header", typeof(string), typeof(ChatControl));
+			DependencyProperty.Register("Header", typeof(string), typeof(ChatPage));
 		public string Header
 		{
 			get { return (string)this.GetValue(HeaderProperty); }
@@ -44,7 +44,7 @@ namespace Floe.UI
 		}
 
 		public static readonly DependencyProperty TitleProperty =
-			DependencyProperty.Register("Title", typeof(string), typeof(ChatControl));
+			DependencyProperty.Register("Title", typeof(string), typeof(ChatPage));
 		public string Title
 		{
 			get { return (string)this.GetValue(TitleProperty); }
@@ -52,7 +52,7 @@ namespace Floe.UI
 		}
 
 		public static readonly DependencyProperty NotifyStateProperty =
-			DependencyProperty.Register("NotifyState", typeof(NotifyState), typeof(ChatControl));
+			DependencyProperty.Register("NotifyState", typeof(NotifyState), typeof(ChatPage));
 		public NotifyState NotifyState
 		{
 			get { return (NotifyState)this.GetValue(NotifyStateProperty); }
@@ -62,6 +62,7 @@ namespace Floe.UI
 		public ChatPage()
 		{
 			this.Header = this.Title = "";
+			this.Loaded += new RoutedEventHandler(ChatPage_Loaded);
 		}
 
 		public ChatPage(ChatPageType type, IrcSession session, IrcTarget target, string id)
@@ -73,6 +74,11 @@ namespace Floe.UI
 			this.Id = id;
 		}
 
+		public virtual bool CanClose()
+		{
+			return true;
+		}
+
 		protected override void OnVisualParentChanged(DependencyObject oldParent)
 		{
 			base.OnVisualParentChanged(oldParent);
@@ -82,6 +88,14 @@ namespace Floe.UI
 			bgBinding.Path = new PropertyPath("UIBackground");
 			bgBinding.Mode = BindingMode.OneWay;
 			this.SetBinding(ChatPage.UIBackgroundProperty, bgBinding);
+		}
+
+		private void ChatPage_Loaded(object sender, RoutedEventArgs e)
+		{
+			if (this.IsVisible)
+			{
+				this.NotifyState = NotifyState.None;
+			}
 		}
 	}
 }

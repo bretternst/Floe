@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Windows;
 using System.Threading;
+using System.Linq;
 using Microsoft.Win32;
 using Floe.Net;
 
@@ -13,7 +14,8 @@ namespace Floe.UI
 		Asking,
 		Working,
 		Cancelled,
-		Finished
+		Received,
+		Sent
 	}
 
 	public partial class FileControl : ChatPage
@@ -72,17 +74,27 @@ namespace Floe.UI
 			set { this.SetValue(StatusTextProperty, value); }
 		}
 
+		public static readonly DependencyProperty IsDangerousProperty =
+			DependencyProperty.Register("IsDangerous", typeof(bool), typeof(FileControl));
+		public bool IsDangerous
+		{
+			get { return (bool)this.GetValue(IsDangerousProperty); }
+			set { this.SetValue(IsDangerousProperty, value); }
+		}
+
 		public FileControl(IrcSession session, IrcTarget target)
 			: base(ChatPageType.DccFile, session, target, "DCC")
 		{
 			InitializeComponent();
 			this.Id = "dcc-file";
-			this.Header = this.Title = string.Format("DCC [{0}]", target.Name);
+			this.Header = this.Title = string.Format("{0} [DCC]", target.Name);
 		}
 
 		public int StartSend(FileInfo file)
 		{
 			_fileInfo = file;
+			this.Header = string.Format("[SEND] {0}", this.Target.Name);
+			this.Title = string.Format("{0} - [DCC {1}] Sending file {2}", App.Product, this.Target.Name, _fileInfo.Name);
 			this.Description = string.Format("Sending {0}...", file.Name);
 			this.FileSize = file.Length;
 			this.StatusText = "Listening for connection";
@@ -108,6 +120,8 @@ namespace Floe.UI
 		public void StartReceive(IPAddress address, int port, string name, long size)
 		{
 			_fileInfo = new FileInfo(Path.Combine(App.Settings.Current.Dcc.DownloadFolder, name));
+			this.Header = string.Format("[RECV] {0}", this.Target.Name);
+			this.Title = string.Format("{0} - [DCC {1}] Receiving file {2}", App.Product, this.Target.Name, _fileInfo.Name);
 			_address = address;
 			_port = port;
 			this.Description = string.Format("Receiving {0}...", name);
@@ -115,21 +129,59 @@ namespace Floe.UI
 			this.StatusText = "Waiting for confirmation";
 			this.Status = FileStatus.Asking;
 
+			this.CheckFileExtension(_fileInfo.Extension.StartsWith(".", StringComparison.Ordinal) && _fileInfo.Extension.Length > 1 ? _fileInfo.Extension.Substring(1) : _fileInfo.Extension);
+
 			if (App.Settings.Current.Dcc.AutoAccept)
 			{
-				this.Accept();
+				this.Accept(false);
 			}
 		}
 
-		private void Accept()
+		public override bool CanClose()
+		{
+			if(this.Status == FileStatus.Working)
+			{
+				return App.Confirm(Window.GetWindow(this), "Are you sure you want to cancel this transfer in progress?", "Confirm Close");
+			}
+			else if (this.Status == FileStatus.Asking)
+			{
+				this.Decline();
+			}
+			return true;
+		}
+
+		public override void Dispose()
+		{
+			base.Dispose();
+
+			if (_dcc != null)
+			{
+				_dcc.Close();
+			}
+		}
+
+		private void CheckFileExtension(string ext)
+		{
+			string[] extensions = App.Settings.Current.Dcc.DangerExtensions.ToUpperInvariant().Split(' ');
+			this.IsDangerous = extensions.Contains(ext.ToUpperInvariant());
+		}
+
+		private void Accept(bool forceOverwrite)
 		{
 			this.Status = FileStatus.Working;
 			this.StatusText = "Connecting";
-			_dcc = new DccXmitReceiver(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action));
+			_dcc = new DccXmitReceiver(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action)) { ForceOverwrite = forceOverwrite, ForceResume = chkForceResume.IsChecked == true };
 			_dcc.Connect(_address, _port);
 			_dcc.Connected += dcc_Connected;
 			_dcc.Disconnected += dcc_Disconnected;
 			_dcc.Error += dcc_Error;
+		}
+
+		private void Decline()
+		{
+			this.Status = FileStatus.Cancelled;
+			this.StatusText = "Declined";
+			this.Session.SendCtcp(this.Target, new CtcpCommand("ERRMSG", "DCC", "XMIT", "declined"), true);
 		}
 
 		private void dcc_Connected(object sender, EventArgs e)
@@ -139,7 +191,7 @@ namespace Floe.UI
 				{
 					this.Dispatcher.BeginInvoke((Action)(() =>
 						{
-							this.BytesTransferred = _dcc.BytesTransferred;
+							this.UpdateProgress();
 						}));
 				}, null, 250, 250);
 		}
@@ -151,16 +203,29 @@ namespace Floe.UI
 
 		private void dcc_Disconnected(object sender, EventArgs e)
 		{
-			this.Status = FileStatus.Finished;
-			this.StatusText = "Finished";
 			_pollTimer.Dispose();
+			this.UpdateProgress();
+
+			if (_dcc.BytesTransferred < this.FileSize)
+			{
+				this.Status = FileStatus.Cancelled;
+				this.StatusText = "Connection lost";
+			}
+			else
+			{
+				this.Status = _dcc is DccXmitReceiver ? FileStatus.Received : FileStatus.Sent;
+				this.StatusText = "Finished";
+			}
 		}
 
 		private void dcc_Error(object sender, Floe.Net.ErrorEventArgs e)
 		{
 			this.Status = FileStatus.Cancelled;
 			this.StatusText = "Error: " + e.Exception.Message;
-			_pollTimer.Dispose();
+			if (_pollTimer != null)
+			{
+				_pollTimer.Dispose();
+			}
 		}
 
 		private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -175,9 +240,10 @@ namespace Floe.UI
 
 		private void btnOpen_Click(object sender, RoutedEventArgs e)
 		{
-			if (_fileInfo != null && _fileInfo.Exists)
+			string path = ((DccXmitReceiver)_dcc).FileSavedAs;
+			if (File.Exists(path))
 			{
-				App.BrowseTo(_fileInfo.FullName);
+				App.BrowseTo(path);
 			}
 		}
 
@@ -191,7 +257,7 @@ namespace Floe.UI
 
 		private void btnSave_Click(object sender, RoutedEventArgs e)
 		{
-			this.Accept();
+			this.Accept(false);
 		}
 
 		private void btnSaveAs_Click(object sender, RoutedEventArgs e)
@@ -203,23 +269,13 @@ namespace Floe.UI
 			{
 				_fileInfo = new FileInfo(dialog.FileName);
 				this.Description = string.Format("Receiving {0}...", dialog.SafeFileName);
-				this.Accept();
+				this.Accept(true);
 			}
 		}
 
 		private void btnDecline_Click(object sender, RoutedEventArgs e)
 		{
-			this.Status = FileStatus.Cancelled;
-			this.StatusText = "Declined";
-			this.Session.SendCtcp(this.Target, new CtcpCommand("ERRMSG", "DCC", "XMIT", "declined"), true);
-		}
-
-		public void Dispose()
-		{
-			if (_dcc != null)
-			{
-				_dcc.Close();
-			}
+			this.Decline();
 		}
 	}
 }

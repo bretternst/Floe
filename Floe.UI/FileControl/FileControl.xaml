@@ -99,8 +99,11 @@
 						<Style TargetType="Button">
 							<Setter Property="Visibility" Value="Collapsed"/>
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Finished">
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Received">
 									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=IsDangerous}" Value="True">
+									<Setter Property="IsEnabled" Value="False"/>
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
@@ -109,19 +112,45 @@
 				<Button Margin="7,0,0,0" Name="btnOpenFolder" Content="Open Folder" MinWidth="75" Click="btnOpenFolder_Click">
 					<Button.Style>
 						<Style TargetType="Button">
-							<Setter Property="Visibility" Value="Collapsed"/>
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Finished">
-									<Setter Property="Visibility" Value="Visible"/>
-								</DataTrigger>
-								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Working">
-									<Setter Property="Visibility" Value="Visible"/>
+							<Setter Property="Visibility" Value="Visible"/>
+							<Style.Triggers>								
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Asking">
+									<Setter Property="Visibility" Value="Collapsed"/>
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
 					</Button.Style>
 				</Button>
+				<CheckBox Margin="7,0,0,0" x:Name="chkForceResume" Content="Force resume" VerticalAlignment="Bottom">
+					<CheckBox.Style>
+						<Style TargetType="CheckBox">
+							<Setter Property="Visibility" Value="Collapsed"/>
+							<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Asking">
+									<Setter Property="Visibility" Value="Visible"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</CheckBox.Style>
+				</CheckBox>
 			</StackPanel>
+			<Label FontWeight="Bold" FontSize="14" Margin="7,5,7,5">
+				<Label.Content>
+					<TextBlock>WARNING: The file appears to have a dangerous extension.</TextBlock>
+				</Label.Content>
+				<Label.Style>
+					<Style TargetType="Label">
+						<Setter Property="Visibility" Value="Collapsed"/>
+						<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding ElementName=fileControl, Path=IsDangerous}" Value="True">
+								<Setter Property="Visibility" Value="Visible"/>
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Label.Style>
+			</Label>
 		</StackPanel>
 	</Border>
 </local:ChatPage>

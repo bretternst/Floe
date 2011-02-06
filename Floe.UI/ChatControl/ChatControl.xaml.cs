@@ -147,7 +147,8 @@ namespace Floe.UI
 				App.Settings.Current.User.FullName,
 				autoReconnect,
 				password,
-				App.Settings.Current.User.Invisible);
+				App.Settings.Current.User.Invisible,
+				App.Settings.Current.Dcc.FindExternalAddress);
 		}
 
 		private void ParseInput(string text)

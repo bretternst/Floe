@@ -54,11 +54,20 @@ namespace Floe.UI
 				}
 				else if (page.Type == ChatPageType.Chat)
 				{
-					if(page.Target.IsChannel && page.Session.State != IrcSessionState.Disconnected)
+					if (page.Target.IsChannel && page.Session.State != IrcSessionState.Disconnected)
 					{
 						page.Session.Part(page.Target.Name);
 					}
 					this.RemovePage(page);
+				}
+				else
+				{
+					_isInModalDialog = true;
+					if (page.CanClose())
+					{
+						this.RemovePage(page);
+					}
+					_isInModalDialog = false;
 				}
 			}
 		}

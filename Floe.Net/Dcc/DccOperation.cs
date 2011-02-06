@@ -185,6 +185,7 @@ namespace Floe.Net
 						this.OnError(new TimeoutException());
 					}
 				}));
+			_socketThread.Start();
 		}
 
 		public void Close()
@@ -267,7 +268,14 @@ namespace Floe.Net
 		{
 			if (evt != null)
 			{
-				evt(this, arg);
+				if (_callback != null)
+				{
+					_callback(() => evt(this, arg));
+				}
+				else
+				{
+					evt(this, arg);
+				}
 			}
 		}
 
@@ -275,7 +283,14 @@ namespace Floe.Net
 		{
 			if (evt != null)
 			{
-				evt(this, EventArgs.Empty);
+				if (_callback != null)
+				{
+					_callback(() => evt(this, EventArgs.Empty));
+				}
+				else
+				{
+					evt(this, EventArgs.Empty);
+				}
 			}
 		}
 

@@ -37,6 +37,24 @@ namespace Floe.UI
 			}
 		}
 
+		public static ChatWindow ChatWindow
+		{
+			get
+			{
+				return App.Current.MainWindow as ChatWindow;
+			}
+		}
+
+		public App()
+		{
+			this.Startup += new StartupEventHandler(App_Startup);
+			this.Exit += new ExitEventHandler(App_Exit);
+			AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+			{
+				LogUnhandledException(e.ExceptionObject);
+			};
+		}
+
 		public static void ShowSettings()
 		{
 			var settings = new Settings.SettingsWindow();
@@ -128,7 +146,7 @@ namespace Floe.UI
 				return false;
 			}
 
-			var window = App.Current.MainWindow as ChatWindow;
+			var window = App.ChatWindow;
 			var page = window.FindPage(session, target);
 			if (page != null)
 			{
@@ -150,16 +168,6 @@ namespace Floe.UI
 				Create(session, page, makeActive);
 				return true;
 			}
-		}
-
-		public App()
-		{
-			this.Startup += new StartupEventHandler(App_Startup);
-			this.Exit += new ExitEventHandler(App_Exit);
-			AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-				{
-					LogUnhandledException(e.ExceptionObject);
-				};
 		}
 
 		private void App_Startup(object sender, StartupEventArgs e)

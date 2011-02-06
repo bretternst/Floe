@@ -50,7 +50,7 @@ namespace Floe.UI
 				}
 				else
 				{
-					int idx = this.GetCharIndexAt(p);
+					int idx = this.GetCharIndexAt(p, false);
 					if (idx >= 0 && idx < int.MaxValue)
 					{
 						_isSelecting = true;
@@ -205,7 +205,7 @@ namespace Floe.UI
 			return null;
 		}
 
-		private int GetCharIndexAt(Point p)
+		private int GetCharIndexAt(Point p, bool allowSelectionAboveTopLine = true)
 		{
 			if (_blocks.Count < 1 || _bottomBlock == null)
 			{
@@ -224,6 +224,10 @@ namespace Floe.UI
 			}
 			while (node.Previous != null && p.Y >= 0.0 && (node = node.Previous) != null);
 			block = node.Value;
+			if (!allowSelectionAboveTopLine && p.Y < block.Y)
+			{
+				return -1;
+			}
 			p.Y = Math.Max(block.Y, p.Y);
 			if (block.Text == null)
 			{

@@ -6,6 +6,7 @@ namespace Floe.Configuration
 	public class DccElement : ConfigurationElement
 	{
 		private const int MinPort = 1024;
+		private const string DefaultDangerExtensions = "386 bat chm cmd com dll doc docx dot dotx drv exe hlp inf ini js jse lnk msi msp ocx ovl pif reg scr sys vb vbe vbs wsc wsf wsh xls xlsx";
 
 		[ConfigurationProperty("lowPort", DefaultValue = 57000)]
 		public int LowPort
@@ -64,6 +65,20 @@ namespace Floe.Configuration
 		{
 			get { return (bool)this["autoAccept"]; }
 			set { this["autoAccept"] = value; }
+		}
+
+		[ConfigurationProperty("findExternalAddress", DefaultValue = true)]
+		public bool FindExternalAddress
+		{
+			get { return (bool)this["findExternalAddress"]; }
+			set { this["findExternalAddress"] = value; }
+		}
+
+		[ConfigurationProperty("dangerExtensions", DefaultValue = DefaultDangerExtensions)]
+		public string DangerExtensions
+		{
+			get { return (string)this["dangerExtensions"]; }
+			set { this["dangerExtensions"] = value; }
 		}
 	}
 }

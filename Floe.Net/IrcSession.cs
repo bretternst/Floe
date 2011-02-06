@@ -42,6 +42,7 @@ namespace Floe.Net
 		private IrcSessionState _state;
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
+		private bool _findExternalAddress;
 		private Action<Action> _callback;
 
 		/// <summary>
@@ -254,21 +255,23 @@ namespace Floe.Net
 		/// <param name="autoReconnect">Indicates whether to automatically reconnect upon disconnection.</param>
 		/// <param name="password">The optional password to supply while logging in.</param>
 		/// <param name="invisible">Determines whether the +i flag will be set by default.</param>
+		/// <param name="findExternalAddress">Determines whether to find the external IP address by querying the IRC server upon connect.</param>
 		public void Open(string server, int port, bool isSecure, string nickname,
-			string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false)
+			string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false, bool findExternalAddress = true)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
 				throw new ArgumentNullException("Nickname");
 			}
+			_password = password;
+			_isInvisible = invisible;
+			_findExternalAddress = findExternalAddress;
 			this.Nickname = nickname;
 			this.Server = server;
 			this.Port = port;
-			_password = password;
 			this.IsSecure = isSecure;
 			this.Username = userName;
 			this.FullName = fullname;
-			_isInvisible = invisible;
 			this.NetworkName = this.Server;
 			this.UserModes = new char[0];
 			this.AutoReconnect = autoReconnect;
@@ -721,7 +724,7 @@ namespace Floe.Net
 
 		private void OnStateChanged()
 		{
-			if (this.State == IrcSessionState.Connected)
+			if (this.State == IrcSessionState.Connected && _findExternalAddress)
 			{
 				this.AddHandler(new IrcCodeHandler((e) =>
 					{

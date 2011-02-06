@@ -410,33 +410,35 @@ namespace Floe.UI
 					}
 					break;
 				case "SERVER":
-					args = Split(command, arguments, 1, 3);
-					int port = 0;
-					bool useSsl = false;
-					if (args.Length > 1 && (args[1] = args[1].Trim()).Length > 0)
 					{
-						if(args[1][0] == '+')
+						args = Split(command, arguments, 1, 3);
+						int port = 0;
+						bool useSsl = false;
+						if (args.Length > 1 && (args[1] = args[1].Trim()).Length > 0)
 						{
-							useSsl = true;
+							if (args[1][0] == '+')
+							{
+								useSsl = true;
+							}
+							int.TryParse(args[1], out port);
 						}
-						int.TryParse(args[1], out port);
+						string password = null;
+						if (args.Length > 2)
+						{
+							password = args[2];
+						}
+						if (port == 0)
+						{
+							port = 6667;
+						}
+						if (this.IsConnected)
+						{
+							this.Session.AutoReconnect = false;
+							this.Session.Quit("Changing servers");
+						}
+						this.Perform = "";
+						this.Connect(args[0], port, useSsl, false, password);
 					}
-					string password = null;
-					if (args.Length > 2)
-					{
-						password = args[2];
-					}
-					if (port == 0)
-					{
-						port = 6667;
-					}
-					if (this.IsConnected)
-					{
-						this.Session.AutoReconnect = false;
-						this.Session.Quit("Changing servers");
-					}
-					this.Perform = "";
-					this.Connect(args[0], port, useSsl, false, password);
 					break;
 				case "ME":
 				case "ACTION":
@@ -566,6 +568,29 @@ namespace Floe.UI
 						else
 						{
 							this.Write("Error", "Specified pattern was not on ignore list.");
+						}
+					}
+					break;
+				case "DCC":
+					{
+						args = Split(command, arguments, 3, 3);
+						if (args[0].ToUpperInvariant() == "XMIT")
+						{
+							string path = null;
+							if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
+							{
+								path = args[2];
+							}
+							else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
+							{
+								this.Write("Error", "Could not find file " + args[2]);
+								return;
+							}
+							App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+						}
+						else
+						{
+							this.Write("Error", "Unsupported DCC mode " + args[0]);
 						}
 					}
 					break;

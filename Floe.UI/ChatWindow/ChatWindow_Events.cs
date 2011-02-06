@@ -88,7 +88,7 @@ namespace Floe.UI
 						break;
 					case "DCC":
 						var args = e.Command.Arguments;
-						this.HandleDcc(session, new IrcTarget(e.From), args);
+						e.Handled = this.HandleDcc(session, new IrcTarget(e.From), args);
 						break;
 				}
 			}
