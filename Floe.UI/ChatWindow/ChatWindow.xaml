@@ -271,9 +271,6 @@
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="TabItem">
-<<<<<<< HEAD
-									<Border Background="Transparent" x:Name="border0">
-=======
 									<Grid>
 										<Grid HorizontalAlignment="Stretch">
 											<Grid.ColumnDefinitions>
@@ -293,7 +290,6 @@
 											<Border Grid.Row="0" Grid.Column="0" Background="{StaticResource winFGx20}"/>
 										</Grid>
 									<Border x:Name="border0" Background="Transparent">
->>>>>>> 1.4
 										<Border x:Name="border1">
 											<Border x:Name="border2" BorderThickness="0,0,1,0" BorderBrush="{StaticResource winTabSep}">
 												<Grid Height="25" HorizontalAlignment="Center" MinWidth="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinTabWidth}">

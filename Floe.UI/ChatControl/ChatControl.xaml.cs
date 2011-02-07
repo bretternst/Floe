@@ -145,11 +145,7 @@ namespace Floe.UI
 					this.Session.Nickname : App.Settings.Current.User.Nickname,
 				App.Settings.Current.User.Username,
 				App.Settings.Current.User.FullName,
-<<<<<<< HEAD
-				App.Settings.Current.User.Invisible,
-=======
 				autoReconnect,
->>>>>>> 1.4
 				password,
 				App.Settings.Current.User.Invisible,
 				App.Settings.Current.Dcc.FindExternalAddress);
