@@ -62,7 +62,7 @@ namespace Floe.Net
 					buffer = new byte[SendChunkSize];
 					try
 					{
-						while (_fileStream.Position < _fileStream.Length)
+						while (_fileStream.Position < _fileStream.Length && !this.TerminateWaitHandle.WaitOne(0))
 						{
 							count = _fileStream.Read(buffer, 0, SendChunkSize);
 							this.Stream.Write(buffer, 0, count);

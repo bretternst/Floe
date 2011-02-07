@@ -251,17 +251,19 @@ namespace Floe.UI
 									if (timeDiff / 1000 > 0)
 									{
 										this.Speed = newBytes / (timeDiff / 1000);
+									}
+									if (this.Speed > 0)
+									{
 										this.EstimatedTime = (int)(this.FileSize / this.Speed);
-										if (this.FileSize > 0)
-										{
-											this.Progress = (double)this.BytesTransferred / (double)this.FileSize;
-										}
+									}
+									if (this.FileSize > 0)
+									{
+										this.Progress = (double)this.BytesTransferred / (double)this.FileSize;
 									}
 								}
 							}
 						}));
 				}, null, PollTime, PollTime);
-			this.DeletePortForwarding();
 		}
 
 		private void dcc_Disconnected(object sender, EventArgs e)
@@ -284,24 +286,22 @@ namespace Floe.UI
 				this.Status = _dcc is DccXmitReceiver ? FileStatus.Received : FileStatus.Sent;
 				this.StatusText = "Finished";
 			}
+			this.DeletePortForwarding();
 		}
 
 		private void dcc_Error(object sender, Floe.Net.ErrorEventArgs e)
 		{
-			this.DeletePortForwarding();
-
 			this.Status = FileStatus.Cancelled;
 			this.StatusText = "Error: " + e.Exception.Message;
 			if (_pollTimer != null)
 			{
 				_pollTimer.Dispose();
 			}
+			this.DeletePortForwarding();
 		}
 
 		private void btnCancel_Click(object sender, RoutedEventArgs e)
 		{
-			this.DeletePortForwarding();
-
 			this.Status = FileStatus.Cancelled;
 			this.StatusText = "Cancelled";
 			if (_dcc != null)

@@ -48,6 +48,7 @@ namespace Floe.Net
 		}
 
 		protected NetworkStream Stream { get; private set; }
+		protected WaitHandle TerminateWaitHandle { get { return _endHandle; } }
 
 		public DccOperation(Action<Action> callback = null)
 		{
