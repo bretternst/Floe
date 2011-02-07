@@ -2,21 +2,31 @@
 
 namespace Floe.Net
 {
+	/// <summary>
+	/// Represents an abstract IRC prefix which could refer to either a user or a server.
+	/// </summary>
 	public abstract class IrcPrefix
 	{
+		/// <summary>
+		/// Gets the raw prefix.
+		/// </summary>
 		public string Prefix { get; private set; }
 
-		public IrcPrefix(string prefix)
+		internal IrcPrefix(string prefix)
 		{
 			this.Prefix = prefix;
 		}
 
+		/// <summary>
+		/// Gets the raw prefix.
+		/// </summary>
+		/// <returns>Returns the raw prefix.</returns>
 		public override string ToString()
 		{
 			return this.Prefix;
 		}
 
-		public static IrcPrefix Parse(string prefix)
+		internal static IrcPrefix Parse(string prefix)
 		{
 			if (string.IsNullOrEmpty(prefix))
 			{
@@ -36,13 +46,28 @@ namespace Floe.Net
 		}
 	}
 
+	/// <summary>
+	/// Represents another user on the IRC network, identified by a prefix (nick!user@host), and exposes the separated
+	/// properties of the prefix.
+	/// </summary>
 	public sealed class IrcPeer : IrcPrefix
 	{
+		/// <summary>
+		/// Gets the user's nickname.
+		/// </summary>
 		public string Nickname { get; private set; }
+
+		/// <summary>
+		/// Gets the user's username.
+		/// </summary>
 		public string Username { get; private set; }
+
+		/// <summary>
+		/// Gets the user's hostname.
+		/// </summary>
 		public string Hostname { get; private set; }
 
-		public IrcPeer(string nickUserHost)
+		internal IrcPeer(string nickUserHost)
 			: base(nickUserHost)
 		{
 			string[] parts = nickUserHost.Split('@');
@@ -67,11 +92,17 @@ namespace Floe.Net
 		}
 	}
 
+	/// <summary>
+	/// Represents an IRC server from which messages may be received.
+	/// </summary>
 	public sealed class IrcServer : IrcPrefix
 	{
+		/// <summary>
+		/// Gets the name of the server.
+		/// </summary>
 		public string ServerName { get { return this.Prefix; } }
 
-		public IrcServer(string serverName)
+		internal IrcServer(string serverName)
 			: base(serverName)
 		{
 		}

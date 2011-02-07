@@ -8,7 +8,7 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl
+	public partial class ChatControl : ChatPage
 	{
 		private static char[] NickSpecialChars = new[] { '[', ']', '\\', '`', '_', '^', '{', '|', '}' };
 

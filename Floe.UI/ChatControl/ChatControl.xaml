@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Floe.UI.ChatControl"
+﻿<local:ChatPage x:Class="Floe.UI.ChatControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -6,7 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
-             d:DesignHeight="400" d:DesignWidth="699" Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
+             d:DesignHeight="400" d:DesignWidth="699" x:Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
 			 FontFamily="Segoe UI" FontSize="12">
 	<UserControl.InputBindings>
 		<KeyBinding Command="local:ChatControl.ClearCommand" Gesture="Alt+C"/>
@@ -44,6 +44,7 @@
 		<ContextMenu x:Key="cmNickname">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<Separator/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
@@ -59,6 +60,7 @@
 		<ContextMenu x:Key="cmNickList">
 			<MenuItem Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<MenuItem Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			<MenuItem Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<Separator/>
 			<MenuItem Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<MenuItem Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
@@ -77,6 +79,7 @@
 		</ContextMenu>
 		<ContextMenu x:Key="cmServer">
 			<MenuItem Header="Connect" Click="connect_Click" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name"/>
+			<MenuItem Command="local:ChatWindow.NewTabCommand" CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
@@ -252,4 +255,4 @@
 			<GridSplitter Grid.Column="1" Name="splitter" IsEnabled="false" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent"/>
 		</Grid>
 	</DockPanel>
-</UserControl>
+</local:ChatPage>

@@ -10,8 +10,20 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl, IDisposable
+	public partial class ChatControl : Floe.UI.ChatPage
 	{
+		#region Nested types
+
+		private class CommandException : Exception
+		{
+			public CommandException(string message)
+				: base(message)
+			{
+			}
+		}
+
+		#endregion
+
 		private const double MinNickListWidth = 50.0;
 
 		private LinkedList<string> _history;
@@ -19,27 +31,20 @@ namespace Floe.UI
 		private LogFileHandle _logFile;
 		private ChatLine _markerLine;
 
-		public readonly static DependencyProperty UIBackgroundProperty = DependencyProperty.Register("UIBackground",
-			typeof(SolidColorBrush), typeof(ChatControl));
-		public SolidColorBrush UIBackground
-		{
-			get { return (SolidColorBrush)this.GetValue(UIBackgroundProperty); }
-			set { this.SetValue(UIBackgroundProperty, value); }
-		}
-
-		public ChatControl(ChatContext context)
+		public ChatControl(IrcSession session, IrcTarget target)
+			: base(target == null ? ChatPageType.Server : ChatPageType.Chat, session, target,
+			target == null ? "server" : string.Format("{0}.{1}", session.NetworkName, target.Name).ToLowerInvariant())
 		{
 			_history = new LinkedList<string>();
 			this.Nicknames = new ObservableCollection<NicknameItem>();
-			this.Context = context;
-			this.Header = context.Target == null ? "Server" : context.Target.ToString();
+			this.Header = this.Target == null ? "Server" : this.Target.ToString();
 
 			InitializeComponent();
 			this.SubscribeEvents();
 
 			if (!this.IsServer)
 			{
-				_logFile = App.OpenLogFile(context.Key);
+				_logFile = App.OpenLogFile(this.Id);
 				var logLines = new List<ChatLine>();
 				while (_logFile.Buffer.Count > 0)
 				{
@@ -50,28 +55,49 @@ namespace Floe.UI
 				boxOutput.AppendBulkLines(logLines);
 			}
 
-			var state = App.Settings.Current.Windows.States[context.Key];
+			var state = App.Settings.Current.Windows.States[this.Id];
 			if (this.IsChannel)
 			{
 				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
-				this.Session.AddHandler(new IrcCodeHandler(IrcCode.RPL_CHANNELMODES, true, (msg) =>
+				this.Session.AddHandler(new IrcCodeHandler((e) =>
 					{
-						if (msg.Parameters.Count == 3 &&
-							this.Target.Equals(new IrcTarget(msg.Parameters[1])))
+						if (e.Message.Parameters.Count > 2 &&
+							this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
 						{
-							this.Invoke(() =>
-							{
-								_channelModes = msg.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
-								this.SetTitle();
-							});
-							return true;
+							_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
+							this.SetTitle();
 						}
-						return false;
-					}));
+						e.Handled = true;
+						return true;
+					}, IrcCode.RPL_CHANNELMODEIS));
 				this.Session.Mode(this.Target);
 				splitter.IsEnabled = true;
 				colNickList.MinWidth = MinNickListWidth;
 				colNickList.Width = new GridLength(state.NickListWidth);
+
+				var nameHandler = new IrcCodeHandler((e) =>
+					{
+						if (e.Message.Parameters.Count >= 3)
+						{
+							var to = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
+							if (this.Target.Equals(to))
+							{
+								foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
+								{
+									this.AddNick(nick);
+								}
+							}
+						}
+						e.Handled = true;
+						return false;
+					}, IrcCode.RPL_NAMEREPLY);
+				this.Session.AddHandler(nameHandler);
+				this.Session.AddHandler(new IrcCodeHandler((e) =>
+					{
+						this.Session.RemoveHandler(nameHandler);
+						e.Handled = true;
+						return true;
+					}, IrcCode.RPL_ENDOFNAMES));
 			}
 			else if (this.IsNickname)
 			{
@@ -85,29 +111,9 @@ namespace Floe.UI
 			boxOutput.ContextMenu = this.GetDefaultContextMenu();
 		}
 
-		public ChatContext Context { get; private set; }
-		public IrcSession Session { get { return this.Context.Session; } }
-		public IrcTarget Target { get { return this.Context.Target; } }
-		public bool IsServer { get { return this.Target == null; } }
-		public bool IsChannel { get { return this.Target != null && this.Target.Type == IrcTargetType.Channel; } }
-		public bool IsNickname { get { return this.Target != null && this.Target.Type == IrcTargetType.Nickname; } }
+		public bool IsChannel { get { return this.Type == ChatPageType.Chat && this.Target.IsChannel; } }
+		public bool IsNickname { get { return this.Type == ChatPageType.Chat && !this.Target.IsChannel; } }
 		public string Perform { get; set; }
-
-		public static readonly DependencyProperty HeaderProperty =
-			DependencyProperty.Register("Header", typeof(string), typeof(ChatControl));
-		public string Header
-		{
-			get { return (string)this.GetValue(HeaderProperty); }
-			set { this.SetValue(HeaderProperty, value); }
-		}
-
-		public static readonly DependencyProperty TitleProperty =
-			DependencyProperty.Register("Title", typeof(string), typeof(ChatControl));
-		public string Title
-		{
-			get { return (string)this.GetValue(TitleProperty); }
-			set { this.SetValue(TitleProperty, value); }
-		}
 
 		public static readonly DependencyProperty IsConnectedProperty =
 			DependencyProperty.Register("IsConnected", typeof(bool), typeof(ChatControl));
@@ -125,43 +131,33 @@ namespace Floe.UI
 			set { this.SetValue(SelectedLinkProperty, value); }
 		}
 
-		public static readonly DependencyProperty NotifyStateProperty =
-			DependencyProperty.Register("NotifyState", typeof(NotifyState), typeof(ChatControl));
-		public NotifyState NotifyState
-		{
-			get { return (NotifyState)this.GetValue(NotifyStateProperty); }
-			set { this.SetValue(NotifyStateProperty, value); }
-		}
-
 		public void Connect(Floe.Configuration.ServerElement server)
 		{
 			this.Session.AutoReconnect = false;
 			this.Perform = server.OnConnect;
-			this.Connect(server.Hostname, server.Port, server.Password, server.IsSecure, server.AutoReconnect);
+			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect, server.Password);
 		}
 
-		public void Connect(string hostname, int port, string password, bool useSsl, bool autoReconnect)
+		public void Connect(string server, int port, bool useSsl, bool autoReconnect, string password)
 		{
-			this.Session.Open(hostname, port, useSsl,
+			this.Session.Open(server, port, useSsl,
 				!string.IsNullOrEmpty(this.Session.Nickname) ?
 					this.Session.Nickname : App.Settings.Current.User.Nickname,
 				App.Settings.Current.User.Username,
 				App.Settings.Current.User.FullName,
+<<<<<<< HEAD
 				App.Settings.Current.User.Invisible,
+=======
+				autoReconnect,
+>>>>>>> 1.4
 				password,
-				autoReconnect);
+				App.Settings.Current.User.Invisible,
+				App.Settings.Current.Dcc.FindExternalAddress);
 		}
 
 		private void ParseInput(string text)
 		{
-			try
-			{
-				this.Execute(text, (Keyboard.Modifiers & ModifierKeys.Shift) > 0);
-			}
-			catch (IrcException ex)
-			{
-				this.Write("Error", ex.Message);
-			}
+			this.Execute(text, (Keyboard.Modifiers & ModifierKeys.Shift) > 0);
 		}
 
 		private void Write(string styleKey, int nickHashCode, string nick, string text, bool attn)
@@ -247,12 +243,12 @@ namespace Floe.UI
 						userModes, this.Session.NetworkName);
 				}
 			}
-			else if (this.Target.Type == IrcTargetType.Nickname)
+			else if (!this.Target.IsChannel)
 			{
 				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4}", App.Product, this.Session.Nickname,
 					userModes, this.Session.NetworkName, _prefix);
 			}
-			else if (this.Target.Type == IrcTargetType.Channel)
+			else if (this.Target.IsChannel)
 			{
 				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4} ({5}) - {6}", App.Product, this.Session.Nickname,
 					userModes, this.Session.NetworkName, this.Target.ToString(), channelModes, _topic);
@@ -294,9 +290,9 @@ namespace Floe.UI
 			}
 		}
 
-		public void Dispose()
+		public override void Dispose()
 		{
-			var state = App.Settings.Current.Windows.States[this.Context.Key];
+			var state = App.Settings.Current.Windows.States[this.Id];
 			state.NickListWidth = colNickList.ActualWidth;
 			state.ColumnWidth = boxOutput.ColumnWidth;
 			this.UnsubscribeEvents();

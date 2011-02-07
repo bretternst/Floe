@@ -60,13 +60,14 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
+    <ApplicationDefinition Include="Application\App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="App_Ignore.cs" />
-    <Compile Include="App_Logging.cs" />
-    <Compile Include="App_Patterns.cs" />
+    <Compile Include="Application\App_Ignore.cs" />
+    <Compile Include="Application\App_Logging.cs" />
+    <Compile Include="Application\App_Patterns.cs" />
+    <Compile Include="Application\App_Resources.cs" />
     <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
       <DependentUpon>ChannelWindow.xaml</DependentUpon>
     </Compile>
@@ -87,13 +88,15 @@
     <Compile Include="ChatControl\ChatControl.xaml.cs">
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ChatContext.cs" />
     <Compile Include="ChatControl\ChatControl_Commands.cs" />
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
     <Compile Include="ChatControl\ChatControl_Slap.cs" />
     <Compile Include="ChatControl\NotifyState.cs" />
+    <Compile Include="ChatWindow\ChatPage.cs" />
+    <Compile Include="ChatWindow\ChatTabItem.cs" />
     <Compile Include="ChatWindow\ChatWindow_Commands.cs" />
+    <Compile Include="ChatWindow\ChatWindow_Dcc.cs" />
     <Compile Include="ChatWindow\ChatWindow_Events.cs" />
     <Compile Include="ChatWindow\ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
@@ -103,8 +106,12 @@
     <Compile Include="Dialogs\ConfirmDialog.xaml.cs">
       <DependentUpon>ConfirmDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Extensions.cs" />
+    <Compile Include="FileControl\FileControl.xaml.cs">
+      <DependentUpon>FileControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HsvColor.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
+    <Compile Include="Interop\FolderBrowser.cs" />
     <Compile Include="Interop\NotifyIcon.cs" />
     <Compile Include="Interop\WindowConstants.cs" />
     <Compile Include="Interop\WindowHelper.cs" />
@@ -113,6 +120,9 @@
     </Compile>
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\DccSettingsControl.xaml.cs">
+      <DependentUpon>DccSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\WindowSettingsControl.xaml.cs">
       <DependentUpon>WindowSettingsControl.xaml</DependentUpon>
@@ -129,7 +139,7 @@
     <Compile Include="Settings\UserSettingsControl.xaml.cs">
       <DependentUpon>UserSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="App.xaml.cs">
+    <Compile Include="Application\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -149,6 +159,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="FileControl\FileControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Settings\BufferSettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -156,6 +170,10 @@
     <Page Include="Settings\ColorsSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\DccSettingsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\WindowSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>

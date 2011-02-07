@@ -4,18 +4,36 @@ using System.Text;
 
 namespace Floe.Net
 {
+	/// <summary>
+	/// Represents a CTCP command sent to, or received from, another client.
+	/// </summary>
 	public sealed class CtcpCommand
 	{
+		/// <summary>
+		/// Gets the CTCP command name.
+		/// </summary>
 		public string Command { get; private set; }
 
+		/// <summary>
+		/// Gets the arguments used with the CTCP command.
+		/// </summary>
 		public string[] Arguments { get; private set; }
 
+		/// <summary>
+		/// Construct a new CTCP command.
+		/// </summary>
+		/// <param name="command">The command name.</param>
+		/// <param name="arguments">The command arguments.</param>
 		public CtcpCommand(string command, params string[] arguments)
 		{
 			this.Command = command.ToUpperInvariant();
 			this.Arguments = arguments.ToArray();
 		}
 
+		/// <summary>
+		/// Convert the command to a string that another IRC client will understand.
+		/// </summary>
+		/// <returns>Returns the raw string to be sent to another client.</returns>
 		public override string ToString()
 		{
 			var output = new StringBuilder();
@@ -29,6 +47,11 @@ namespace Floe.Net
 			return output.ToString();
 		}
 
+		/// <summary>
+		/// Create a new CtcpCommand object from raw text received from another client.
+		/// </summary>
+		/// <param name="text">The raw text that was received.</param>
+		/// <returns>Returns the new CtcpCommand constructed from the specified text.</returns>
 		public static CtcpCommand Parse(string text)
 		{
 			text = text.Replace("\u0001", "");
@@ -48,6 +71,11 @@ namespace Floe.Net
 			return new CtcpCommand(command, args);
 		}
 
+		/// <summary>
+		/// Determine whether the specified raw text is a CTCP command.
+		/// </summary>
+		/// <param name="text">The text to test.</param>
+		/// <returns>Returns true if the text contains a CTCP command, otherwise false.</returns>
 		public static bool IsCtcpCommand(string text)
 		{
 			return text.Length > 0 && text[0] == '\u0001' && text[text.Length - 1] == '\u0001';

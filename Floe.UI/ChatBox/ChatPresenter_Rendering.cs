@@ -13,6 +13,8 @@ namespace Floe.UI
 	{
 		private const double SeparatorPadding = 6.0;
 		private const int TextProcessingBatchSize = 50;
+		private const float MinNickBrightness = .2f;
+		private const float NickBrightnessBand = .2f;
 
 		private class Block
 		{
@@ -83,23 +85,13 @@ namespace Floe.UI
 
 		private Brush GetNickColor(int hashCode)
 		{
-			var rand = new Random(hashCode);
-			int rgb = 0;
-			Color c = Colors.Black;
-			do
-			{
-				rgb = rand.Next();
-				for (int i = 0; i < this.NicknameColorSeed; i++)
-				{
-					rgb = rand.Next();
-				}
+			var rand = new Random(hashCode * (this.NicknameColorSeed + 1));
+			float bgv = (float)Math.Max(Math.Max(this.BackgroundColor.R, this.BackgroundColor.G), this.BackgroundColor.B) / 255f;
 
-				var bg = this.BackgroundColor;
-				c = Color.FromRgb((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
-				rgb = (int)Math.Abs(bg.R - c.R) + (int)Math.Abs(bg.G - c.G) + (int)Math.Abs(bg.B - c.B);
-			}
-			while (rgb < 125);
-			return new SolidColorBrush(c);
+			float v = (float)rand.NextDouble() * NickBrightnessBand + (bgv < 0.5f ? (1f - NickBrightnessBand) : MinNickBrightness);
+			float h = 360f * (float)rand.NextDouble();
+			float s = .4f + (.6f * (float)rand.NextDouble());
+			return new SolidColorBrush(new HsvColor(1f, h, s, v).ToColor());
 		}
 
 		public void AppendBulkLines(IEnumerable<ChatLine> lines)
@@ -137,10 +129,6 @@ namespace Floe.UI
 			_blocks.AddLast(b);
 			this.FormatOne(b, this.AutoSizeColumn);
 			_bufferLines += b.Text.Length;
-			if (!_isAutoScrolling)
-			{
-				_scrollPos += b.Text.Length;
-			}
 
 			while (_blocks.Count > this.BufferLines)
 			{
@@ -156,6 +144,10 @@ namespace Floe.UI
 			}
 
 			this.InvalidateScrollInfo();
+			if (!_isAutoScrolling || _isSelecting)
+			{
+				_scrollPos += b.Text.Length;
+			}
 			this.InvalidateVisual();
 		}
 
@@ -197,21 +189,19 @@ namespace Floe.UI
 		private void InvalidateAll(bool styleChanged)
 		{
 			var formatter = new ChatFormatter(this.Typeface, this.FontSize, this.Foreground, this.Palette);
-			// Surely there's a better way to measure the height of a font?
-			var sample = formatter.Format("|", null, this.ViewportWidth, this.Foreground, this.Background, TextWrapping.NoWrap);
-			_lineHeight = sample.First().Height;
+			_lineHeight = Math.Ceiling(this.FontSize * this.Typeface.FontFamily.LineSpacing);
 
 			if (styleChanged)
 			{
 				var offset = 0;
-				_blocks.ForEach((b) =>
+				foreach (var b in _blocks)
 				{
 					b.CharStart = offset;
 					b.TimeString = this.FormatTime(b.Source.Time);
 					b.NickString = this.FormatNick(b.Source.Nick);
 					offset += b.TimeString.Length + b.NickString.Length + b.Source.Text.Length;
 					b.CharEnd = offset;
-				});
+				}
 			}
 
 			this.StartProcessingText();

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Text;
 
 namespace Floe.UI
 {
@@ -43,6 +44,86 @@ namespace Floe.UI
 		}
 	}
 
+	public class SecondsToFriendlyTimeConverter : IValueConverter
+	{
+		private string _format = "{0}";
+
+		public string Format { get { return _format; } set { _format = value; } }
+
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var seconds = System.Convert.ToInt32(value);
+			if (seconds > 0)
+			{
+				var sb = new StringBuilder();
+				var span = TimeSpan.FromSeconds(System.Convert.ToInt32(value));
+				if ((int)span.TotalDays > 0)
+				{
+					sb.Append(((int)(span.TotalDays)).ToString()).Append(" day").Append(span.TotalDays > 1 ? "s" : "");
+				}
+				if (span.Hours > 0)
+				{
+					if (sb.Length > 0)
+					{
+						sb.Append(", ");
+					}
+					sb.Append(span.Hours.ToString()).Append(" hour").Append(span.Hours > 1 ? "s" : "");
+				}
+				if (span.Minutes > 0)
+				{
+					if (sb.Length > 0)
+					{
+						sb.Append(", ");
+					}
+					sb.Append(span.Minutes.ToString()).Append(" minute").Append(span.Minutes > 1 ? "s" : "");
+				}
+
+				if ((int)span.TotalDays == 0 && span.Hours == 0)
+				{
+					if (sb.Length > 0)
+					{
+						sb.Append(", ");
+					}
+					sb.Append(span.Seconds.ToString()).Append(" second").Append(span.Seconds > 1 ? "s" : "");
+				}
+				return string.Format(_format, sb.ToString());
+			}
+			return "";
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class BytesToFriendlyStringConverter : IValueConverter
+	{
+		private static readonly string[] _suffixes = new[] { "B", "KB", "MB", "GB", "TB" };
+		private static readonly string[] _formats = new[] { "F0", "F0", "F1", "F2", "F2" };
+
+		private string _format = "{0} {1}";
+
+		public string Format { get { return _format; } set { _format = value; } }
+
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var bytes = System.Convert.ToDouble(value);
+			int i = 0;
+			while (bytes > 1024 && i < _suffixes.Length - 1)
+			{
+				bytes /= 1024.0;
+				i++;
+			}
+			return string.Format(_format, bytes.ToString(_formats[i]), _suffixes[i]);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
 	public class BrushAlphaConverter : IMultiValueConverter
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
@@ -63,81 +144,25 @@ namespace Floe.UI
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			float factor = (float)(double)parameter;
-
-			var c = ((SolidColorBrush)value).Color;
-			byte a = c.A;
-			float r = (float)c.R / 255f, g = (float)c.G / 255f, b = (float)c.B / 255f;
-			float h = 0f, s = 0f, v = Math.Max(Math.Max(r, g), b);
-			float delta = v - Math.Min(Math.Min(r, g), b);
-
-			if (v > 0)
-			{
-				s = delta / v;
-			}
-
-			if (r == v)
-			{
-				h = (g - b) / delta;
-			}
-			else if (g == v)
-			{
-				h = 2f + (b - r) / delta;
-			}
-			else
-			{
-				h = 4f + (r - g) / delta;
-			}
-
-			h *= 60f;
-			if (h < 0f)
-			{
-				h += 360f;
-			}
-
-			s *= factor;
-
-			if (s == 0)
-			{
-				r = g = b = v;
-			}
-			else
-			{
-				h /= 60;
-				int i = (int)h;
-				float f = h - (float)i;
-				float p = v * (1 - s);
-				float q = v * (1 - s * f);
-				float t = v * (1 - s * (1 - f));
-
-				switch(i)
-				{
-					case 0:
-						r = v; g = t; b = p;
-						break;
-					case 1:
-						r = q; g = v; b = p;
-						break;
-					case 2:
-						r = p; g = v; b = t;
-						break;
-					case 3:
-						r = p; g = q; b = v;
-						break;
-					case 4:
-						r = t; g = p; b = v;
-						break;
-					default:
-						r = v; g = p; b = q;
-						break;
-				}
-			}
-
-			return new SolidColorBrush(Color.FromArgb(
-				a, (byte)(r * 255f), (byte)(g * 255f), (byte)(b * 255f)));
+			var hsv = HsvColor.FromColor(((SolidColorBrush)value).Color);
+			hsv = new HsvColor(hsv.A, hsv.H, hsv.S * (float)(double)parameter, hsv.V);
+			return new SolidColorBrush(hsv.ToColor());
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class MultiplyConverter : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			return new System.Windows.GridLength(System.Convert.ToDouble(values[0]) * System.Convert.ToDouble(values[1]));
+		}
+
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
 		{
 			throw new NotImplementedException();
 		}

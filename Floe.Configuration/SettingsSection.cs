@@ -56,5 +56,12 @@ namespace Floe.Configuration
 			get { return (string)this["ignore"]; }
 			set { this["ignore"] = value; }
 		}
+
+		[ConfigurationProperty("dcc")]
+		public DccElement Dcc
+		{
+			get { return (DccElement)this["dcc"]; }
+			set { this["dcc"] = value; }
+		}
 	}
 }

@@ -7,57 +7,53 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl
+	public partial class ChatControl : ChatPage
 	{
 		private char[] _channelModes = new char[0];
 		private string _topic = "", _prefix;
-		private bool _hasNames = false, _hasDeactivated = false, _usingAlternateNick = false;
+		private bool _hasDeactivated = false, _usingAlternateNick = false;
 		private Window _window;
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
 			var state = this.Session.State;
-			this.BeginInvoke(() =>
+			this.IsConnected = state != IrcSessionState.Disconnected;
+
+			if (state == IrcSessionState.Disconnected)
+			{
+				this.Write("Error", "Disconnected");
+			}
+
+			if (this.IsServer)
+			{
+				switch (state)
 				{
-					this.IsConnected = state != IrcSessionState.Disconnected;
-
-					if (state == IrcSessionState.Disconnected)
-					{
-						this.Write("Error", "Disconnected");
-					}
-
-					if (this.IsServer)
-					{
-						switch (state)
+					case IrcSessionState.Connecting:
+						_usingAlternateNick = false;
+						this.Header = this.Session.NetworkName;
+						this.Write("Client", string.Format(
+							"Connecting to {0}:{1}", this.Session.Server, this.Session.Port));
+						break;
+					case IrcSessionState.Connected:
+						this.Header = this.Session.NetworkName;
+						if (this.Perform != null)
 						{
-							case IrcSessionState.Connecting:
-								_usingAlternateNick = false;
-								this.Header = this.Session.NetworkName;
-								this.Write("Client", string.Format(
-									"Connecting to {0}:{1}", this.Session.Server, this.Session.Port));
-								break;
-							case IrcSessionState.Connected:
-								this.Header = this.Session.NetworkName;
-								if (this.Perform != null)
-								{
-									foreach (var cmd in this.Perform.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0))
-									{
-										this.Execute(cmd, false);
-									}
-								}
-								break;
+							foreach (var cmd in this.Perform.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0))
+							{
+								this.Execute(cmd, false);
+							}
 						}
-						this.SetTitle();
-					}
-				});
+						break;
+				}
+				this.SetTitle();
+			}
 		}
 
 		private void Session_ConnectionError(object sender, ErrorEventArgs e)
 		{
 			if (this.IsServer)
 			{
-				this.BeginInvoke(() => this.Write("Error",
-					string.IsNullOrEmpty(e.Exception.Message) ? e.Exception.GetType().Name : e.Exception.Message));
+				this.Write("Error", string.IsNullOrEmpty(e.Exception.Message) ? e.Exception.GetType().Name : e.Exception.Message);
 			}
 		}
 
@@ -70,17 +66,14 @@ namespace Floe.UI
 
 			if (this.IsServer)
 			{
-				this.BeginInvoke(() =>
-					{
-						if (e.From is IrcPeer)
-						{
-							this.Write("Notice", (IrcPeer)e.From, e.Text, false);
-						}
-						else if (this.IsServer)
-						{
-							this.Write("Notice", e.Text);
-						}
-					});
+				if (e.From is IrcPeer)
+				{
+					this.Write("Notice", (IrcPeer)e.From, e.Text, false);
+				}
+				else if (this.IsServer)
+				{
+					this.Write("Notice", e.Text);
+				}
 			}
 		}
 
@@ -93,164 +86,147 @@ namespace Floe.UI
 
 			if (!this.IsServer)
 			{
-				if ((this.Target.Type == IrcTargetType.Channel && this.Target.Equals(e.To)) ||
-					(this.Target.Type == IrcTargetType.Nickname && this.Target.Equals(new IrcTarget(e.From)) &&
-                    e.To.Type == IrcTargetType.Nickname))
+				if ((this.Target.IsChannel && this.Target.Equals(e.To)) ||
+					(!this.Target.IsChannel && this.Target.Equals(new IrcTarget(e.From)) && !e.To.IsChannel))
 				{
-					this.BeginInvoke(() =>
+					bool attn = false;
+					if (App.IsAttentionMatch(this.Session.Nickname, e.Text))
+					{
+						attn = true;
+						if (_window != null)
 						{
-							bool attn = false;
-							if (App.IsAttentionMatch(this.Session.Nickname, e.Text))
-							{
-								attn = true;
-								if (_window != null)
-								{
-									App.Alert(_window, string.Format("You received an alert from {0}", this.Target.Name));
-								}
-								if (this.VisualParent == null)
-								{
-									this.NotifyState = NotifyState.Alert;
-								}
-							}
+							App.Alert(_window, string.Format("You received an alert from {0}", this.Target.Name));
+						}
+						if (this.VisualParent == null)
+						{
+							this.NotifyState = NotifyState.Alert;
+						}
+					}
 
-							this.Write("Default", e.From, e.Text, attn);
-							if (this.Target.Type == IrcTargetType.Nickname)
-							{
-								if (e.From.Prefix != _prefix)
-								{
-									_prefix = e.From.Prefix;
-									this.SetTitle();
-								}
-							}
-
-							if (this.Target.Type == IrcTargetType.Nickname)
-							{
-								Interop.WindowHelper.FlashWindow(_window);
-							}
-						});
+					this.Write("Default", e.From, e.Text, attn);
+					if (!this.Target.IsChannel)
+					{
+						if (e.From.Prefix != _prefix)
+						{
+							_prefix = e.From.Prefix;
+							this.SetTitle();
+						}
+						Interop.WindowHelper.FlashWindow(_window);
+					}
 				}
 			}
 		}
 
 		private void Session_Kicked(object sender, IrcKickEventArgs e)
 		{
-			this.BeginInvoke(() =>
-				{
-					if (!this.IsServer && this.Target.Equals(e.Channel))
-					{
-						this.Write("Kick", string.Format("{0} has been kicked by {1} ({2})",
-							e.KickeeNickname, e.Kicker.Nickname, e.Text));
-						this.RemoveNick(e.KickeeNickname);
-					}
-				});
+			if (!this.IsServer && this.Target.Equals(e.Channel))
+			{
+				this.Write("Kick", string.Format("{0} has been kicked by {1} ({2})",
+					e.KickeeNickname, e.Kicker.Nickname, e.Text));
+				this.RemoveNick(e.KickeeNickname);
+			}
 		}
 
 		private void Session_SelfKicked(object sender, IrcKickEventArgs e)
 		{
-			this.BeginInvoke(() =>
-				{
-					if (this.IsServer)
-					{
-						this.Write("Kick", string.Format("You have been kicked from {0} by {1} ({2})",
-							e.Channel, e.Kicker.Nickname, e.Text));
-					}
-				});
+			if (this.IsServer)
+			{
+				this.Write("Kick", string.Format("You have been kicked from {0} by {1} ({2})",
+					e.Channel, e.Kicker.Nickname, e.Text));
+			}
 		}
 
 		private void Session_InfoReceived(object sender, IrcInfoEventArgs e)
 		{
-			this.BeginInvoke(() =>
-				{
-					switch (e.Code)
+			switch (e.Code)
+			{
+				case IrcCode.ERR_NICKNAMEINUSE:
+					if (this.IsServer && this.Session.State == IrcSessionState.Connecting)
 					{
-						case IrcCode.ERR_NICKNAMEINUSE:
-							if (this.IsServer && this.Session.State == IrcSessionState.Connecting)
-							{
-								if (_usingAlternateNick || string.IsNullOrEmpty(App.Settings.Current.User.AlternateNickname))
-								{
-									this.SetInputText("/nick ");
-								}
-								else
-								{
-									this.Session.Nick(App.Settings.Current.User.AlternateNickname);
-									_usingAlternateNick = true;
-								}
-							}
-							break;
-						case IrcCode.RPL_TOPIC:
-							if (e.Message.Parameters.Count == 3 && !this.IsServer &&
-								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
-							{
-								_topic = e.Message.Parameters[2];
-								this.SetTitle();
-								this.Write("Topic", string.Format("Topic is: {0}", _topic));
-							}
-							return;
-						case IrcCode.RPL_TOPICSETBY:
-							if (e.Message.Parameters.Count == 4 && !this.IsServer &&
-								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
-							{
-								this.Write("Topic", string.Format("Topic set by {0} on {1}", e.Message.Parameters[2],
-									this.FormatTime(e.Message.Parameters[3])));
-							}
-							return;
-						case IrcCode.RPL_CHANNELCREATEDON:
-							if (e.Message.Parameters.Count == 3 && !this.IsServer &&
-								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
-							{
-								//this.Write("ServerInfo", string.Format("* Channel created on {0}", this.FormatTime(e.Message.Parameters[2])));
-							}
-							return;
-						case IrcCode.RPL_WHOISUSER:
-						case IrcCode.RPL_WHOWASUSER:
-							if (e.Message.Parameters.Count == 6 && this.IsDefault)
-							{
-								this.Write("ServerInfo",
-									string.Format("{1} " + (e.Code == IrcCode.RPL_WHOWASUSER ? "was" : "is") + " {2}@{3} {4} {5}",
-									(object[])e.Message.Parameters));
-								return;
-							}
-							break;
-						case IrcCode.RPL_WHOISCHANNELS:
-							if (e.Message.Parameters.Count == 3 && this.IsDefault)
-							{
-								this.Write("ServerInfo", string.Format("{1} is on {2}",
-									(object[])e.Message.Parameters));
-								return;
-							}
-							break;
-						case IrcCode.RPL_WHOISSERVER:
-							if (e.Message.Parameters.Count == 4 && this.IsDefault)
-							{
-								this.Write("ServerInfo", string.Format("{1} using {2} {3}",
-									(object[])e.Message.Parameters));
-								return;
-							}
-							break;
-						case IrcCode.RPL_WHOISIDLE:
-							if (e.Message.Parameters.Count == 5 && this.IsDefault)
-							{
-								this.Write("ServerInfo", string.Format("{0} has been idle {1}, signed on {2}",
-									e.Message.Parameters[1], this.FormatTimeSpan(e.Message.Parameters[2]),
-									this.FormatTime(e.Message.Parameters[3])));
-								return;
-							}
-							break;
-						case IrcCode.RPL_INVITING:
-							if (e.Message.Parameters.Count == 3 && this.IsDefault)
-							{
-								this.Write("ServerInfo", string.Format("Invited {0} to channel {1}",
-									e.Message.Parameters[1], e.Message.Parameters[2]));
-								return;
-							}
-							break;
+						if (_usingAlternateNick || string.IsNullOrEmpty(App.Settings.Current.User.AlternateNickname))
+						{
+							this.SetInputText("/nick ");
+						}
+						else
+						{
+							this.Session.Nick(App.Settings.Current.User.AlternateNickname);
+							_usingAlternateNick = true;
+						}
 					}
+					break;
+				case IrcCode.RPL_TOPIC:
+					if (e.Message.Parameters.Count == 3 && !this.IsServer &&
+						this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
+					{
+						_topic = e.Message.Parameters[2];
+						this.SetTitle();
+						this.Write("Topic", string.Format("Topic is: {0}", _topic));
+					}
+					return;
+				case IrcCode.RPL_TOPICSETBY:
+					if (e.Message.Parameters.Count == 4 && !this.IsServer &&
+						this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
+					{
+						this.Write("Topic", string.Format("Topic set by {0} on {1}", e.Message.Parameters[2],
+							this.FormatTime(e.Message.Parameters[3])));
+					}
+					return;
+				case IrcCode.RPL_CHANNELCREATEDON:
+					if (e.Message.Parameters.Count == 3 && !this.IsServer &&
+						this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
+					{
+						//this.Write("ServerInfo", string.Format("* Channel created on {0}", this.FormatTime(e.Message.Parameters[2])));
+					}
+					return;
+				case IrcCode.RPL_WHOISUSER:
+				case IrcCode.RPL_WHOWASUSER:
+					if (e.Message.Parameters.Count == 6 && this.IsDefault)
+					{
+						this.Write("ServerInfo",
+							string.Format("{1} " + (e.Code == IrcCode.RPL_WHOWASUSER ? "was" : "is") + " {2}@{3} {4} {5}",
+							(object[])e.Message.Parameters));
+						return;
+					}
+					break;
+				case IrcCode.RPL_WHOISCHANNELS:
+					if (e.Message.Parameters.Count == 3 && this.IsDefault)
+					{
+						this.Write("ServerInfo", string.Format("{1} is on {2}",
+							(object[])e.Message.Parameters));
+						return;
+					}
+					break;
+				case IrcCode.RPL_WHOISSERVER:
+					if (e.Message.Parameters.Count == 4 && this.IsDefault)
+					{
+						this.Write("ServerInfo", string.Format("{1} using {2} {3}",
+							(object[])e.Message.Parameters));
+						return;
+					}
+					break;
+				case IrcCode.RPL_WHOISIDLE:
+					if (e.Message.Parameters.Count == 5 && this.IsDefault)
+					{
+						this.Write("ServerInfo", string.Format("{0} has been idle {1}, signed on {2}",
+							e.Message.Parameters[1], this.FormatTimeSpan(e.Message.Parameters[2]),
+							this.FormatTime(e.Message.Parameters[3])));
+						return;
+					}
+					break;
+				case IrcCode.RPL_INVITING:
+					if (e.Message.Parameters.Count == 3 && this.IsDefault)
+					{
+						this.Write("ServerInfo", string.Format("Invited {0} to channel {1}",
+							e.Message.Parameters[1], e.Message.Parameters[2]));
+						return;
+					}
+					break;
+			}
 
-					if ((int)e.Code < 200 && this.IsServer || this.IsDefault)
-					{
-						this.Write("ServerInfo", e.Text);
-					}
-				});
+			if (!e.Handled && ((int)e.Code < 200 && this.IsServer || this.IsDefault))
+			{
+				this.Write("ServerInfo", e.Text);
+			}
 		}
 
 		private bool IsDefault
@@ -269,8 +245,8 @@ namespace Floe.UI
 					}
 
 					if(this.IsServer &&
-						!((ChatWindow)_window).Items.Any((item) => item.IsVisible && item.Control.Session == this.Session) &&
-						!App.Current.Windows.OfType<ChannelWindow>().Any((cw) => cw.Control.Session == this.Session && cw.IsActive))
+						!((ChatWindow)_window).Items.Any((item) => item.IsVisible && item.Page.Session == this.Session) &&
+						!App.Current.Windows.OfType<ChannelWindow>().Any((cw) => cw.Session == this.Session && cw.IsActive))
 					{
 						return true;
 					}
@@ -287,32 +263,29 @@ namespace Floe.UI
 				return;
 			}
 
-			this.BeginInvoke(() =>
+			if (((this.IsChannel && this.Target.Equals(e.To)) ||
+				(this.IsNickname && this.Target.Equals(new IrcTarget(e.From)) && !e.To.IsChannel))
+				&& e.Command.Command == "ACTION")
+			{
+				string text = string.Join(" ", e.Command.Arguments);
+				bool attn = false;
+				if (App.IsAttentionMatch(this.Session.Nickname, text))
 				{
-					if (((this.IsChannel && this.Target.Equals(e.To)) ||
-						(this.IsNickname && this.Target.Equals(new IrcTarget(e.From)) && e.To.Type == IrcTargetType.Nickname))
-						&& e.Command.Command == "ACTION")
+					attn = true;
+					if (_window != null)
 					{
-						string text = string.Join(" ", e.Command.Arguments);
-						bool attn = false;
-						if (App.IsAttentionMatch(this.Session.Nickname, text))
-						{
-							attn = true;
-							if (_window != null)
-							{
-								Interop.WindowHelper.FlashWindow(_window);
-							}
-						}
+						Interop.WindowHelper.FlashWindow(_window);
+					}
+				}
 
-						this.Write("Action", string.Format("{0} {1}", e.From.Nickname, text, attn));
-					}
-					else if (this.IsServer && e.Command.Command != "ACTION")
-					{
-						this.Write("Ctcp", e.From, string.Format("[CTCP {1}] {2}",
-							e.From.Nickname, e.Command.Command,
-							e.Command.Arguments.Length > 0 ? string.Join(" ", e.Command.Arguments) : ""), false);
-					}
-				});
+				this.Write("Action", string.Format("{0} {1}", e.From.Nickname, text, attn));
+			}
+			else if (this.IsServer && e.Command.Command != "ACTION")
+			{
+				this.Write("Ctcp", e.From, string.Format("[CTCP {1}] {2}",
+					e.From.Nickname, e.Command.Command,
+					e.Command.Arguments.Length > 0 ? string.Join(" ", e.Command.Arguments) : ""), false);
+			}
 		}
 
 		private void Session_Joined(object sender, IrcJoinEventArgs e)
@@ -321,15 +294,12 @@ namespace Floe.UI
 
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
-				this.BeginInvoke(() =>
-					{
-						if (!isIgnored)
-						{
-							this.Write("Join", string.Format("{0} ({1}@{2}) has joined channel {3}",
-								e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
-						}
-						this.AddNick(ChannelLevel.Normal, e.Who.Nickname);
-					});
+				if (!isIgnored)
+				{
+					this.Write("Join", string.Format("{0} ({1}@{2}) has joined channel {3}",
+						e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
+				}
+				this.AddNick(ChannelLevel.Normal, e.Who.Nickname);
 			}
 		}
 
@@ -339,15 +309,12 @@ namespace Floe.UI
 
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
-				this.BeginInvoke(() =>
-					{
-						if (!isIgnored)
-						{
-							this.Write("Part", string.Format("{0} ({1}@{2}) has left channel {3}",
-								e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
-						}
-						this.RemoveNick(e.Who.Nickname);
-					});
+				if (!isIgnored)
+				{
+					this.Write("Part", string.Format("{0} ({1}@{2}) has left channel {3}",
+						e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
+				}
+				this.RemoveNick(e.Who.Nickname);
 			}
 		}
 
@@ -355,162 +322,105 @@ namespace Floe.UI
 		{
 			bool isIgnored = App.IsIgnoreMatch(e.Message.From);
 
-			this.BeginInvoke(() =>
+			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			{
+				if (!isIgnored)
 				{
-					if (this.IsChannel && this.IsPresent(e.OldNickname))
-					{
-						if (!isIgnored)
-						{
-							this.Write("Nick", string.Format("{0} is now known as {1}", e.OldNickname, e.NewNickname));
-						}
-					}
+					this.Write("Nick", string.Format("{0} is now known as {1}", e.OldNickname, e.NewNickname));
+				}
+			}
 
-					if (this.IsChannel && this.IsPresent(e.OldNickname))
-					{
-						this.ChangeNick(e.OldNickname, e.NewNickname);
-					}
-				});
+			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			{
+				this.ChangeNick(e.OldNickname, e.NewNickname);
+			}
 		}
 
 		private void Session_SelfNickChanged(object sender, IrcNickEventArgs e)
 		{
-			this.BeginInvoke(() =>
+			if (this.IsServer || this.IsChannel)
 			{
-				if (this.IsServer || this.IsChannel)
-				{
-					this.Write("Nick", string.Format("You are now known as {0}", e.NewNickname));
-				}
-				this.SetTitle();
+				this.Write("Nick", string.Format("You are now known as {0}", e.NewNickname));
+			}
+			this.SetTitle();
 
-				if (this.IsChannel && this.IsPresent(e.OldNickname))
-				{
-					this.ChangeNick(e.OldNickname, e.NewNickname);
-				}
-			});
+			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			{
+				this.ChangeNick(e.OldNickname, e.NewNickname);
+			}
 		}
 
 		private void Session_TopicChanged(object sender, IrcTopicEventArgs e)
 		{
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
-				this.BeginInvoke(() =>
-					{
-						this.Write("Topic", string.Format("{0} changed topic to: {1}", e.Who.Nickname, e.Text));
-						_topic = e.Text;
-						this.SetTitle();
-					});
+				this.Write("Topic", string.Format("{0} changed topic to: {1}", e.Who.Nickname, e.Text));
+				_topic = e.Text;
+				this.SetTitle();
 			}
 		}
 
 		private void Session_UserModeChanged(object sender, IrcUserModeEventArgs e)
 		{
-			this.BeginInvoke(() =>
-				{
-					if (this.IsServer)
-					{
-						this.Write("Mode", string.Format("You set mode: {0}", IrcUserMode.RenderModes(e.Modes)));
-					}
-					this.SetTitle();
-				});
+			if (this.IsServer)
+			{
+				this.Write("Mode", string.Format("You set mode: {0}", IrcUserMode.RenderModes(e.Modes)));
+			}
+			this.SetTitle();
 		}
 
 		private void Session_UserQuit(object sender, IrcQuitEventArgs e)
 		{
 			bool isIgnored = App.IsIgnoreMatch(e.Who);
 
-			this.BeginInvoke(() =>
+			if (this.IsChannel && this.IsPresent(e.Who.Nickname))
+			{
+				if (!isIgnored)
 				{
-					if (this.IsChannel && this.IsPresent(e.Who.Nickname))
-					{
-						if (!isIgnored)
-						{
-							this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Text));
-						}
-						this.RemoveNick(e.Who.Nickname);
-					}
-				});
+					this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Text));
+				}
+				this.RemoveNick(e.Who.Nickname);
+			}
 		}
 
 		private void Session_ChannelModeChanged(object sender, IrcChannelModeEventArgs e)
 		{
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
-				this.BeginInvoke(() =>
-					{
-						if (e.Who != null)
-						{
-							this.Write("Mode", string.Format("{0} set mode: {1}", e.Who.Nickname,
-								string.Join(" ", IrcChannelMode.RenderModes(e.Modes))));
+				if (e.Who != null)
+				{
+					this.Write("Mode", string.Format("{0} set mode: {1}", e.Who.Nickname,
+						string.Join(" ", IrcChannelMode.RenderModes(e.Modes))));
 
-							_channelModes = (from m in e.Modes.Where((newMode) => newMode.Parameter == null && newMode.Set).
-												 Select((newMode) => newMode.Mode).Union(_channelModes).Distinct()
-											 where !e.Modes.Any((newMode) => !newMode.Set && newMode.Mode == m)
-											 select m).ToArray();
-						}
-						else
-						{
-							_channelModes = (from m in e.Modes
-											 where m.Set && m.Parameter == null
-											 select m.Mode).ToArray();
-						}
-						this.SetTitle();
-						foreach (var mode in e.Modes)
-						{
-							this.ProcessMode(mode);
-						}
-					});
+					_channelModes = (from m in e.Modes.Where((newMode) => newMode.Parameter == null && newMode.Set).
+										 Select((newMode) => newMode.Mode).Union(_channelModes).Distinct()
+									 where !e.Modes.Any((newMode) => !newMode.Set && newMode.Mode == m)
+									 select m).ToArray();
+				}
+				else
+				{
+					_channelModes = (from m in e.Modes
+									 where m.Set && m.Parameter == null
+									 select m.Mode).ToArray();
+				}
+				this.SetTitle();
+				foreach (var mode in e.Modes)
+				{
+					this.ProcessMode(mode);
+				}
 			}
 		}
 
 		private void Session_Invited(object sender, IrcInviteEventArgs e)
 		{
-			if(App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From))
 			{
 				return;
 			}
 
-			this.BeginInvoke(() =>
-				{
-					if (this.IsDefault || this.IsServer)
-					{
-						this.Write("Invite", string.Format("{0} invited you to channel {1}", e.From.Nickname, e.Channel));
-					}
-				});
-		}
-
-		private void Session_RawMessageReceived(object sender, IrcEventArgs e)
-		{
-			int code;
-			if(int.TryParse(e.Message.Command, out code))
+			if (this.IsDefault || this.IsServer)
 			{
-				var ircCode = (IrcCode)code;
-				switch(ircCode)
-				{
-					case IrcCode.RPL_NAMEREPLY:
-						if (!_hasNames && e.Message.Parameters.Count >= 3 && this.IsChannel)
-						{
-							var target = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
-							if (this.Target.Equals(target))
-							{
-								this.Invoke(() =>
-									{
-										foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
-										{
-											this.AddNick(nick);
-										}
-									});
-								e.Handled = true;
-							}
-						}
-						break;
-					case IrcCode.RPL_ENDOFNAMES:
-						if (!_hasNames && this.IsChannel)
-						{
-							_hasNames = true;
-							e.Handled = true;
-						}
-						break;
-				}
+				this.Write("Invite", string.Format("{0} invited you to channel {1}", e.From.Nickname, e.Channel));
 			}
 		}
 
@@ -561,24 +471,33 @@ namespace Floe.UI
 				{
 					e.CancelCommand();
 
-					this.BeginInvoke(() =>
+					var parts = text.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0).ToArray();
+					if (parts.Length > App.Settings.Current.Buffer.MaximumPasteLines)
 					{
-						var parts = text.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0).ToArray();
-						if (parts.Length > App.Settings.Current.Buffer.MaximumPasteLines)
-						{
-							if(!App.Confirm(_window, string.Format("Are you sure you want to paste more than {0} lines?",
-								App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warning"))
+						Dispatcher.BeginInvoke((Action)(() =>
 							{
-								return;
-							}
-						}
+								if (!App.Confirm(_window, string.Format("Are you sure you want to paste more than {0} lines?",
+									App.Settings.Current.Buffer.MaximumPasteLines), "Paste Warning"))
+								{
+									return;
+								}
+								foreach (var part in parts)
+								{
+									txtInput.Text = txtInput.Text.Substring(0, txtInput.SelectionStart);
+									txtInput.Text += part;
+									this.SubmitInput();
+								}
+							}));
+					}
+					else
+					{
 						foreach (var part in parts)
 						{
 							txtInput.Text = txtInput.Text.Substring(0, txtInput.SelectionStart);
 							txtInput.Text += part;
 							this.SubmitInput();
 						}
-					});
+					}
 				}
 			}
 		}
@@ -821,7 +740,6 @@ namespace Floe.UI
 			this.Session.UserModeChanged += new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged += new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
-			this.Session.RawMessageReceived += new EventHandler<IrcEventArgs>(Session_RawMessageReceived);
             this.Session.Invited += new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
@@ -837,6 +755,7 @@ namespace Floe.UI
 		private void UnsubscribeEvents()
 		{
 			this.Session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
+			this.Session.ConnectionError -= new EventHandler<ErrorEventArgs>(Session_ConnectionError);
 			this.Session.Noticed -= new EventHandler<IrcMessageEventArgs>(Session_Noticed);
 			this.Session.PrivateMessaged -= new EventHandler<IrcMessageEventArgs>(Session_PrivateMessaged);
 			this.Session.Kicked -= new EventHandler<IrcKickEventArgs>(Session_Kicked);
@@ -851,6 +770,7 @@ namespace Floe.UI
 			this.Session.UserModeChanged -= new EventHandler<IrcUserModeEventArgs>(Session_UserModeChanged);
 			this.Session.ChannelModeChanged -= new EventHandler<IrcChannelModeEventArgs>(Session_ChannelModeChanged);
 			this.Session.UserQuit -= new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
+			this.Session.Invited -= new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.RemovePastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
 
 			if (_window != null)

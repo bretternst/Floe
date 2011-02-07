@@ -10,7 +10,7 @@ using Floe.Net;
 
 namespace Floe.UI
 {
-	public partial class ChatControl : UserControl
+	public partial class ChatControl : ChatPage
 	{
 		private const char CommandChar = '/';
 
@@ -195,18 +195,18 @@ namespace Floe.UI
 
 			for(int i = 0; i < nicks.Count(); i += 3)
 			{
-				this.Session.AddHandler(new IrcCodeHandler(IrcCode.RPL_USERHOST, true, (msg) =>
+				this.Session.AddHandler(new IrcCodeHandler((ee) =>
 					{
-						if (msg.Parameters.Count > 1)
+						if (ee.Message.Parameters.Count > 1)
 						{
-							var modes = from user in msg.Parameters[1].Split(' ')
+							var modes = from user in ee.Message.Parameters[1].Split(' ')
 										let parts = user.Split('@')
 										where parts.Length == 2
 										select new IrcChannelMode(banSet, 'b', "*!*@" + parts[1]);
 							this.Session.Mode(this.Target.Name, modes);
 						}
 						return true;
-					}));
+					}, IrcCode.RPL_USERHOST));
 				var chunk = nicks.Skip(i).Take(3).ToArray();
 				this.Session.UserHost(chunk);
 			}
@@ -238,12 +238,19 @@ namespace Floe.UI
 				}
 				if (command.Length > 0)
 				{
-					this.Execute(command.ToUpperInvariant(), args);
+					try
+					{
+						this.Execute(command.ToUpperInvariant(), args);
+					}
+					catch (CommandException ex)
+					{
+						this.Write("Error", ex.Message);
+					}
 				}
 			}
 			else
 			{
-				if (text.Trim().Length > 0)
+				if (text.Trim().Length > 0 && this.IsConnected)
 				{
 					if (!this.IsServer)
 					{
@@ -375,8 +382,12 @@ namespace Floe.UI
 				case "MODE":
 					args = Split(command, arguments, 1, 2);
 					var target = new IrcTarget(args[0]);
-					if (target.Type == IrcTargetType.Nickname)
+					if (!target.IsChannel)
 					{
+						if (!this.Session.IsSelf(target))
+						{
+							throw new CommandException("Can't change modes for another user.");
+						}
 						if (args.Length > 1)
 						{
 							this.Session.Mode(args[1]);
@@ -399,33 +410,35 @@ namespace Floe.UI
 					}
 					break;
 				case "SERVER":
-					args = Split(command, arguments, 1, 3);
-					int port = 0;
-					bool useSsl = false;
-					if (args.Length > 1 && (args[1] = args[1].Trim()).Length > 0)
 					{
-						if(args[1][0] == '+')
+						args = Split(command, arguments, 1, 3);
+						int port = 0;
+						bool useSsl = false;
+						if (args.Length > 1 && (args[1] = args[1].Trim()).Length > 0)
 						{
-							useSsl = true;
+							if (args[1][0] == '+')
+							{
+								useSsl = true;
+							}
+							int.TryParse(args[1], out port);
 						}
-						int.TryParse(args[1], out port);
+						string password = null;
+						if (args.Length > 2)
+						{
+							password = args[2];
+						}
+						if (port == 0)
+						{
+							port = 6667;
+						}
+						if (this.IsConnected)
+						{
+							this.Session.AutoReconnect = false;
+							this.Session.Quit("Changing servers");
+						}
+						this.Perform = "";
+						this.Connect(args[0], port, useSsl, false, password);
 					}
-					string password = null;
-					if (args.Length > 2)
-					{
-						password = args[2];
-					}
-					if (port == 0)
-					{
-						port = 6667;
-					}
-					if (this.IsConnected)
-					{
-						this.Session.AutoReconnect = false;
-						this.Session.Quit("Changing servers");
-					}
-					this.Perform = "";
-					this.Connect(args[0], port, password, useSsl, false);
 					break;
 				case "ME":
 				case "ACTION":
@@ -433,10 +446,13 @@ namespace Floe.UI
 					{
 						this.Write("Error", "Can't talk in this window.");
 					}
-					args = Split(command, arguments, 1, int.MaxValue);
-					this.Session.SendCtcp(this.Target,
-						new CtcpCommand("ACTION", args), false);
-					this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
+					if (this.IsConnected)
+					{
+						args = Split(command, arguments, 1, int.MaxValue);
+						this.Session.SendCtcp(this.Target,
+							new CtcpCommand("ACTION", args), false);
+						this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
+					}
 					break;
 				case "SETUP":
 					App.ShowSettings();
@@ -445,9 +461,12 @@ namespace Floe.UI
 					boxOutput.Clear();
 					break;
 				case "MSG":
-					args = Split(command, arguments, 2, 2);
-					this.Session.PrivateMessage(new IrcTarget(args[0]), args[1]);
-					this.Write("Own", string.Format("-> [{0}] {1}", args[0], args[1]));
+					if (this.IsConnected)
+					{
+						args = Split(command, arguments, 2, 2);
+						this.Session.PrivateMessage(new IrcTarget(args[0]), args[1]);
+						this.Write("Own", string.Format("-> [{0}] {1}", args[0], args[1]));
+					}
 					break;
 				case "LIST":
 					args = Split(command, arguments, 1, 2);
@@ -552,6 +571,29 @@ namespace Floe.UI
 						}
 					}
 					break;
+				case "DCC":
+					{
+						args = Split(command, arguments, 3, 3);
+						if (args[0].ToUpperInvariant() == "XMIT")
+						{
+							string path = null;
+							if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
+							{
+								path = args[2];
+							}
+							else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
+							{
+								this.Write("Error", "Could not find file " + args[2]);
+								return;
+							}
+							App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+						}
+						else
+						{
+							this.Write("Error", "Unsupported DCC mode " + args[0]);
+						}
+					}
+					break;
 				default:
 					this.Write("Error", string.Format("Unrecognized command: {0}", command));
 					break;
@@ -566,17 +608,17 @@ namespace Floe.UI
 		private string[] Split(string command, string args, int minArgs, int maxArgs, bool isChannelRequired)
 		{
 			string[] parts = ChatControl.Split(args, maxArgs);
-			if (isChannelRequired && (parts.Length < 1 || !IrcTarget.IsChannel(parts[0])))
+			if (isChannelRequired && (parts.Length < 1 || !IrcTarget.IsChannelName(parts[0])))
 			{
 				if (!this.IsChannel)
 				{
-					throw new IrcException("Not on a channel.");
+					throw new CommandException("Not on a channel.");
 				}
 				parts = new[] { this.Target.Name }.Union(ChatControl.Split(args, maxArgs - 1)).ToArray();
 			}
 			if (parts.Length < minArgs)
 			{
-				throw new IrcException(string.Format("{0} requires {1} parameters.", command, minArgs));
+				throw new CommandException(string.Format("{0} requires {1} parameters.", command, minArgs));
 			}
 			return parts;
 		}

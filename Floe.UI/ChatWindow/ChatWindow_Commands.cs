@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Win32;
 using Floe.Net;
 
 namespace Floe.UI
@@ -18,75 +19,85 @@ namespace Floe.UI
 		public readonly static RoutedUICommand MinimizeCommand = new RoutedUICommand("Minimize", "Minimize", typeof(ChatWindow));
 		public readonly static RoutedUICommand MaximizeCommand = new RoutedUICommand("Maximize", "Maximize", typeof(ChatWindow));
 		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Quit", "Close", typeof(ChatWindow));
+		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("DCC Send...", "DccSend", typeof(ChatWindow));
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
-			var control = tabsChat.SelectedContent as ChatControl;
-			this.BeginInvoke(() => App.Create(control.Session, new IrcTarget((string)e.Parameter), true));
+			var control = tabsChat.SelectedContent as ChatPage;
+			App.Create(control.Session, new IrcTarget((string)e.Parameter), true);
 		}
 
 		private void ExecuteCloseTab(object sender, ExecutedRoutedEventArgs e)
 		{
-			var context = e.Parameter as ChatContext;
-			if (context != null)
+			var page = e.Parameter as ChatPage;
+			if (page != null)
 			{
-				if (context.Target == null)
+				if (page.Type == ChatPageType.Server)
 				{
-					if (context.Session.State == IrcSessionState.Disconnected || 
+					if (page.Session.State == IrcSessionState.Disconnected || 
 						App.Settings.Current.Windows.SuppressWarningOnQuit ||
-						this.ConfirmQuit(string.Format("Are you sure you want to disconnect from {0}?", context.Session.NetworkName),
+						this.ConfirmQuit(string.Format("Are you sure you want to disconnect from {0}?", page.Session.NetworkName),
 						"Close Server Tab"))
 					{
-						if(context.Session.State != IrcSessionState.Disconnected)
+						if(page.Session.State != IrcSessionState.Disconnected)
 						{
-							context.Session.Quit("Leaving");
+							page.Session.Quit("Leaving");
 						}
 						var itemsToRemove = (from i in this.Items
-											 where i.Control.Session == context.Session
-											 select i.Control.Context).ToArray();
-						foreach(var item in itemsToRemove)
+											 where i.Page.Session == page.Session && (i.Page.Type == ChatPageType.Chat || i.Page.Type == ChatPageType.Server)
+											 select i.Page).ToArray();
+						foreach(var p in itemsToRemove)
 						{
-							this.RemovePage(item);
+							this.RemovePage(p);
 						}
 					}
 				}
+				else if (page.Type == ChatPageType.Chat)
+				{
+					if (page.Target.IsChannel && page.Session.State != IrcSessionState.Disconnected)
+					{
+						page.Session.Part(page.Target.Name);
+					}
+					this.RemovePage(page);
+				}
 				else
 				{
-					if(context.Target.Type == IrcTargetType.Channel && context.Session.State != IrcSessionState.Disconnected)
+					_isInModalDialog = true;
+					if (page.CanClose())
 					{
-						context.Session.Part(context.Target.Name);
+						this.RemovePage(page);
 					}
-					this.RemovePage(context);
+					_isInModalDialog = false;
 				}
 			}
 		}
 
 		private void ExecuteNewTab(object sender, ExecutedRoutedEventArgs e)
 		{
-			this.AddPage(new ChatContext(new IrcSession(), null), true);
+			this.AddPage(new ChatControl(new IrcSession((a) => this.Dispatcher.BeginInvoke(a)), null), true);
 		}
 
 		private void ExecuteDetach(object sender, ExecutedRoutedEventArgs e)
 		{
 			var item = e.Parameter as ChatTabItem;
-			if (item != null && !item.Control.IsServer)
+			if (item != null && item.Page.Type != ChatPageType.Server)
 			{
 				this.Items.Remove(item);
-				var ctrl = item.Control;
+				var ctrl = item.Content;
 				item.Content = null;
-				var window = new ChannelWindow(ctrl);
+				var window = new ChannelWindow(item.Page);
 				window.Show();
 			}
 		}
 
 		private void CanExecuteCloseTab(object sender, CanExecuteRoutedEventArgs e)
 		{
-			var context = e.Parameter as ChatContext;
-			if (context != null)
+			var page = e.Parameter as ChatPage;
+			if (page != null)
 			{
-				if (context.Target == null)
+				if (page.Target == null)
 				{
-					e.CanExecute = this.Items.Count((i) => i.Control.IsServer) > 1;
+					e.CanExecute = this.Items.Count((i) => i.Page.Type == ChatPageType.Server) > 1;
 				}
 				else
 				{
@@ -141,6 +152,19 @@ namespace Floe.UI
 		private void ExecuteClose(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.Close();
+		}
+
+		private void ExecuteDccSend(object sender, ExecutedRoutedEventArgs e)
+		{
+			var control = tabsChat.SelectedContent as ChatPage;
+			var dialog = new OpenFileDialog();
+			dialog.CheckFileExists = true;
+			dialog.Multiselect = false;
+			dialog.InitialDirectory = App.Settings.Current.Dcc.DownloadFolder;
+			if (dialog.ShowDialog(this) == true)
+			{
+				this.DccSend(control.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(dialog.FileName));
+			}
 		}
 	}
 }

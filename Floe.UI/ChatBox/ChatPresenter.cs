@@ -31,6 +31,7 @@ namespace Floe.UI
 			_blocks = new LinkedList<Block>();
 			_curBlock = null;
 			_bufferLines = 0;
+			_isAutoScrolling = true;
 			this.InvalidateScrollInfo();
 			this.InvalidateVisual();
 		}

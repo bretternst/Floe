@@ -2,6 +2,10 @@
 
 namespace Floe.Net
 {
+	/// <summary>
+	/// An enumeration of all standard three-digit codes that may be sent from an IRC server to the client, typically
+	/// in response to some command. These numbers are based on RFC 2812, with some de-facto additions.
+	/// </summary>
 	public enum IrcCode
 	{
 		RPL_WELCOME = 001,
@@ -25,7 +29,7 @@ namespace Floe.Net
 		RPL_LISTSTART = 321,
 		RPL_LIST = 322,
 		RPL_LISTEND = 323,
-		RPL_CHANNELMODES = 324,
+		RPL_CHANNELMODEIS = 324,
 		RPL_UNIQOPIS = 325,
 		RPL_CHANNELCREATEDON = 329,
 		RPL_NOTOPIC = 331,

@@ -9,8 +9,8 @@
 	<Window.InputBindings>
 		<KeyBinding Command="local:ChatWindow.PreviousTabCommand" Gesture="Alt+Left"/>
 		<KeyBinding Command="local:ChatWindow.NextTabCommand" Gesture="Alt+Right"/>
-        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+F4" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
-        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+W" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Control.Context}"/>
+        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+F4" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Page}"/>
+        <KeyBinding Command="local:ChatWindow.CloseTabCommand" Gesture="Ctrl+W" CommandParameter="{Binding ElementName=tabsChat, Path=SelectedItem.Page}"/>
     </Window.InputBindings>
 	<Window.CommandBindings>
 		<CommandBinding Command="local:ChatWindow.ChatCommand" Executed="ExecuteChat"/>
@@ -23,6 +23,7 @@
 		<CommandBinding Command="local:ChatWindow.MinimizeCommand" Executed="ExecuteMinimize"/>
 		<CommandBinding Command="local:ChatWindow.MaximizeCommand" Executed="ExecuteMaximize"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose"/>
+		<CommandBinding Command="local:ChatWindow.DccSendCommand" Executed="ExecuteDccSend"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<ContextMenu Placement="MousePoint" x:Key="NotifyMenu">
@@ -131,7 +132,7 @@
 			</Grid.ColumnDefinitions>
 			
 			<Border Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="0">
-				<TextBlock Margin="4,0,0,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
+				<TextBlock Margin="4,0,10,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
 			</Border>
 			<StackPanel Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
 				<Button x:Name="btnSettings" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,2,0" Padding="0" Command="local:ChatWindow.SettingsCommand">
@@ -254,7 +255,7 @@
 				<TabControl.ItemContainerStyle>
 					<Style TargetType="TabItem">
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.IsServer}" Value="False">
+							<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.IsServer}" Value="False">
 								<Setter Property="ContextMenu">
 									<Setter.Value>
 										<ContextMenu>
@@ -264,13 +265,35 @@
 								</Setter>
 							</DataTrigger>
 						</Style.Triggers>
-						<Setter Property="Header" Value="{Binding RelativeSource={RelativeSource Self}, Path=Control.Header}"/>
+						<Setter Property="Header" Value="{Binding RelativeSource={RelativeSource Self}, Path=Page.Header}"/>
 						<Setter Property="Content" Value="{Binding Content}"/>
 						<Setter Property="Foreground" Value="{StaticResource winFG}"/>
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="TabItem">
+<<<<<<< HEAD
 									<Border Background="Transparent" x:Name="border0">
+=======
+									<Grid>
+										<Grid HorizontalAlignment="Stretch">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition>
+													<ColumnDefinition.Width>
+														<MultiBinding Converter="{StaticResource multiplyConverter}">
+															<Binding ElementName="border0" Path="ActualWidth"/>
+															<Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Page.Progress"/>
+														</MultiBinding>
+													</ColumnDefinition.Width>
+												</ColumnDefinition>
+												<ColumnDefinition Width="*"/>
+											</Grid.ColumnDefinitions>
+											<Grid.RowDefinitions>
+												<RowDefinition/>
+											</Grid.RowDefinitions>
+											<Border Grid.Row="0" Grid.Column="0" Background="{StaticResource winFGx20}"/>
+										</Grid>
+									<Border x:Name="border0" Background="Transparent">
+>>>>>>> 1.4
 										<Border x:Name="border1">
 											<Border x:Name="border2" BorderThickness="0,0,1,0" BorderBrush="{StaticResource winTabSep}">
 												<Grid Height="25" HorizontalAlignment="Center" MinWidth="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.MinTabWidth}">
@@ -290,11 +313,12 @@
 													<Button x:Name="btnTabClose" Margin="0,0,4,0" Style="{StaticResource tabCloseButtonStyle}"
 														Command="local:ChatWindow.CloseTabCommand" Grid.Column="2" Grid.Row="1"
 														Height="Auto" VerticalAlignment="Bottom"
-														CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Control.Context}"/>
+														CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Page}"/>
 												</Grid>
 											</Border>
 										</Border>
 									</Border>
+									</Grid>
 									<ControlTemplate.Triggers>
 										<DataTrigger Binding="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.TabStripPosition}" Value="Top">
 											<Setter Property="Grid.Row" TargetName="arrow" Value="1"/>
@@ -314,21 +338,21 @@
 											</MultiTrigger.Conditions>
 											<Setter Property="Background" TargetName="border1" Value="{StaticResource winFGdownGrad}"/>
 										</MultiTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="NoiseActivity">
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.NotifyState}" Value="NoiseActivity">
 											<DataTrigger.Setters>
 												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource noiseBrush}"/>
 												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource noiseBrush}"/>
 												<Setter TargetName="arrow" Property="Visibility" Value="Visible"/>
 											</DataTrigger.Setters>
 										</DataTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="ChatActivity">
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.NotifyState}" Value="ChatActivity">
 											<DataTrigger.Setters>
 												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource chatBrush}"/>
 												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource chatBrush}"/>
 												<Setter TargetName="arrow" Property="Visibility" Value="Visible"/>
 											</DataTrigger.Setters>
 										</DataTrigger>
-										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Control.NotifyState}" Value="Alert">
+										<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Page.NotifyState}" Value="Alert">
 											<DataTrigger.Setters>
 												<Setter TargetName="arrow" Property="Fill" Value="{StaticResource alertBrush}"/>
 												<Setter TargetName="arrow" Property="Stroke" Value="{StaticResource alertBrush}"/>

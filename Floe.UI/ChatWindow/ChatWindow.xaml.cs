@@ -12,16 +12,6 @@ namespace Floe.UI
 {
 	public partial class ChatWindow : Window
 	{
-		public class ChatTabItem : TabItem
-		{
-			public ChatControl Control { get { return this.Content as ChatControl; } }
-
-			public ChatTabItem(ChatControl content)
-			{
-				this.Content = content;
-			}
-		}
-
 		public ObservableCollection<ChatTabItem> Items { get; private set; }
 		public ChatControl ActiveControl { get { return tabsChat.SelectedContent as ChatControl; } }
 
@@ -34,23 +24,20 @@ namespace Floe.UI
 			this.Loaded += new RoutedEventHandler(ChatWindow_Loaded);
 		}
 
-		public void AddPage(ChatContext context, bool switchToPage)
+		public void AddPage(ChatPage page, bool switchToPage)
 		{
-			var page = new ChatControl(context);
 			var item = new ChatTabItem(page);
 
-			this.SetBindings(page);
-
-			if (context.Target == null)
+			if (page.Type == ChatPageType.Server)
 			{
 				this.Items.Add(item);
-				this.SubscribeEvents(context.Session);
+				this.SubscribeEvents(page.Session);
 			}
 			else
 			{
 				for (int i = this.Items.Count - 1; i >= 0; --i)
 				{
-					if (this.Items[i].Control.Context.Session == context.Session)
+					if (this.Items[i].Page.Session == page.Session)
 					{
 						this.Items.Insert(i + 1, item);
 						break;
@@ -68,49 +55,41 @@ namespace Floe.UI
 			}
 		}
 
-		public void RemovePage(ChatContext context)
+		public void RemovePage(ChatPage page)
 		{
-			var item = (from p in this.Items where p.Control.Context == context select p).FirstOrDefault();
-			if (item != null)
+			if (page.Type == ChatPageType.Server)
 			{
-				if (context.Target == null)
-				{
-					this.UnsubscribeEvents(context.Session);
-				}
-				item.Control.Dispose();
-				this.Items.Remove(item);
+				this.UnsubscribeEvents(page.Session);
 			}
+			page.Dispose();
+			this.Items.Remove(this.Items.Where((i) => i.Page == page).FirstOrDefault());
 		}
 
-		public void SwitchToPage(ChatContext context)
+		public void SwitchToPage(ChatPage page)
 		{
-			var item = (from p in this.Items where p.Control.Context == context select p).FirstOrDefault();
-			if (item != null)
-			{
-				tabsChat.SelectedIndex = this.Items.IndexOf(item);
-			}
+			var index = this.Items.Where((tab) => tab.Page == page).Select((t,i) => i).FirstOrDefault();
+			tabsChat.SelectedIndex = index;
 		}
 
-		public ChatContext FindPage(IrcSession session, IrcTarget target)
+		public ChatPage FindPage(IrcSession session, IrcTarget target)
 		{
-			return this.Items.Where((i) => i.Control.Context.Session == session && i.Control.Context.Target != null &&
-				i.Control.Context.Target.Equals(target)).Select((p) => p.Control.Context).FirstOrDefault();
+			return this.Items.Where((i) => i.Page.Session == session && i.Page.Target != null &&
+				i.Page.Target.Equals(target)).Select((i) => i.Page).FirstOrDefault();
 		}
 
-		public void Attach(ChatControl control)
+		public void Attach(ChatPage page)
 		{
 			for (int i = this.Items.Count - 1; i >= 0; --i)
 			{
-				if (this.Items[i].Control.Context.Session == control.Session)
+				if (this.Items[i].Page.Session == page.Session)
 				{
-					this.Items.Insert(++i, new ChatTabItem(control));
+					this.Items.Insert(++i, new ChatTabItem(page));
 					tabsChat.SelectedIndex = i;
 					break;
 				}
 			}
 
-			this.SetBindings(control);
-			this.BeginInvoke(() => this.SwitchToPage(control.Context));
+			this.SwitchToPage(page);
 		}
 
 		public void Alert(string text)
@@ -123,22 +102,14 @@ namespace Floe.UI
 
 		private void QuitAllSessions()
 		{
-			foreach (var page in this.Items.Where((i) => i.Control.Context.Target == null).Select((i) => i.Control))
+			foreach (var i in this.Items.Where((i) => i.Page.Type == ChatPageType.Server).Select((i) => i))
 			{
-				if (page.IsConnected)
+				if (i.Page.Session.State == IrcSessionState.Connected)
 				{
-					page.Context.Session.AutoReconnect = false;
-					page.Context.Session.Quit("Leaving");
+					i.Page.Session.AutoReconnect = false;
+					i.Page.Session.Quit("Leaving");
 				}
 			}
-		}
-
-		private void SetBindings(ChatControl control)
-		{
-			var bgBinding = new Binding();
-			bgBinding.Source = this;
-			bgBinding.Path = new PropertyPath("UIBackground");
-			control.SetBinding(ChatControl.UIBackgroundProperty, bgBinding);
 		}
 	}
 }

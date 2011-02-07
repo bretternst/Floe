@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Floe.Net</RootNamespace>
     <AssemblyName>Floe.Net</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
@@ -47,9 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CtcpCommand.cs" />
+    <Compile Include="Dcc\DccOperation.cs" />
+    <Compile Include="Dcc\DccXmitReceiver.cs" />
+    <Compile Include="Dcc\DccXmitSender.cs" />
     <Compile Include="IrcCode.cs" />
     <Compile Include="IrcCodeHandler.cs" />
-    <Compile Include="IrcException.cs" />
     <Compile Include="IrcModes.cs" />
     <Compile Include="IrcConnection.cs" />
     <Compile Include="IrcEventArgs.cs" />
@@ -57,6 +59,7 @@
     <Compile Include="IrcPrefix.cs" />
     <Compile Include="IrcSession.cs" />
     <Compile Include="IrcTarget.cs" />
+    <Compile Include="Dcc\NatHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

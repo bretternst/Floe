@@ -25,7 +25,7 @@ namespace Floe.UI
 		{
 			base.OnSourceInitialized(e);
 
-			var state = App.Settings.Current.Windows.States[this.Control.Context.Key];
+			var state = App.Settings.Current.Windows.States[this.Page.Id];
 			if (!string.IsNullOrEmpty(state.Placement))
 			{
 				Interop.WindowHelper.Load(this, state.Placement);

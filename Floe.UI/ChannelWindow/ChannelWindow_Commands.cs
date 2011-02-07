@@ -12,12 +12,12 @@ namespace Floe.UI
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
-			this.BeginInvoke(() => App.Create(this.Control.Session, new IrcTarget((string)e.Parameter), true));
+			App.Create(this.Page.Session, new IrcTarget((string)e.Parameter), true);
 		}
 
 		private void ExecuteReattach(object sender, ExecutedRoutedEventArgs e)
 		{
-			grdRoot.Children.Remove(this.Control);
+			grdRoot.Children.Remove(this.Page);
 			this.Close();
 		}
 
