@@ -36,7 +36,7 @@ namespace Floe.Net
 			base.OnConnected();
 
 			var timeStampBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((int)(_fileInfo.LastWriteTimeUtc - new DateTime(1970, 1, 1)).TotalSeconds));
-			this.Stream.Write(timeStampBytes, 0, 4);
+			this.Write(timeStampBytes, 0, 4);
 		}
 
 		protected override void OnReceived(byte[] buffer, int count)
@@ -62,11 +62,14 @@ namespace Floe.Net
 					buffer = new byte[SendChunkSize];
 					try
 					{
-						while (_fileStream.Position < _fileStream.Length && !this.TerminateWaitHandle.WaitOne(0))
+						while (_fileStream.Position < _fileStream.Length)
 						{
 							count = _fileStream.Read(buffer, 0, SendChunkSize);
-							this.Stream.Write(buffer, 0, count);
 							this.BytesTransferred += count;
+							if (!this.Write(buffer, 0, count))
+							{
+								return;
+							}
 						}
 					}
 					catch (IOException ex)

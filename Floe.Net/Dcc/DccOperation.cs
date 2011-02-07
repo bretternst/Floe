@@ -28,6 +28,7 @@ namespace Floe.Net
 		private ManualResetEvent _endHandle;
 		private Action<Action> _callback;
 		private long _bytesTransferred;
+		private NetworkStream _stream;
 
 		public EventHandler Connected;
 		public EventHandler Disconnected;
@@ -46,9 +47,6 @@ namespace Floe.Net
 				Interlocked.Exchange(ref _bytesTransferred, value);
 			}
 		}
-
-		protected NetworkStream Stream { get; private set; }
-		protected WaitHandle TerminateWaitHandle { get { return _endHandle; } }
 
 		public DccOperation(Action<Action> callback = null)
 		{
@@ -104,7 +102,7 @@ namespace Floe.Net
 							}
 							catch (SocketException)
 							{
-								return;
+								break;
 							}
 							finally
 							{
@@ -120,7 +118,7 @@ namespace Floe.Net
 							{
 								this.SocketLoop();
 							}
-							catch(Exception ex)
+							catch (Exception ex)
 							{
 								this.OnError(ex);
 							}
@@ -128,7 +126,7 @@ namespace Floe.Net
 
 						case 1:
 							_listener.Stop();
-							return;
+							break;
 
 						case WaitHandle.WaitTimeout:
 							_listener.Stop();
@@ -189,13 +187,23 @@ namespace Floe.Net
 			_socketThread.Start();
 		}
 
+		public bool Write(byte[] data, int offset, int size)
+		{
+			var ar = _stream.BeginWrite(data, offset, size, null, null);
+			int index = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle });
+			switch (index)
+			{
+				case 0:
+					_stream.EndWrite(ar);
+					return true;
+				default:
+					return false;
+			}
+		}
+
 		public void Close()
 		{
 			_endHandle.Set();
-			if (_listener != null)
-			{
-				_listener.Stop();
-			}
 		}
 
 		/// <summary>
@@ -203,14 +211,6 @@ namespace Floe.Net
 		/// </summary>
 		public void Dispose()
 		{
-			if (_listener != null)
-			{
-				try
-				{
-					_listener.Stop();
-				}
-				catch { }
-			}
 			if (_tcpClient != null)
 			{
 				try
@@ -223,7 +223,7 @@ namespace Floe.Net
 
 		protected virtual void OnConnected()
 		{
-			this.Stream = _tcpClient.GetStream();
+			_stream = _tcpClient.GetStream();
 			this.RaiseEvent(this.Connected);
 		}
 
@@ -303,12 +303,12 @@ namespace Floe.Net
 			{
 				while (_tcpClient.Connected)
 				{
-					var ar = this.Stream.BeginRead(readBuffer, 0, BufferSize, null, null);
+					var ar = _stream.BeginRead(readBuffer, 0, BufferSize, null, null);
 					int idx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle });
 					switch (idx)
 					{
 						case 0:
-							int count = this.Stream.EndRead(ar);
+							int count = _stream.EndRead(ar);
 							if (count <= 0)
 							{
 								return;

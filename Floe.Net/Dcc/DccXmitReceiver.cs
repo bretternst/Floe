@@ -81,7 +81,7 @@ namespace Floe.Net
 						this.FileSavedAs = _fileInfo.FullName;
 						_fileStream = new FileStream(_fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.Read);
 					}
-					this.Stream.Write(resumeBytes, 0, 4);
+					this.Write(resumeBytes, 0, 4);
 					_isTransferring = true;
 				}
 			}
