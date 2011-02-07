@@ -46,5 +46,6 @@
 		<CheckBox Canvas.Left="12" Canvas.Top="185" Content="Discover external IP" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.FindExternalAddress}" Name="checkBox2" ToolTip="Automatically discover external IP address by querying the IRC server on connect. You will need to reconnect for the change to take effect." />
 		<TextBox ToolTip="{StaticResource ttDanger}" TextWrapping="Wrap" Canvas.Left="185" Canvas.Top="136" Height="87" MaxHeight="87" Name="txtDanger" Width="187" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.DangerExtensions}" />
 		<Label Canvas.Left="180" Canvas.Top="112" ToolTip="{StaticResource ttDanger}" Content="Dangerous Extentions:" Height="28" Name="label3"  Width="174" />
+		<CheckBox Canvas.Left="12" Canvas.Top="163" Content="Enable UPnP (forwarding)" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.EnableUpnp}" Name="checkBox3" ToolTip="Attempt to automatically forward ports if there is a UPnP-enabled gateway on the local network." />
 	</Canvas>
 </UserControl>

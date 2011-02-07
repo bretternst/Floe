@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Text;
 
 namespace Floe.UI
 {
@@ -40,6 +41,59 @@ namespace Floe.UI
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return double.Parse(value.ToString());
+		}
+	}
+
+	public class SecondsToFriendlyTimeConverter : IValueConverter
+	{
+		private string _format = "{0}";
+
+		public string Format { get { return _format; } set { _format = value; } }
+
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			var seconds = System.Convert.ToInt32(value);
+			if (seconds > 0)
+			{
+				var sb = new StringBuilder();
+				var span = TimeSpan.FromSeconds(System.Convert.ToInt32(value));
+				if ((int)span.TotalDays > 0)
+				{
+					sb.Append(((int)(span.TotalDays)).ToString()).Append(" day").Append(span.TotalDays > 1 ? "s" : "");
+				}
+				if (span.Hours > 0)
+				{
+					if (sb.Length > 0)
+					{
+						sb.Append(", ");
+					}
+					sb.Append(span.Hours.ToString()).Append(" hour").Append(span.Hours > 1 ? "s" : "");
+				}
+				if (span.Minutes > 0)
+				{
+					if (sb.Length > 0)
+					{
+						sb.Append(", ");
+					}
+					sb.Append(span.Minutes.ToString()).Append(" minute").Append(span.Minutes > 1 ? "s" : "");
+				}
+
+				if ((int)span.TotalDays == 0 && span.Hours == 0)
+				{
+					if (sb.Length > 0)
+					{
+						sb.Append(", ");
+					}
+					sb.Append(span.Seconds.ToString()).Append(" second").Append(span.Seconds > 1 ? "s" : "");
+				}
+				return string.Format(_format, sb.ToString());
+			}
+			return "";
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
 		}
 	}
 
@@ -96,6 +150,19 @@ namespace Floe.UI
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class MultiplyConverter : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			return new System.Windows.GridLength(System.Convert.ToDouble(values[0]) * System.Convert.ToDouble(values[1]));
+		}
+
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
 		{
 			throw new NotImplementedException();
 		}

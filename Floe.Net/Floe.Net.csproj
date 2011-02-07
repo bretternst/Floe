@@ -59,6 +59,7 @@
     <Compile Include="IrcPrefix.cs" />
     <Compile Include="IrcSession.cs" />
     <Compile Include="IrcTarget.cs" />
+    <Compile Include="Dcc\NatHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

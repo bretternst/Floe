@@ -15,6 +15,7 @@
 		</Style>
 		<local:BytesToFriendlyStringConverter Format="{}{0} {1}"  x:Key="bytesToSizeConverter"/>
 		<local:BytesToFriendlyStringConverter Format="{}{0} {1}/s"  x:Key="bytesToSpeedConverter"/>
+		<local:SecondsToFriendlyTimeConverter Format=" ({0})" x:Key="secondsToFriendlyTimeConverter"/>
 	</local:ChatPage.Resources>
 	<Border BorderBrush="{Binding Source={StaticResource winFG}}" BorderThickness="0,1,0,1" Background="{Binding ElementName=fileControl, Path=UIBackground, Mode=OneWay}"
 			 TextBlock.Foreground="{Binding Source={StaticResource winFG}}" Padding="5,2,5,2">
@@ -39,7 +40,10 @@
 					<TextBlock Grid.Column="0" Grid.Row="2" Text="Transferred:"/>
 					<Label Grid.Column="2" Grid.Row="2" Name="lblTransferred" Content="{Binding ElementName=fileControl, Path=BytesTransferred, Converter={StaticResource bytesToSizeConverter}}"/>
 					<TextBlock Grid.Column="0" Grid.Row="3" Text="Speed:"/>
-					<Label Grid.Column="2" Grid.Row="3" Name="lblSpeed" Content="{Binding ElementName=fileControl, Path=Speed, Converter={StaticResource bytesToSpeedConverter}}"/>
+					<StackPanel Grid.Column="2" Grid.Row="3" Orientation="Horizontal">
+						<Label Name="lblSpeed" Content="{Binding ElementName=fileControl, Path=Speed, Converter={StaticResource bytesToSpeedConverter}}"/>
+						<Label Name="lblEta" Content="{Binding ElementName=fileControl, Path=EstimatedTime, Converter={StaticResource secondsToFriendlyTimeConverter}}"/>
+					</StackPanel>
 					<TextBlock Grid.Column="0" Grid.Row="4" Text="Status:"/>
 					<Label Grid.Column="2" Grid.Row="4" Name="lblStatus" Content="{Binding ElementName=fileControl, Path=StatusText}"/>
 				</Grid>
@@ -135,7 +139,7 @@
 					</CheckBox.Style>
 				</CheckBox>
 			</StackPanel>
-			<Label FontWeight="Bold" FontSize="14" Margin="7,5,7,5">
+			<Label FontWeight="Bold" FontSize="14" Margin="7,5,7,5" Width="Auto">
 				<Label.Content>
 					<TextBlock>WARNING: The file appears to have a dangerous extension.</TextBlock>
 				</Label.Content>

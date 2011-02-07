@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Windows;
+using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
 using Microsoft.Win32;
@@ -20,11 +21,16 @@ namespace Floe.UI
 
 	public partial class FileControl : ChatPage
 	{
+		private const int PollTime = 250;
+		private const int SpeedUpdateInterval = 4;
+		private const int SpeedWindow = 5;
+
 		private FileInfo _fileInfo;
 		private DccOperation _dcc;
 		private Timer _pollTimer;
 		private IPAddress _address;
 		private int _port;
+		private bool _isPortForwarding;
 
 		public static readonly DependencyProperty DescriptionProperty =
 			DependencyProperty.Register("Description", typeof(string), typeof(FileControl));
@@ -52,10 +58,18 @@ namespace Floe.UI
 
 		public static readonly DependencyProperty SpeedProperty =
 			DependencyProperty.Register("Speed", typeof(long), typeof(FileControl));
-		public string Speed
+		public long Speed
 		{
-			get { return (string)this.GetValue(SpeedProperty); }
+			get { return (long)this.GetValue(SpeedProperty); }
 			set { this.SetValue(SpeedProperty, value); }
+		}
+
+		public static readonly DependencyProperty EstimatedTimeProperty =
+			DependencyProperty.Register("EstimatedTime", typeof(int), typeof(FileControl));
+		public int EstimatedTime
+		{
+			get { return (int)this.GetValue(EstimatedTimeProperty); }
+			set { this.SetValue(EstimatedTimeProperty, value); }
 		}
 
 		public static readonly DependencyProperty StatusProperty =
@@ -90,14 +104,13 @@ namespace Floe.UI
 			this.Header = this.Title = string.Format("{0} [DCC]", target.Name);
 		}
 
-		public int StartSend(FileInfo file)
+		public void StartSend(FileInfo file, Action<int> readyCallback)
 		{
 			_fileInfo = file;
 			this.Header = string.Format("[SEND] {0}", this.Target.Name);
 			this.Title = string.Format("{0} - [DCC {1}] Sending file {2}", App.Product, this.Target.Name, _fileInfo.Name);
 			this.Description = string.Format("Sending {0}...", file.Name);
 			this.FileSize = file.Length;
-			this.StatusText = "Listening for connection";
 			this.Status = FileStatus.Working;
 
 			_dcc = new DccXmitSender(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action));
@@ -114,7 +127,25 @@ namespace Floe.UI
 				this.StatusText = "Error: No ports available";
 				_port = 0;
 			}
-			return _port;
+
+			if (App.Settings.Current.Dcc.EnableUpnp && NatHelper.IsAvailable)
+			{
+				this.StatusText = "Forwarding port";
+				NatHelper.BeginAddForwardingRule(_port, System.Net.Sockets.ProtocolType.Tcp, "Floe DCC", (o) =>
+					{
+						this.Dispatcher.BeginInvoke((Action)(() =>
+							{
+								this.StatusText = "Listening for connection";
+								readyCallback(_port);
+							}));
+					});
+				_isPortForwarding = true;
+			}
+			else
+			{
+				this.StatusText = "Listening for connection";
+				readyCallback(_port);
+			}
 		}
 
 		public void StartReceive(IPAddress address, int port, string name, long size)
@@ -184,32 +215,69 @@ namespace Floe.UI
 			this.Session.SendCtcp(this.Target, new CtcpCommand("ERRMSG", "DCC", "XMIT", "declined"), true);
 		}
 
+		private void DeletePortForwarding()
+		{
+			if (_isPortForwarding)
+			{
+				NatHelper.BeginDeleteForwardingRule(_port, System.Net.Sockets.ProtocolType.Tcp, (ar) => NatHelper.EndDeleteForwardingRule(ar));
+				_isPortForwarding = false;
+			}
+		}
+
 		private void dcc_Connected(object sender, EventArgs e)
 		{
 			this.StatusText = "Transferring";
+			int iteration = SpeedUpdateInterval;
+			var stats = new Queue<Tuple<long, long>>(SpeedWindow + 1);
+			stats.Enqueue(new Tuple<long, long>(DateTime.UtcNow.Ticks, 0));
 			_pollTimer = new Timer((o) =>
 				{
 					this.Dispatcher.BeginInvoke((Action)(() =>
 						{
-							this.UpdateProgress();
+							this.BytesTransferred = _dcc.BytesTransferred;
+							if (--iteration == 0)
+							{
+								iteration = SpeedUpdateInterval;
+								var now = DateTime.UtcNow.Ticks;
+								stats.Enqueue(new Tuple<long, long>(now, this.BytesTransferred));
+								while (stats.Count > SpeedWindow)
+								{
+									stats.Dequeue();
+								}
+								if (stats.Count > 1)
+								{
+									var timeDiff = (now - stats.Peek().Item1) / 10000;
+									var newBytes = this.BytesTransferred - stats.Peek().Item2;
+									if (timeDiff / 1000 > 0)
+									{
+										this.Speed = newBytes / (timeDiff / 1000);
+										this.EstimatedTime = (int)(this.FileSize / this.Speed);
+										if (this.FileSize > 0)
+										{
+											this.Progress = (double)this.BytesTransferred / (double)this.FileSize;
+										}
+									}
+								}
+							}
 						}));
-				}, null, 250, 250);
-		}
-
-		private void UpdateProgress()
-		{
-			this.BytesTransferred = _dcc.BytesTransferred;
+				}, null, PollTime, PollTime);
+			this.DeletePortForwarding();
 		}
 
 		private void dcc_Disconnected(object sender, EventArgs e)
 		{
 			_pollTimer.Dispose();
-			this.UpdateProgress();
+			this.BytesTransferred = _dcc.BytesTransferred;
+			this.Speed = 0;
+			this.EstimatedTime = 0;
 
-			if (_dcc.BytesTransferred < this.FileSize)
+			if (this.BytesTransferred < this.FileSize)
 			{
-				this.Status = FileStatus.Cancelled;
-				this.StatusText = "Connection lost";
+				if (this.Status != FileStatus.Cancelled)
+				{
+					this.Status = FileStatus.Cancelled;
+					this.StatusText = "Connection lost";
+				}
 			}
 			else
 			{
@@ -220,6 +288,8 @@ namespace Floe.UI
 
 		private void dcc_Error(object sender, Floe.Net.ErrorEventArgs e)
 		{
+			this.DeletePortForwarding();
+
 			this.Status = FileStatus.Cancelled;
 			this.StatusText = "Error: " + e.Exception.Message;
 			if (_pollTimer != null)
@@ -230,6 +300,8 @@ namespace Floe.UI
 
 		private void btnCancel_Click(object sender, RoutedEventArgs e)
 		{
+			this.DeletePortForwarding();
+
 			this.Status = FileStatus.Cancelled;
 			this.StatusText = "Cancelled";
 			if (_dcc != null)

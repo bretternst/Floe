@@ -14,12 +14,14 @@ namespace Floe.UI
 		public void DccSend(IrcSession session, IrcTarget target, FileInfo file)
 		{
 			var page = new FileControl(session, target);
-			int port = page.StartSend(file);
 			App.Create(session, page, true);
-			if (port > 0)
-			{
-				session.SendCtcp(target, new CtcpCommand("DCC", "XMIT", "CLEAR", session.ExternalAddress.ToString(), port.ToString(), file.Name, file.Length.ToString()), false);
-			}
+			page.StartSend(file, (port) =>
+				{
+					if (port > 0)
+					{
+						session.SendCtcp(target, new CtcpCommand("DCC", "XMIT", "CLEAR", session.ExternalAddress.ToString(), port.ToString(), file.Name, file.Length.ToString()), false);
+					}
+				});
 		}
 
 		private bool HandleDcc(IrcSession session, IrcTarget target, string[] args)

@@ -7,9 +7,11 @@
 		<local:App x:Key="App"/>
 		<local:BrushToColorConverter x:Key="brushToColor"/>
 		<local:BrushAlphaConverter x:Key="opacityConverter"/>
+		<local:MultiplyConverter x:Key="multiplyConverter"/>
 		<SolidColorBrush x:Key="winBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
 		<SolidColorBrush x:Key="winFG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
 		<SolidColorBrush x:Key="winFGx0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0"/>
+		<SolidColorBrush x:Key="winFGx20" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.2"/>
 		<SolidColorBrush x:Key="winFGx40" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.4"/>
 		<SolidColorBrush x:Key="winFGx80" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.8"/>
 		<SolidColorBrush x:Key="alertBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Alert}"/>

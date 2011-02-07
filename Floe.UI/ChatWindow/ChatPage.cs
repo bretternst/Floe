@@ -51,6 +51,14 @@ namespace Floe.UI
 			set { this.SetValue(TitleProperty, value); }
 		}
 
+		public static readonly DependencyProperty ProgressProperty =
+			DependencyProperty.Register("Progress", typeof(double), typeof(ChatPage));
+		public double Progress
+		{
+			get { return (double)this.GetValue(ProgressProperty); }
+			set { this.SetValue(ProgressProperty, value); }
+		}
+
 		public static readonly DependencyProperty NotifyStateProperty =
 			DependencyProperty.Register("NotifyState", typeof(NotifyState), typeof(ChatPage));
 		public NotifyState NotifyState

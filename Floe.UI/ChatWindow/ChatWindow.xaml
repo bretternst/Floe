@@ -271,6 +271,24 @@
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="TabItem">
+									<Grid>
+										<Grid HorizontalAlignment="Stretch">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition>
+													<ColumnDefinition.Width>
+														<MultiBinding Converter="{StaticResource multiplyConverter}">
+															<Binding ElementName="border0" Path="ActualWidth"/>
+															<Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Page.Progress"/>
+														</MultiBinding>
+													</ColumnDefinition.Width>
+												</ColumnDefinition>
+												<ColumnDefinition Width="*"/>
+											</Grid.ColumnDefinitions>
+											<Grid.RowDefinitions>
+												<RowDefinition/>
+											</Grid.RowDefinitions>
+											<Border Grid.Row="0" Grid.Column="0" Background="{StaticResource winFGx20}"/>
+										</Grid>
 									<Border x:Name="border0" Background="Transparent">
 										<Border x:Name="border1">
 											<Border x:Name="border2" BorderThickness="0,0,1,0" BorderBrush="{StaticResource winTabSep}">
@@ -296,6 +314,7 @@
 											</Border>
 										</Border>
 									</Border>
+									</Grid>
 									<ControlTemplate.Triggers>
 										<DataTrigger Binding="{Binding Source={x:Static local:App.Settings}, Path=Current.Windows.TabStripPosition}" Value="Top">
 											<Setter Property="Grid.Row" TargetName="arrow" Value="1"/>

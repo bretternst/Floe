@@ -53,6 +53,8 @@ namespace Floe.UI
 			{
 				LogUnhandledException(e.ExceptionObject);
 			};
+
+			NatHelper.BeginDiscover((ar) => NatHelper.EndDiscover(ar));
 		}
 
 		public static void ShowSettings()

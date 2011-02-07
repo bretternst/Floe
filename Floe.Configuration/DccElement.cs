@@ -80,5 +80,12 @@ namespace Floe.Configuration
 			get { return (string)this["dangerExtensions"]; }
 			set { this["dangerExtensions"] = value; }
 		}
+
+		[ConfigurationProperty("enableUpnp", DefaultValue = true)]
+		public bool EnableUpnp
+		{
+			get { return (bool)this["enableUpnp"]; }
+			set { this["enableUpnp"] = value; }
+		}
 	}
 }
