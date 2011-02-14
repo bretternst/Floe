@@ -26,7 +26,7 @@ namespace Floe.Net
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
 		private ManualResetEvent _endHandle;
-		private Action<Action> _callback;
+		private SynchronizationContext _syncContext;
 		private long _bytesTransferred;
 		private NetworkStream _stream;
 
@@ -34,8 +34,19 @@ namespace Floe.Net
 		public EventHandler Disconnected;
 		public EventHandler<ErrorEventArgs> Error;
 
+		/// <summary>
+		/// Gets the remote address.
+		/// </summary>
 		public IPAddress Address { get; private set; }
+
+		/// <summary>
+		/// Gets the remote port.
+		/// </summary>
 		public int Port { get; private set; }
+
+		/// <summary>
+		/// Gets the number of bytes transferred. This is typically only relevant for a file transfer operation.
+		/// </summary>
 		public long BytesTransferred
 		{
 			get
@@ -48,9 +59,9 @@ namespace Floe.Net
 			}
 		}
 
-		public DccOperation(Action<Action> callback = null)
+		public DccOperation()
 		{
-			_callback = callback;
+			_syncContext = SynchronizationContext.Current;
 			_endHandle = new ManualResetEvent(false);
 		}
 
@@ -241,37 +252,13 @@ namespace Floe.Net
 		{
 		}
 
-		protected void Dispatch<T>(Action<T> handler, T arg)
-		{
-			if (_callback != null)
-			{
-				_callback(() => handler(arg));
-			}
-			else
-			{
-				handler(arg);
-			}
-		}
-
-		protected void Dispatch(Action handler)
-		{
-			if (_callback != null)
-			{
-				_callback(handler);
-			}
-			else
-			{
-				handler();
-			}
-		}
-
 		protected void RaiseEvent<T>(EventHandler<T> evt, T arg) where T : EventArgs
 		{
 			if (evt != null)
 			{
-				if (_callback != null)
+				if (_syncContext != null)
 				{
-					_callback(() => evt(this, arg));
+					_syncContext.Post((o) => evt(this, (T)o), arg);
 				}
 				else
 				{
@@ -284,9 +271,9 @@ namespace Floe.Net
 		{
 			if (evt != null)
 			{
-				if (_callback != null)
+				if (_syncContext != null)
 				{
-					_callback(() => evt(this, EventArgs.Empty));
+					_syncContext.Post((o) => evt(this, EventArgs.Empty), null);
 				}
 				else
 				{

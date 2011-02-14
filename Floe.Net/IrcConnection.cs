@@ -21,7 +21,7 @@ namespace Floe.Net
 		private ConcurrentQueue<IrcMessage> _writeQueue;
 		private ManualResetEvent _writeWaitHandle;
 		private ManualResetEvent _endWaitHandle;
-		private Action<Action> _callback;
+		private SynchronizationContext _syncContext;
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
@@ -32,9 +32,9 @@ namespace Floe.Net
 
 		public IPAddress ExternalAddress { get { return ((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address; } }
 
-		public IrcConnection(Action<Action> callback)
+		public IrcConnection()
 		{
-			_callback = callback;
+			_syncContext = SynchronizationContext.Current;
 		}
 
 		public void Open(string server, int port, bool isSecure)
@@ -217,9 +217,9 @@ namespace Floe.Net
 
 		private void Dispatch<T>(Action<T> action, T arg)
 		{
-			if (_callback != null)
+			if (_syncContext != null)
 			{
-				_callback(() => action(arg));
+				_syncContext.Post((o) => action((T)o), arg);
 			}
 			else
 			{
@@ -229,9 +229,9 @@ namespace Floe.Net
 
 		private void Dispatch(Action action)
 		{
-			if (_callback != null)
+			if (_syncContext != null)
 			{
-				_callback(action);
+				_syncContext.Post((o) => ((Action)o)(), action);
 			}
 			else
 			{

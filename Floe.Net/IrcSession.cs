@@ -43,7 +43,7 @@ namespace Floe.Net
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
 		private bool _findExternalAddress;
-		private Action<Action> _callback;
+		private SynchronizationContext _syncContext;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -228,13 +228,13 @@ namespace Floe.Net
 		/// </summary>
 		/// <param name="dispatcher">An optional callback function that may be used to route events to an appropriate
 		/// thread. The typical usage will be to call Dispatcher.BeginInvoke.</param>
-		public IrcSession(Action<Action> callback = null)
+		public IrcSession()
 		{
 			this.State = IrcSessionState.Disconnected;
 			this.UserModes = new char[0];
-			_callback = callback;
+			_syncContext = SynchronizationContext.Current;
 
-			_conn = new IrcConnection(callback);
+			_conn = new IrcConnection();
 			_conn.Connected += new EventHandler(_conn_Connected);
 			_conn.Disconnected += new EventHandler(_conn_Disconnected);
 			_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
@@ -773,9 +773,9 @@ namespace Floe.Net
 				}
 				_reconnectTimer = new Timer(new TimerCallback((obj) =>
 				{
-					if (_callback != null)
+					if (_syncContext != null)
 					{
-						_callback(this.OnReconnect);
+						_syncContext.Post((o) => ((Action)o)(), (Action)this.OnReconnect);
 					}
 					else
 					{

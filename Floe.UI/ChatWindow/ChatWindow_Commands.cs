@@ -74,7 +74,7 @@ namespace Floe.UI
 
 		private void ExecuteNewTab(object sender, ExecutedRoutedEventArgs e)
 		{
-			this.AddPage(new ChatControl(new IrcSession((a) => this.Dispatcher.BeginInvoke(a)), null), true);
+			this.AddPage(new ChatControl(new IrcSession(), null), true);
 		}
 
 		private void ExecuteDetach(object sender, ExecutedRoutedEventArgs e)

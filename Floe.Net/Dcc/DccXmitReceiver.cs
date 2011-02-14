@@ -42,7 +42,6 @@ namespace Floe.Net
 		/// <param name="fileInfo">A reference to the file to save. If the file exists, a resume will be attempted. If the resume fails, the file will be renamed.</param>
 		/// <param name="callback">An optional callback used to route events to another thread.</param>
 		public DccXmitReceiver(FileInfo fileInfo, Action<Action> callback = null)
-			: base(callback)
 		{
 			_fileInfo = fileInfo;
 			this.FileSavedAs = fileInfo.FullName;

@@ -26,7 +26,6 @@ namespace Floe.Net
 		/// <param name="fileInfo">A reference to the file to send.</param>
 		/// <param name="callback">An optional callback used to route events to another thread.</param>
 		public DccXmitSender(FileInfo fileInfo, Action<Action> callback = null)
-			: base(callback)
 		{
 			_fileInfo = fileInfo;
 		}
