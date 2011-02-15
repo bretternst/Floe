@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using Floe.Net;
 
@@ -574,9 +573,10 @@ namespace Floe.UI
 				case "DCC":
 					{
 						args = Split(command, arguments, 3, 3);
-						if (args[0].ToUpperInvariant() == "XMIT")
+						string dccCmd = args[0].ToUpperInvariant();
+						string path = null;
+						if (dccCmd == "XMIT" || dccCmd == "SEND")
 						{
-							string path = null;
 							if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
 							{
 								path = args[2];
@@ -586,11 +586,18 @@ namespace Floe.UI
 								this.Write("Error", "Could not find file " + args[2]);
 								return;
 							}
-							App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
 						}
-						else
+						switch (dccCmd)
 						{
-							this.Write("Error", "Unsupported DCC mode " + args[0]);
+							case "XMIT":
+								App.ChatWindow.DccXmit(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+								break;
+							case "SEND":
+								App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+								break;
+							default:
+								this.Write("Error", "Unsupported DCC mode " + args[0]);
+								break;
 						}
 					}
 					break;

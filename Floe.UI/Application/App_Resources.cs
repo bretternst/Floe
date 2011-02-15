@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Windows;
-using System.Reflection;
+using System.Drawing;
 using System.Linq;
-using System.Windows.Input;
-using System.Windows.Threading;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Drawing;
-using System.IO;
 using Floe.Configuration;
-using Floe.Net;
 
 namespace Floe.UI
 {

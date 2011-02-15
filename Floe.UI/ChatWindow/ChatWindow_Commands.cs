@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Microsoft.Win32;
 using Floe.Net;
+using Microsoft.Win32;
 
 namespace Floe.UI
 {
@@ -19,6 +19,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand MinimizeCommand = new RoutedUICommand("Minimize", "Minimize", typeof(ChatWindow));
 		public readonly static RoutedUICommand MaximizeCommand = new RoutedUICommand("Maximize", "Maximize", typeof(ChatWindow));
 		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Quit", "Close", typeof(ChatWindow));
+		public readonly static RoutedUICommand DccXmitCommand = new RoutedUICommand("DCC Xmit...", "DccXmit", typeof(ChatWindow));
 		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("DCC Send...", "DccSend", typeof(ChatWindow));
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
@@ -154,16 +155,23 @@ namespace Floe.UI
 			this.Close();
 		}
 
+		private void ExecuteDccXmit(object sender, ExecutedRoutedEventArgs e)
+		{
+			var control = tabsChat.SelectedContent as ChatPage;
+			string fileName = App.OpenFileDialog(this, App.Settings.Current.Dcc.DownloadFolder);
+			if (!string.IsNullOrEmpty(fileName))
+			{
+				this.DccXmit(control.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
+			}
+		}
+
 		private void ExecuteDccSend(object sender, ExecutedRoutedEventArgs e)
 		{
 			var control = tabsChat.SelectedContent as ChatPage;
-			var dialog = new OpenFileDialog();
-			dialog.CheckFileExists = true;
-			dialog.Multiselect = false;
-			dialog.InitialDirectory = App.Settings.Current.Dcc.DownloadFolder;
-			if (dialog.ShowDialog(this) == true)
+			string fileName = App.OpenFileDialog(this, App.Settings.Current.Dcc.DownloadFolder);
+			if (!string.IsNullOrEmpty(fileName))
 			{
-				this.DccSend(control.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(dialog.FileName));
+				this.DccSend(control.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
 			}
 		}
 	}

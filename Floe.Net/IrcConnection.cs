@@ -143,27 +143,40 @@ namespace Floe.Net
 			this.Dispatch(this.OnConnected);
 
 			byte[] readBuffer = new byte[512], writeBuffer = new byte[Encoding.UTF8.GetMaxByteCount(512)];
-			int count = 0, handleIdx = 0;
+			int count = 0;
 			var input = new StringBuilder();
-			IrcMessage message;
+			IrcMessage outgoing = null;
 			char last = '\u0000';
+			IAsyncResult arr = null, arw = null;
 
 			while (_tcpClient.Connected)
 			{
-				if (handleIdx == 0)
+				if (arr == null)
 				{
-					ar = stream.BeginRead(readBuffer, 0, 512, null, null);
+					arr = stream.BeginRead(readBuffer, 0, 512, null, null);
 				}
-				handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle, _endWaitHandle }, HeartbeatInterval);
-				if (!_tcpClient.Connected)
+				_writeWaitHandle.Reset();
+				if (arw == null && _writeQueue.TryDequeue(out outgoing))
 				{
-					break;
+					string output = outgoing.ToString();
+					count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
+					count = Math.Min(510, count);
+					writeBuffer[count] = 0xd;
+					writeBuffer[count + 1] = 0xa;
+					arw = stream.BeginWrite(writeBuffer, 0, count + 2, null, null);
 				}
+				int idx = WaitHandle.WaitAny(
+					new[] {
+						arr.AsyncWaitHandle,
+						arw != null ? arw.AsyncWaitHandle : _writeWaitHandle,
+						_endWaitHandle },
+					HeartbeatInterval);
 
-				switch (handleIdx)
+				switch (idx)
 				{
 					case 0:
-						count = stream.EndRead(ar);
+						count = stream.EndRead(arr);
+						arr = null;
 						if (count == 0)
 						{
 							_tcpClient.Close();
@@ -176,8 +189,8 @@ namespace Floe.Net
 								{
 									if (input.Length > 0)
 									{
-										message = IrcMessage.Parse(input.ToString());
-										this.Dispatch(this.OnMessageReceived, message);
+										var incoming = IrcMessage.Parse(input.ToString());
+										this.Dispatch(this.OnMessageReceived, incoming);
 										input.Clear();
 									}
 								}
@@ -190,21 +203,18 @@ namespace Floe.Net
 						}
 						break;
 					case 1:
-						_writeWaitHandle.Reset();
-						while (_writeQueue.TryDequeue(out message))
+						if (arw != null)
 						{
-							string output = message.ToString();
-							count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
-							count = Math.Min(510, count);
-							writeBuffer[count] = 0xd;
-							writeBuffer[count + 1] = 0xa;
-
-							stream.Write(writeBuffer, 0, count + 2);
-
-							this.Dispatch(this.OnMessageSent, message);
+							stream.EndWrite(arw);
+							arw = null;
+							this.Dispatch(this.OnMessageSent, outgoing);
 						}
 						break;
 					case 2:
+						if (arw != null)
+						{
+							stream.EndWrite(arw);
+						}
 						return;
 					case WaitHandle.WaitTimeout:
 						this.Dispatch(this.OnHeartbeat);

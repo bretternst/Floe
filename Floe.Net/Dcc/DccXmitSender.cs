@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Net;
 
@@ -12,20 +9,20 @@ namespace Floe.Net
 	/// </summary>
 	public sealed class DccXmitSender : DccOperation
 	{
-		private const int SendChunkSize = 2048;
+		private const int SendChunkSize = 4096;
 
 		private bool _isTransferring = false;
 		private FileInfo _fileInfo;
 		private FileStream _fileStream;
-		private byte[] _resumeBytes = new Byte[4];
+		private byte[] _resumeBytes = new byte[4];
+		private byte[] _buffer = new byte[SendChunkSize];
 		private int _handshakeBytesReceived;
 
 		/// <summary>
 		/// Construct a new DccXmitSender.
 		/// </summary>
 		/// <param name="fileInfo">A reference to the file to send.</param>
-		/// <param name="callback">An optional callback used to route events to another thread.</param>
-		public DccXmitSender(FileInfo fileInfo, Action<Action> callback = null)
+		public DccXmitSender(FileInfo fileInfo)
 		{
 			_fileInfo = fileInfo;
 		}
@@ -35,7 +32,7 @@ namespace Floe.Net
 			base.OnConnected();
 
 			var timeStampBytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder((int)(_fileInfo.LastWriteTimeUtc - new DateTime(1970, 1, 1)).TotalSeconds));
-			this.Write(timeStampBytes, 0, 4);
+			this.QueueWrite(timeStampBytes, 0, 4);
 		}
 
 		protected override void OnReceived(byte[] buffer, int count)
@@ -57,49 +54,50 @@ namespace Floe.Net
 						this.BytesTransferred = resume;
 					}
 					_isTransferring = true;
-
-					buffer = new byte[SendChunkSize];
-					try
-					{
-						while (_fileStream.Position < _fileStream.Length)
-						{
-							count = _fileStream.Read(buffer, 0, SendChunkSize);
-							this.BytesTransferred += count;
-							if (!this.Write(buffer, 0, count))
-							{
-								return;
-							}
-						}
-					}
-					catch (IOException ex)
-					{
-						this.OnError(ex);
-					}
-					finally
-					{
-						this.Close();
-					}
+					this.WriteDataBlock();
 				}
+			}
+		}
+
+		protected override void OnSent(byte[] buffer, int offset, int count)
+		{
+			if (_isTransferring)
+			{
+				this.BytesTransferred += count;
+				this.WriteDataBlock();
 			}
 		}
 
 		protected override void OnDisconnected()
 		{
 			base.OnDisconnected();
+			this.CloseFile();
+		}
 
+		protected override void OnError(Exception ex)
+		{
+			base.OnError(ex);
+			this.CloseFile();
+		}
+
+		private void CloseFile()
+		{
 			if (_fileStream != null)
 			{
 				_fileStream.Dispose();
 			}
 		}
 
-		protected override void OnError(Exception ex)
+		private void WriteDataBlock()
 		{
-			base.OnError(ex);
-
-			if (_fileStream != null)
+			if (_fileStream.Position < _fileStream.Length)
 			{
-				_fileStream.Dispose();
+				int count = _fileStream.Read(_buffer, 0, SendChunkSize);
+				this.QueueWrite(_buffer, 0, count);
+			}
+			else
+			{
+				this.Close();
 			}
 		}
 	}

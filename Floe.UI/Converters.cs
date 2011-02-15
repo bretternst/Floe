@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
+using System.Text;
 using System.Windows.Data;
 using System.Windows.Media;
-using System.Text;
 
 namespace Floe.UI
 {

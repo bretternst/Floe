@@ -1,12 +1,12 @@
 ﻿using System;
-using System.IO;
-using System.Net;
-using System.Windows;
 using System.Collections.Generic;
-using System.Threading;
+using System.IO;
 using System.Linq;
-using Microsoft.Win32;
+using System.Net;
+using System.Threading;
+using System.Windows;
 using Floe.Net;
+using Microsoft.Win32;
 
 namespace Floe.UI
 {
@@ -17,6 +17,12 @@ namespace Floe.UI
 		Cancelled,
 		Received,
 		Sent
+	}
+
+	public enum DccMethod
+	{
+		Send,
+		Xmit
 	}
 
 	public partial class FileControl : ChatPage
@@ -96,9 +102,18 @@ namespace Floe.UI
 			set { this.SetValue(IsDangerousProperty, value); }
 		}
 
-		public FileControl(IrcSession session, IrcTarget target)
+		public static readonly DependencyProperty DccMethodProperty =
+			DependencyProperty.Register("DccMethod", typeof(DccMethod), typeof(FileControl));
+		public DccMethod DccMethod
+		{
+			get { return (DccMethod)this.GetValue(DccMethodProperty); }
+			set { this.SetValue(DccMethodProperty, value); }
+		}
+
+		public FileControl(IrcSession session, IrcTarget target, DccMethod method)
 			: base(ChatPageType.DccFile, session, target, "DCC")
 		{
+			this.DccMethod = method;
 			InitializeComponent();
 			this.Id = "dcc-file";
 			this.Header = this.Title = string.Format("{0} [DCC]", target.Name);
@@ -113,7 +128,15 @@ namespace Floe.UI
 			this.FileSize = file.Length;
 			this.Status = FileStatus.Working;
 
-			_dcc = new DccXmitSender(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action));
+			switch (this.DccMethod)
+			{
+				case DccMethod.Send:
+					_dcc = new DccSendSender(_fileInfo);
+					break;
+				case DccMethod.Xmit:
+					_dcc = new DccXmitSender(_fileInfo);
+					break;
+			}
 			_dcc.Connected += dcc_Connected;
 			_dcc.Disconnected += dcc_Disconnected;
 			_dcc.Error += dcc_Error;
@@ -187,7 +210,7 @@ namespace Floe.UI
 
 			if (_dcc != null)
 			{
-				_dcc.Close();
+				_dcc.Dispose();
 			}
 		}
 
@@ -201,7 +224,15 @@ namespace Floe.UI
 		{
 			this.Status = FileStatus.Working;
 			this.StatusText = "Connecting";
-			_dcc = new DccXmitReceiver(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action)) { ForceOverwrite = forceOverwrite, ForceResume = chkForceResume.IsChecked == true };
+			switch (this.DccMethod)
+			{
+				case DccMethod.Send:
+					_dcc = new DccSendReceiver(_fileInfo) { ForceOverwrite = forceOverwrite };
+					break;
+				case DccMethod.Xmit:
+					_dcc = new DccXmitReceiver(_fileInfo) { ForceOverwrite = forceOverwrite, ForceResume = chkForceResume.IsChecked == true };
+					break;
+			}
 			_dcc.Connect(_address, _port);
 			_dcc.Connected += dcc_Connected;
 			_dcc.Disconnected += dcc_Disconnected;
@@ -272,6 +303,7 @@ namespace Floe.UI
 			this.BytesTransferred = _dcc.BytesTransferred;
 			this.Speed = 0;
 			this.EstimatedTime = 0;
+			this.Progress = 1f;
 
 			if (this.BytesTransferred < this.FileSize)
 			{
@@ -283,7 +315,7 @@ namespace Floe.UI
 			}
 			else
 			{
-				this.Status = _dcc is DccXmitReceiver ? FileStatus.Received : FileStatus.Sent;
+				this.Status = (_dcc is DccXmitReceiver || _dcc is DccSendReceiver) ? FileStatus.Received : FileStatus.Sent;
 				this.StatusText = "Finished";
 			}
 			this.DeletePortForwarding();
@@ -306,13 +338,21 @@ namespace Floe.UI
 			this.StatusText = "Cancelled";
 			if (_dcc != null)
 			{
-				_dcc.Close();
+				_dcc.Dispose();
 			}
 		}
 
 		private void btnOpen_Click(object sender, RoutedEventArgs e)
 		{
-			string path = ((DccXmitReceiver)_dcc).FileSavedAs;
+			string path = "";
+			if (_dcc is DccXmitReceiver)
+			{
+				path = ((DccXmitReceiver)_dcc).FileSavedAs;
+			}
+			else
+			{
+				path = ((DccSendReceiver)_dcc).FileSavedAs;
+			}
 			if (File.Exists(path))
 			{
 				App.BrowseTo(path);

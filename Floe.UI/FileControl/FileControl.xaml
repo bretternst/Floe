@@ -131,9 +131,13 @@
 							<Setter Property="Visibility" Value="Collapsed"/>
 							<Setter Property="Foreground" Value="{StaticResource winFG}"/>
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding ElementName=fileControl, Path=Status}" Value="Asking">
+								<MultiDataTrigger>
+									<MultiDataTrigger.Conditions>
+										<Condition Binding="{Binding ElementName=fileControl, Path=Status}" Value="Asking"/>
+										<Condition Binding="{Binding ElementName=fileControl, Path=DccMethod}" Value="DccXmit"/>
+									</MultiDataTrigger.Conditions>
 									<Setter Property="Visibility" Value="Visible"/>
-								</DataTrigger>
+								</MultiDataTrigger>
 							</Style.Triggers>
 						</Style>
 					</CheckBox.Style>

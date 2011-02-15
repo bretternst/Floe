@@ -226,8 +226,6 @@ namespace Floe.Net
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		/// <param name="dispatcher">An optional callback function that may be used to route events to an appropriate
-		/// thread. The typical usage will be to call Dispatcher.BeginInvoke.</param>
 		public IrcSession()
 		{
 			this.State = IrcSessionState.Disconnected;

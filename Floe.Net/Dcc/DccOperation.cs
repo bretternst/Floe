@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -19,13 +17,15 @@ namespace Floe.Net
 	{
 		private const int ConnectTimeout = 60 * 1000;
 		private const int ListenTimeout = 5 * 60 * 1000;
-		private const int BufferSize = 2048;
+		private const int BufferSize = 4096;
 		private const int MinPort = 1024;
 
 		private TcpListener _listener;
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
 		private ManualResetEvent _endHandle;
+		private ConcurrentQueue<Tuple<byte[], int, int>> _writeQueue;
+		private ManualResetEvent _writeHandle;
 		private SynchronizationContext _syncContext;
 		private long _bytesTransferred;
 		private NetworkStream _stream;
@@ -59,10 +59,12 @@ namespace Floe.Net
 			}
 		}
 
-		public DccOperation()
+		protected DccOperation()
 		{
 			_syncContext = SynchronizationContext.Current;
 			_endHandle = new ManualResetEvent(false);
+			_writeHandle = new ManualResetEvent(false);
+			_writeQueue = new ConcurrentQueue<Tuple<byte[], int, int>>();
 		}
 
 		/// <summary>
@@ -198,38 +200,31 @@ namespace Floe.Net
 			_socketThread.Start();
 		}
 
-		public bool Write(byte[] data, int offset, int size)
-		{
-			var ar = _stream.BeginWrite(data, offset, size, null, null);
-			int index = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle });
-			switch (index)
-			{
-				case 0:
-					_stream.EndWrite(ar);
-					return true;
-				default:
-					return false;
-			}
-		}
-
-		public void Close()
-		{
-			_endHandle.Set();
-		}
-
 		/// <summary>
 		/// Closes an active DCC session or cancels the listener.
 		/// </summary>
 		public void Dispose()
 		{
+			this.Close();
 			if (_tcpClient != null)
 			{
-				try
-				{
-					_tcpClient.Close();
-				}
-				catch { }
+				_tcpClient.Close();
 			}
+			if (_listener != null)
+			{
+				_listener.Stop();
+			}
+		}
+
+		protected void QueueWrite(byte[] data, int offset, int size)
+		{
+			_writeQueue.Enqueue(new Tuple<byte[], int, int>(data, offset, size));
+			_writeHandle.Set();
+		}
+
+		protected void Close()
+		{
+			_endHandle.Set();
 		}
 
 		protected virtual void OnConnected()
@@ -249,6 +244,10 @@ namespace Floe.Net
 		}
 
 		protected virtual void OnReceived(byte[] buffer, int count)
+		{
+		}
+
+		protected virtual void OnSent(byte[] buffer, int offset, int count)
 		{
 		}
 
@@ -285,17 +284,37 @@ namespace Floe.Net
 		private void SocketLoop()
 		{
 			var readBuffer = new byte[BufferSize];
+			Tuple<byte[], int, int> outgoing = null;
+			IAsyncResult arr = null, arw = null;
 
 			try
 			{
 				while (_tcpClient.Connected)
 				{
-					var ar = _stream.BeginRead(readBuffer, 0, BufferSize, null, null);
-					int idx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle });
+					if (arr == null)
+					{
+						arr = _stream.BeginRead(readBuffer, 0, BufferSize, null, null);
+					}
+					_writeHandle.Reset();
+					if (arw == null && _writeQueue.TryDequeue(out outgoing))
+					{
+						if (outgoing.Item1 == null)
+						{
+							break;
+						}
+						arw = _stream.BeginWrite(outgoing.Item1, outgoing.Item2, outgoing.Item3, null, null);
+					}
+					int idx = WaitHandle.WaitAny(
+						new[] {
+							arr.AsyncWaitHandle,
+							arw != null ? arw.AsyncWaitHandle : _writeHandle,
+							_endHandle
+						});
 					switch (idx)
 					{
 						case 0:
-							int count = _stream.EndRead(ar);
+							int count = _stream.EndRead(arr);
+							arr = null;
 							if (count <= 0)
 							{
 								return;
@@ -303,8 +322,19 @@ namespace Floe.Net
 							this.OnReceived(readBuffer, count);
 							break;
 						case 1:
+							if (arw != null)
+							{
+								_stream.EndWrite(arw);
+								arw = null;
+								this.OnSent(outgoing.Item1, outgoing.Item2, outgoing.Item3);
+							}
+							break;
+						case 2:
+							if (arw != null)
+							{
+								_stream.EndWrite(arw);
+							}
 							return;
-
 					}
 				}
 			}

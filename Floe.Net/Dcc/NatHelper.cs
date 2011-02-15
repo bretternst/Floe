@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using System.Threading;
 
 namespace Floe.Net
 {
@@ -76,22 +75,29 @@ namespace Floe.Net
 						{
 							sock.SendTo(outBuf, endpoint);
 							sock.ReceiveTimeout = DiscoverTimeout;
-							int length = sock.Receive(inBuf);
-							string data = Encoding.ASCII.GetString(inBuf, 0, length).ToLowerInvariant();
-
-							var match = ResponseLocation.Match(data);
-							if (match.Success && match.Groups["location"].Success)
+							while (true)
 							{
-								System.Diagnostics.Debug.WriteLine("Found UPnP device at " + match.Groups["location"]);
-								string controlUrl = GetServiceUrl(match.Groups["location"].Value);
-								if (!string.IsNullOrEmpty(controlUrl))
+								int length = sock.Receive(inBuf);
+								string data = Encoding.ASCII.GetString(inBuf, 0, length).ToLowerInvariant();
+
+								var match = ResponseLocation.Match(data);
+								if (match.Success && match.Groups["location"].Success)
 								{
-									_controlUrl = controlUrl;
-									System.Diagnostics.Debug.WriteLine("Found control URL at " + _controlUrl);
-									ar.IsSuccessful = true;
+									System.Diagnostics.Debug.WriteLine("Found UPnP device at " + match.Groups["location"]);
+									string controlUrl = GetServiceUrl(match.Groups["location"].Value);
+									if (!string.IsNullOrEmpty(controlUrl))
+									{
+										_controlUrl = controlUrl;
+										System.Diagnostics.Debug.WriteLine("Found control URL at " + _controlUrl);
+										ar.IsSuccessful = true;
+										break;
+									}
+									else
+									{
+										continue;
+									}
 								}
 							}
-							break;
 						}
 						catch (Exception ex)
 						{
@@ -305,7 +311,7 @@ namespace Floe.Net
 			}
 			if (node.Value.IndexOf(DeviceType, StringComparison.OrdinalIgnoreCase) < 0)
 			{
-				throw new ApplicationException("Response from incorrect device type: " + node.Value);
+				return null;
 			}
 			node = doc.Root.XPathSelectElement(ControlUrlPath, ns);
 			if (node == null)

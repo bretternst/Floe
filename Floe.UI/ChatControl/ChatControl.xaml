@@ -44,6 +44,7 @@
 		<ContextMenu x:Key="cmNickname">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.DccXmitCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<Separator/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
@@ -60,6 +61,7 @@
 		<ContextMenu x:Key="cmNickList">
 			<MenuItem Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<MenuItem Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			<MenuItem Command="local:ChatWindow.DccXmitCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<MenuItem Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<Separator/>
 			<MenuItem Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>

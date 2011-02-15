@@ -1,14 +1,6 @@
 ﻿using System;
-using System.Windows;
-using System.Reflection;
 using System.Linq;
-using System.Windows.Input;
-using System.Windows.Threading;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Drawing;
-using System.IO;
-using Floe.Configuration;
+using System.Windows;
 using Floe.Net;
 
 namespace Floe.UI
@@ -88,6 +80,15 @@ namespace Floe.UI
 			{
 				chatWindow.Alert(text);
 			}
+		}
+
+		public static string OpenFileDialog(Window owner, string initialDirectory)
+		{
+			var dialog = new Microsoft.Win32.OpenFileDialog();
+			dialog.CheckFileExists = true;
+			dialog.Multiselect = false;
+			dialog.InitialDirectory = initialDirectory;
+			return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
 		}
 
 		public static void BrowseTo(string url)
