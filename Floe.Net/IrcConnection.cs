@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
@@ -144,9 +145,9 @@ namespace Floe.Net
 
 			byte[] readBuffer = new byte[512], writeBuffer = new byte[Encoding.UTF8.GetMaxByteCount(512)];
 			int count = 0;
-			var input = new StringBuilder();
+			bool gotCR = false;
+			var input = new List<byte>(512);
 			IrcMessage outgoing = null;
-			char last = '\u0000';
 			IAsyncResult arr = null, arw = null;
 
 			while (_tcpClient.Connected)
@@ -183,22 +184,27 @@ namespace Floe.Net
 						}
 						else
 						{
-							foreach (char c in Encoding.UTF8.GetChars(readBuffer, 0, count))
+							for (int i = 0; i < count; i++)
 							{
-								if (c == 0xa && last == 0xd)
+								switch (readBuffer[i])
 								{
-									if (input.Length > 0)
-									{
-										var incoming = IrcMessage.Parse(input.ToString());
-										this.Dispatch(this.OnMessageReceived, incoming);
-										input.Clear();
-									}
+									case 0xa:
+										if (gotCR)
+										{
+											var incoming = IrcMessage.Parse(Encoding.UTF8.GetString(input.ToArray()));
+											this.Dispatch(this.OnMessageReceived, incoming);
+											input.Clear();
+											gotCR = false;
+										}
+										break;
+									case 0xd:
+										gotCR = true;
+										break;
+									default:
+										gotCR = false;
+										input.Add(readBuffer[i]);
+										break;
 								}
-								else if (c != 0xd && c != 0xa)
-								{
-									input.Append(c);
-								}
-								last = c;
 							}
 						}
 						break;
