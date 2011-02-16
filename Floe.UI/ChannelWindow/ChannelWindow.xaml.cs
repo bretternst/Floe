@@ -23,20 +23,20 @@ namespace Floe.UI
 			page.SetValue(Grid.ColumnSpanProperty, 2);
 			grdRoot.Children.Add((Control)page);
 			page.Session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
+			page.Session.SelfParted += new EventHandler<IrcPartEventArgs>(Session_SelfParted);
+			page.Session.SelfKicked += new EventHandler<IrcKickEventArgs>(Session_SelfKicked);
 		}
 
 		protected override void OnClosing(CancelEventArgs e)
 		{
 			this.Page.Session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
+			this.Page.Session.SelfParted -= new EventHandler<IrcPartEventArgs>(Session_SelfParted);
+			this.Page.Session.SelfKicked -= new EventHandler<IrcKickEventArgs>(Session_SelfKicked);
 
 			var state = App.Settings.Current.Windows.States[this.Page.Id];
 
 			if (this.Page.Parent != null)
 			{
-				if (this.Page.Session.State == IrcSessionState.Connected && this.Page.Target.IsChannel)
-				{
-					this.Page.Session.Part(this.Page.Target.Name);
-				}
 				state.IsDetached = true;
 				this.Page.Dispose();
 			}
@@ -72,6 +72,22 @@ namespace Floe.UI
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
 			if (((IrcSession)sender).State == IrcSessionState.Connecting)
+			{
+				this.Close();
+			}
+		}
+
+		private void Session_SelfKicked(object sender, IrcKickEventArgs e)
+		{
+			if (e.Channel.Equals(this.Page.Target))
+			{
+				this.Close();
+			}
+		}
+
+		private void Session_SelfParted(object sender, IrcPartEventArgs e)
+		{
+			if (e.Channel.Equals(this.Page.Target))
 			{
 				this.Close();
 			}

@@ -11,7 +11,8 @@ namespace Floe.UI
 	{
 		Server,
 		Chat,
-		DccFile
+		DccFile,
+		DccChat
 	}
 
 	public class ChatPage : UserControl, IDisposable

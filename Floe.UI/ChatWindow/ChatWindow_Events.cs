@@ -13,7 +13,7 @@ namespace Floe.UI
 
 		private void Session_SelfJoined(object sender, IrcJoinEventArgs e)
 		{
-			var page = new ChatControl((IrcSession)sender, e.Channel);
+			var page = new ChatControl(ChatPageType.Chat, (IrcSession)sender, e.Channel);
 			var state = App.Settings.Current.Windows.States[page.Id];
 			if (state.IsDetached)
 			{
@@ -28,19 +28,19 @@ namespace Floe.UI
 
 		private void Session_SelfParted(object sender, IrcPartEventArgs e)
 		{
-			var context = this.FindPage((IrcSession)sender, e.Channel);
-			if (context != null)
+			var page = this.FindPage(ChatPageType.Chat, (IrcSession)sender, e.Channel);
+			if (page != null)
 			{
-				this.RemovePage(context);
+				this.RemovePage(page);
 			}
 		}
 
 		private void Session_SelfKicked(object sender, IrcKickEventArgs e)
 		{
-			var context = this.FindPage((IrcSession)sender, e.Channel);
-			if (context != null)
+			var page = this.FindPage(ChatPageType.Chat, (IrcSession)sender, e.Channel);
+			if (page != null)
 			{
-				this.RemovePage(context);
+				this.RemovePage(page);
 			}
 		}
 
@@ -119,7 +119,7 @@ namespace Floe.UI
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
 			var session = new IrcSession();
-			this.AddPage(new ChatControl(session, null), true);
+			this.AddPage(new ChatControl(ChatPageType.Server, session, null), true);
 
 			if (Application.Current.MainWindow == this)
 			{
@@ -135,7 +135,7 @@ namespace Floe.UI
 				{
 					if (i++ > 0)
 					{
-						this.AddPage(new ChatControl(new IrcSession(), null), false);
+						this.AddPage(new ChatControl(ChatPageType.Server, new IrcSession(), null), false);
 					}
 					var page = this.Items[this.Items.Count - 1] as ChatTabItem;
 					if (page != null)

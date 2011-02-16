@@ -23,8 +23,6 @@
 		<CommandBinding Command="local:ChatWindow.MinimizeCommand" Executed="ExecuteMinimize"/>
 		<CommandBinding Command="local:ChatWindow.MaximizeCommand" Executed="ExecuteMaximize"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose"/>
-		<CommandBinding Command="local:ChatWindow.DccXmitCommand" Executed="ExecuteDccXmit"/>
-		<CommandBinding Command="local:ChatWindow.DccSendCommand" Executed="ExecuteDccSend"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<ContextMenu Placement="MousePoint" x:Key="NotifyMenu">
@@ -269,6 +267,7 @@
 						<Setter Property="Header" Value="{Binding RelativeSource={RelativeSource Self}, Path=Page.Header}"/>
 						<Setter Property="Content" Value="{Binding Content}"/>
 						<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+						<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="TabItem">

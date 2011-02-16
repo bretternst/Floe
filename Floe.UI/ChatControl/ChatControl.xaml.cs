@@ -30,78 +30,91 @@ namespace Floe.UI
 		private LogFileHandle _logFile;
 		private ChatLine _markerLine;
 
-		public ChatControl(IrcSession session, IrcTarget target)
-			: base(target == null ? ChatPageType.Server : ChatPageType.Chat, session, target,
-			target == null ? "server" : string.Format("{0}.{1}", session.NetworkName, target.Name).ToLowerInvariant())
+		public ChatControl(ChatPageType type, IrcSession session, IrcTarget target)
+			: base(type, session, target, type == ChatPageType.Server ? "server" : 
+			(type == ChatPageType.DccChat ? "dcc-chat" : string.Format("{0}.{1}", session.NetworkName, target.Name).ToLowerInvariant()))
 		{
 			_history = new LinkedList<string>();
 			this.Nicknames = new ObservableCollection<NicknameItem>();
-			this.Header = this.Target == null ? "Server" : this.Target.ToString();
 
 			InitializeComponent();
-			this.SubscribeEvents();
 
-			if (!this.IsServer)
+			if (this.Type == ChatPageType.DccChat)
 			{
-				_logFile = App.OpenLogFile(this.Id);
-				var logLines = new List<ChatLine>();
-				while (_logFile.Buffer.Count > 0)
+				this.Header = string.Format("[CHAT] {0}", this.Target.Name);
+			}
+			else if (this.Type == ChatPageType.Chat || this.Type == ChatPageType.Server)
+			{
+				this.Header = this.Target == null ? "Server" : this.Target.ToString();
+				this.SubscribeEvents();
+
+				if (!this.IsServer)
 				{
-					var cl = _logFile.Buffer.Dequeue();
-					cl.Marker = _logFile.Buffer.Count == 0 ? ChatMarker.OldMarker : ChatMarker.None;
-					logLines.Add(cl);
+					_logFile = App.OpenLogFile(this.Id);
+					var logLines = new List<ChatLine>();
+					while (_logFile.Buffer.Count > 0)
+					{
+						var cl = _logFile.Buffer.Dequeue();
+						cl.Marker = _logFile.Buffer.Count == 0 ? ChatMarker.OldMarker : ChatMarker.None;
+						logLines.Add(cl);
+					}
+					boxOutput.AppendBulkLines(logLines);
 				}
-				boxOutput.AppendBulkLines(logLines);
+
+				if (this.IsChannel)
+				{
+					this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
+					this.Session.AddHandler(new IrcCodeHandler((e) =>
+						{
+							if (e.Message.Parameters.Count > 2 &&
+								this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
+							{
+								_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
+								this.SetTitle();
+							}
+							e.Handled = true;
+							return true;
+						}, IrcCode.RPL_CHANNELMODEIS));
+					this.Session.Mode(this.Target);
+					splitter.IsEnabled = true;
+
+					var nameHandler = new IrcCodeHandler((e) =>
+						{
+							if (e.Message.Parameters.Count >= 3)
+							{
+								var to = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
+								if (this.Target.Equals(to))
+								{
+									foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
+									{
+										this.AddNick(nick);
+									}
+								}
+							}
+							e.Handled = true;
+							return false;
+						}, IrcCode.RPL_NAMEREPLY);
+					this.Session.AddHandler(nameHandler);
+					this.Session.AddHandler(new IrcCodeHandler((e) =>
+						{
+							this.Session.RemoveHandler(nameHandler);
+							e.Handled = true;
+							return true;
+						}, IrcCode.RPL_ENDOFNAMES));
+				}
+				else if (this.IsNickname)
+				{
+					_prefix = this.Target.Name;
+				}
+			}
+			else
+			{
+				throw new ArgumentException("Page type is not supported.");
 			}
 
 			var state = App.Settings.Current.Windows.States[this.Id];
-			if (this.IsChannel)
-			{
-				this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
-				this.Session.AddHandler(new IrcCodeHandler((e) =>
-					{
-						if (e.Message.Parameters.Count > 2 &&
-							this.Target.Equals(new IrcTarget(e.Message.Parameters[1])))
-						{
-							_channelModes = e.Message.Parameters[2].ToCharArray().Where((c) => c != '+').ToArray();
-							this.SetTitle();
-						}
-						e.Handled = true;
-						return true;
-					}, IrcCode.RPL_CHANNELMODEIS));
-				this.Session.Mode(this.Target);
-				splitter.IsEnabled = true;
-				colNickList.MinWidth = MinNickListWidth;
-				colNickList.Width = new GridLength(state.NickListWidth);
-
-				var nameHandler = new IrcCodeHandler((e) =>
-					{
-						if (e.Message.Parameters.Count >= 3)
-						{
-							var to = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
-							if (this.Target.Equals(to))
-							{
-								foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
-								{
-									this.AddNick(nick);
-								}
-							}
-						}
-						e.Handled = true;
-						return false;
-					}, IrcCode.RPL_NAMEREPLY);
-				this.Session.AddHandler(nameHandler);
-				this.Session.AddHandler(new IrcCodeHandler((e) =>
-					{
-						this.Session.RemoveHandler(nameHandler);
-						e.Handled = true;
-						return true;
-					}, IrcCode.RPL_ENDOFNAMES));
-			}
-			else if (this.IsNickname)
-			{
-				_prefix = this.Target.Name;
-			}
+			colNickList.MinWidth = MinNickListWidth;
+			colNickList.Width = new GridLength(state.NickListWidth);
 			boxOutput.ColumnWidth = state.ColumnWidth;
 
 			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
@@ -177,7 +190,7 @@ namespace Floe.UI
 
 			if (this.VisualParent == null)
 			{
-				if (this.IsNickname)
+				if (this.IsNickname || this.Type == ChatPageType.DccChat)
 				{
 					// Activity in PM window
 					this.NotifyState = NotifyState.Alert;
@@ -226,27 +239,36 @@ namespace Floe.UI
 			string channelModes = _channelModes.Length > 0 ?
 				string.Format("+{0}", string.Join("", (from c in _channelModes select c.ToString()).ToArray())) : "";
 
-			if(this.IsServer)
+			switch (this.Type)
 			{
-				if (this.Session.State == IrcSessionState.Disconnected)
-				{
-					this.Title = string.Format("{0} - Not Connected", App.Product);
-				}
-				else
-				{
-					this.Title = string.Format("{0} - {1} ({2}) on {3}", App.Product, this.Session.Nickname,
-						userModes, this.Session.NetworkName);
-				}
-			}
-			else if (!this.Target.IsChannel)
-			{
-				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4}", App.Product, this.Session.Nickname,
-					userModes, this.Session.NetworkName, _prefix);
-			}
-			else if (this.Target.IsChannel)
-			{
-				this.Title = string.Format("{0} - {1} ({2}) on {3} - {4} ({5}) - {6}", App.Product, this.Session.Nickname,
-					userModes, this.Session.NetworkName, this.Target.ToString(), channelModes, _topic);
+				case ChatPageType.DccChat:
+					this.Title = string.Format("{0} - {1} - DCC chat with {2}", App.Product, this.Session.Nickname, this.Target.Name);
+					break;
+
+				case ChatPageType.Server:
+					if (this.Session.State == IrcSessionState.Disconnected)
+					{
+						this.Title = string.Format("{0} - Not Connected", App.Product);
+					}
+					else
+					{
+						this.Title = string.Format("{0} - {1} ({2}) on {3}", App.Product, this.Session.Nickname,
+							userModes, this.Session.NetworkName);
+					}
+					break;
+
+				default:
+					if (this.Target.IsChannel)
+					{
+						this.Title = string.Format("{0} - {1} ({2}) on {3} - {4} ({5}) - {6}", App.Product, this.Session.Nickname,
+							userModes, this.Session.NetworkName, this.Target.ToString(), channelModes, _topic);
+					}
+					else
+					{
+						this.Title = string.Format("{0} - {1} ({2}) on {3} - {4}", App.Product, this.Session.Nickname,
+							userModes, this.Session.NetworkName, _prefix);
+					}
+					break;
 			}
 		}
 
@@ -290,10 +312,19 @@ namespace Floe.UI
 			var state = App.Settings.Current.Windows.States[this.Id];
 			state.NickListWidth = colNickList.ActualWidth;
 			state.ColumnWidth = boxOutput.ColumnWidth;
-			this.UnsubscribeEvents();
-			if (_logFile != null)
+
+			if (this.Type == ChatPageType.DccChat && _dcc != null)
 			{
-				_logFile.Dispose();
+				_dcc.Dispose();
+				this.DeletePortForwarding();
+			}
+			else
+			{
+				this.UnsubscribeEvents();
+				if (_logFile != null)
+				{
+					_logFile.Dispose();
+				}
 			}
 		}
 	}

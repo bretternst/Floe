@@ -139,7 +139,7 @@ namespace Floe.UI
 		public static bool Create(IrcSession session, IrcTarget target, bool makeActive)
 		{
 			var detached = App.Current.Windows.OfType<ChannelWindow>().Where((cw) => cw.Page.Session == session
-				&& target.Equals(cw.Page.Target)).FirstOrDefault();
+				&& target.Equals(cw.Page.Target) && cw.Page.Type == ChatPageType.Chat).FirstOrDefault();
 			if (detached != null)
 			{
 				if (makeActive)
@@ -150,7 +150,7 @@ namespace Floe.UI
 			}
 
 			var window = App.ChatWindow;
-			var page = window.FindPage(session, target);
+			var page = window.FindPage(ChatPageType.Chat, session, target);
 			if (page != null)
 			{
 				if (makeActive)
@@ -167,9 +167,22 @@ namespace Floe.UI
 			}
 			else
 			{
-				page = new ChatControl(session, target);
+				page = new ChatControl(target == null ? ChatPageType.Server : ChatPageType.Chat, session, target);
 				Create(session, page, makeActive);
 				return true;
+			}
+		}
+
+		public static void ClosePage(ChatPage page)
+		{
+			var window = Window.GetWindow(page);
+			if (window is ChannelWindow)
+			{
+				window.Close();
+			}
+			else
+			{
+				App.ChatWindow.RemovePage(page);
 			}
 		}
 

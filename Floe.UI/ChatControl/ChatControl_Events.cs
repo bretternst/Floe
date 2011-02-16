@@ -583,6 +583,9 @@ namespace Floe.UI
 
 		private void ChatControl_Loaded(object sender, RoutedEventArgs e)
 		{
+			Keyboard.Focus(txtInput);
+			this.SetTitle();
+
 			if (_window == null)
 			{
 				_window = Window.GetWindow(this);
@@ -742,12 +745,6 @@ namespace Floe.UI
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
             this.Session.Invited += new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
-
-			this.Loaded += (sender, e) =>
-			{
-				Keyboard.Focus(txtInput);
-				this.SetTitle();
-			};
 
 			this.IsConnected = !(this.Session.State == IrcSessionState.Disconnected);
 		}

@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CtcpCommand.cs" />
+    <Compile Include="Dcc\DccChat.cs" />
     <Compile Include="Dcc\DccOperation.cs" />
     <Compile Include="Dcc\DccSendReceiver.cs" />
     <Compile Include="Dcc\DccSendSender.cs" />

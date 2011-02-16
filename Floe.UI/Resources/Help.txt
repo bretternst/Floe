@@ -3,6 +3,7 @@
 /BAN <nick>                             - Bans the user from the current channel
 /CLEAR                                  - Clear the current screen
 /CTCP <nick> <command> [args]           - Send CTCP command to a user
+/DCC CHAT <nick>                        - Initiate direct chat with user
 /DCC SEND <nick> <filepath>             - Send a file to another user
 /DCC XMIT <nick> <filepath>             - Send a file to another user (fast)
 /DEOP <nick>                            - De-op user in the current channel

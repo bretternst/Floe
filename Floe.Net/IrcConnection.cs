@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
@@ -194,17 +194,15 @@ namespace Floe.Net
 											var incoming = IrcMessage.Parse(Encoding.UTF8.GetString(input.ToArray()));
 											this.Dispatch(this.OnMessageReceived, incoming);
 											input.Clear();
-											gotCR = false;
 										}
 										break;
 									case 0xd:
-										gotCR = true;
 										break;
 									default:
-										gotCR = false;
 										input.Add(readBuffer[i]);
 										break;
 								}
+								gotCR = readBuffer[i] == 0xd;
 							}
 						}
 						break;

@@ -89,6 +89,7 @@
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChatControl\ChatControl_Commands.cs" />
+    <Compile Include="ChatControl\ChatControl_Dcc.cs" />
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
     <Compile Include="ChatControl\ChatControl_Slap.cs" />

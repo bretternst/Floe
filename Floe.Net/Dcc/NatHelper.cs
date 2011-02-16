@@ -124,7 +124,7 @@ namespace Floe.Net
 			var result = ar as AsyncResult;
 			if(result == null)
 			{
-				throw new ArgumentException("ar");
+				throw new ArgumentException("IAsyncResult is not from this operation.", "ar");
 			}
 			result.AsyncWaitHandle.WaitOne();
 			return result.IsSuccessful;

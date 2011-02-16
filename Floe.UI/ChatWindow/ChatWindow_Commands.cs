@@ -19,8 +19,6 @@ namespace Floe.UI
 		public readonly static RoutedUICommand MinimizeCommand = new RoutedUICommand("Minimize", "Minimize", typeof(ChatWindow));
 		public readonly static RoutedUICommand MaximizeCommand = new RoutedUICommand("Maximize", "Maximize", typeof(ChatWindow));
 		public readonly static RoutedUICommand CloseCommand = new RoutedUICommand("Quit", "Close", typeof(ChatWindow));
-		public readonly static RoutedUICommand DccXmitCommand = new RoutedUICommand("DCC Xmit...", "DccXmit", typeof(ChatWindow));
-		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("DCC Send...", "DccSend", typeof(ChatWindow));
 
 		private void ExecuteChat(object sender, ExecutedRoutedEventArgs e)
 		{
@@ -75,7 +73,7 @@ namespace Floe.UI
 
 		private void ExecuteNewTab(object sender, ExecutedRoutedEventArgs e)
 		{
-			this.AddPage(new ChatControl(new IrcSession(), null), true);
+			this.AddPage(new ChatControl(ChatPageType.Server, new IrcSession(), null), true);
 		}
 
 		private void ExecuteDetach(object sender, ExecutedRoutedEventArgs e)
@@ -153,26 +151,6 @@ namespace Floe.UI
 		private void ExecuteClose(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.Close();
-		}
-
-		private void ExecuteDccXmit(object sender, ExecutedRoutedEventArgs e)
-		{
-			var control = tabsChat.SelectedContent as ChatPage;
-			string fileName = App.OpenFileDialog(this, App.Settings.Current.Dcc.DownloadFolder);
-			if (!string.IsNullOrEmpty(fileName))
-			{
-				this.DccXmit(control.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
-			}
-		}
-
-		private void ExecuteDccSend(object sender, ExecutedRoutedEventArgs e)
-		{
-			var control = tabsChat.SelectedContent as ChatPage;
-			string fileName = App.OpenFileDialog(this, App.Settings.Current.Dcc.DownloadFolder);
-			if (!string.IsNullOrEmpty(fileName))
-			{
-				this.DccSend(control.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
-			}
 		}
 	}
 }

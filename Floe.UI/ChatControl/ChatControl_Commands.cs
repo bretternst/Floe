@@ -30,6 +30,9 @@ namespace Floe.UI
 		public readonly static RoutedUICommand SearchPreviousCommand = new RoutedUICommand("Previous", "SearchPrevious", typeof(ChatControl));
 		public readonly static RoutedUICommand SearchNextCommand = new RoutedUICommand("Next", "SearchNext", typeof(ChatControl));
 		public readonly static RoutedUICommand SlapCommand = new RoutedUICommand("Slap!", "Slap", typeof(ChatControl));
+		public readonly static RoutedUICommand DccChatCommand = new RoutedUICommand("Chat", "DccXmit", typeof(ChatWindow));
+		public readonly static RoutedUICommand DccXmitCommand = new RoutedUICommand("Xmit...", "DccXmit", typeof(ChatWindow));
+		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("Send...", "DccSend", typeof(ChatWindow));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -211,6 +214,29 @@ namespace Floe.UI
 			}
 		}
 
+		private void ExecuteDccChat(object sender, ExecutedRoutedEventArgs e)
+		{
+			App.ChatWindow.DccChat(this.Session, new IrcTarget((string)e.Parameter));
+		}
+
+		private void ExecuteDccXmit(object sender, ExecutedRoutedEventArgs e)
+		{
+			string fileName = App.OpenFileDialog(_window, App.Settings.Current.Dcc.DownloadFolder);
+			if (!string.IsNullOrEmpty(fileName))
+			{
+				App.ChatWindow.DccXmit(this.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
+			}
+		}
+
+		private void ExecuteDccSend(object sender, ExecutedRoutedEventArgs e)
+		{
+			string fileName = App.OpenFileDialog(_window, App.Settings.Current.Dcc.DownloadFolder);
+			if (!string.IsNullOrEmpty(fileName))
+			{
+				App.ChatWindow.DccSend(this.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
+			}
+		}
+
 		private void Execute(string text, bool literal)
 		{
 			var chars = text.ToCharArray();
@@ -251,10 +277,15 @@ namespace Floe.UI
 			{
 				if (text.Trim().Length > 0 && this.IsConnected)
 				{
-					if (!this.IsServer)
+					if (this.Type == ChatPageType.Chat)
 					{
 						this.Session.PrivateMessage(this.Target, text);
 						this.Write("Own", 0, this.GetNickWithLevel(this.Session.Nickname), text, false);
+					}
+					else if (this.Type == ChatPageType.DccChat)
+					{
+						_dcc.QueueMessage(text);
+						this.Write("Own", 0, this.Session.Nickname, text, false);
 					}
 					else
 					{
@@ -448,9 +479,15 @@ namespace Floe.UI
 					if (this.IsConnected)
 					{
 						args = Split(command, arguments, 1, int.MaxValue);
-						this.Session.SendCtcp(this.Target,
-							new CtcpCommand("ACTION", args), false);
 						this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
+						if (this.Type == ChatPageType.Chat)
+						{
+							this.Session.SendCtcp(this.Target, new CtcpCommand("ACTION", args), false);
+						}
+						else if (this.Type == ChatPageType.DccChat)
+						{
+							_dcc.QueueMessage(string.Format("\u0001ACTION {0}\u0001", string.Join(" ", args)));
+						}
 					}
 					break;
 				case "SETUP":
@@ -572,28 +609,43 @@ namespace Floe.UI
 					break;
 				case "DCC":
 					{
-						args = Split(command, arguments, 3, 3);
-						string dccCmd = args[0].ToUpperInvariant();
-						string path = null;
-						if (dccCmd == "XMIT" || dccCmd == "SEND")
+						if (!this.IsConnected)
 						{
-							if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
-							{
-								path = args[2];
-							}
-							else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
-							{
-								this.Write("Error", "Could not find file " + args[2]);
-								return;
-							}
+							return;
 						}
+						args = Split(command, arguments, 2, 3);
+						string dccCmd = args[0].ToUpperInvariant();
+
 						switch (dccCmd)
 						{
-							case "XMIT":
-								App.ChatWindow.DccXmit(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+							case "CHAT":
+								App.ChatWindow.DccChat(this.Session, new IrcTarget(args[1]));
 								break;
 							case "SEND":
-								App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+							case "XMIT":
+								string path = null;
+								if (args.Length < 3)
+								{
+									this.Write("Error", "File name is required.");
+									break;
+								}
+								if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
+								{
+									path = args[2];
+								}
+								else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
+								{
+									this.Write("Error", "Could not find file " + args[2]);
+									break;
+								}
+								if (dccCmd == "XMIT")
+								{
+									App.ChatWindow.DccXmit(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+								}
+								else
+								{
+									App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+								}
 								break;
 							default:
 								this.Write("Error", "Unsupported DCC mode " + args[0]);

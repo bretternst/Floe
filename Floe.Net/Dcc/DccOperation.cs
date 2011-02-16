@@ -78,11 +78,11 @@ namespace Floe.Net
 		{
 			if (lowPort > ushort.MaxValue || lowPort < MinPort)
 			{
-				throw new ArgumentException("lowPort");
+				throw new ArgumentException("Invalid port.", "lowPort");
 			}
 			if (highPort > ushort.MaxValue || highPort < lowPort)
 			{
-				throw new ArgumentException("highPort");
+				throw new ArgumentException("Invalid port.", "highPort");
 			}
 
 			while(true)
@@ -161,7 +161,7 @@ namespace Floe.Net
 		{
 			if (port <= 0 || port > ushort.MaxValue)
 			{
-				throw new ArgumentException("port");
+				throw new ArgumentException("Invalid port.");
 			}
 			this.Address = address;
 			this.Port = port;
@@ -180,6 +180,10 @@ namespace Floe.Net
 						catch (SocketException ex)
 						{
 							this.OnError(ex);
+							return;
+						}
+						catch (NullReferenceException)
+						{
 							return;
 						}
 

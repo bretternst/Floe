@@ -30,6 +30,9 @@
 		<CommandBinding Command="local:ChatControl.SearchPreviousCommand" Executed="ExecuteSearchPrevious"/>
 		<CommandBinding Command="local:ChatControl.SearchNextCommand" Executed="ExecuteSearchNext"/>
 		<CommandBinding Command="local:ChatControl.SlapCommand" Executed="ExecuteSlap"/>
+		<CommandBinding Command="local:ChatControl.DccChatCommand" Executed="ExecuteDccChat"/>
+		<CommandBinding Command="local:ChatControl.DccXmitCommand" Executed="ExecuteDccXmit"/>
+		<CommandBinding Command="local:ChatControl.DccSendCommand" Executed="ExecuteDccSend"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<local:BrushAlphaConverter x:Key="opacityConverter"/>
@@ -44,8 +47,11 @@
 		<ContextMenu x:Key="cmNickname">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
-			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.DccXmitCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
-			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem Header="DCC">
+				<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DccChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+				<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DccXmitCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+				<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DccSendCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			</MenuItem>
 			<Separator/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
@@ -61,8 +67,11 @@
 		<ContextMenu x:Key="cmNickList">
 			<MenuItem Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<MenuItem Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
-			<MenuItem Command="local:ChatWindow.DccXmitCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
-			<MenuItem Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			<MenuItem Header="DCC">
+				<MenuItem Command="local:ChatControl.DccChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+				<MenuItem Command="local:ChatControl.DccXmitCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+				<MenuItem Command="local:ChatControl.DccSendCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			</MenuItem>
 			<Separator/>
 			<MenuItem Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<MenuItem Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
@@ -127,6 +136,11 @@
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Top" Background="{Binding ElementName=chatControl, Path=UIBackground, Mode=OneWay}">
 			<StackPanel Orientation="Vertical">
+				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlDccChat" Margin="0,5,10,5" SnapsToDevicePixels="True">
+					<Label Style="{StaticResource uiLabelStyle}" x:Name="lblDccChat" FontWeight="Bold"/>
+					<Button x:Name="btnAccept" Padding="3,1,3,1" Content="Accept" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnAccept_Click"/>
+					<Button x:Name="btnDecline" Padding="3,1,3,1" Content="Decline" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Click="btnDecline_Click"/>
+				</WrapPanel>
 				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlSearch" Margin="0,5,10,5" SnapsToDevicePixels="True">
 					<Button x:Name="btnCloseSearch" Command="local:ChatControl.SearchCommand" VerticalAlignment="Center" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0">
 						<Path Margin="2" SnapsToDevicePixels="True"

@@ -40,6 +40,10 @@ namespace Floe.UI
 
 		private void ExecuteClose(object sender, ExecutedRoutedEventArgs e)
 		{
+			if (this.Page.Session.State == IrcSessionState.Connected && this.Page.Target.IsChannel)
+			{
+				this.Page.Session.Part(this.Page.Target.Name);
+			}
 			this.Close();
 		}
 
