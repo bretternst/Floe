@@ -1,0 +1,99 @@
+﻿<local:ChatPage x:Class="Floe.UI.ListControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:local="clr-namespace:Floe.UI"
+				xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="699" x:Name="listControl" FocusManager.IsFocusScope="True" Background="Transparent"
+			 FontFamily="Segoe UI" FontSize="12" UIBackground="Black">
+	<local:ChatPage.CommandBindings>
+		<CommandBinding Command="local:ChatControl.JoinCommand" Executed="ExecuteJoin"/>
+	</local:ChatPage.CommandBindings>
+	<local:ChatPage.Resources>
+		<ContextMenu x:Key="cmChannels">
+			<MenuItem Command="local:ChatControl.JoinCommand" CommandParameter="{Binding ElementName=lstChannels, Path=SelectedItem.Name}"/>
+		</ContextMenu>
+	</local:ChatPage.Resources>
+	<DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<Border DockPanel.Dock="Top" Background="{Binding ElementName=listControl, Path=UIBackground, Mode=OneWay}">
+			<StackPanel Orientation="Vertical">
+				<WrapPanel Orientation="Horizontal" x:Name="pnlDccChat" Margin="5,5,10,5" SnapsToDevicePixels="True">
+					<TextBlock Style="{StaticResource uiTextBlockStyle}" Text="Retrieving channels: "/>
+					<TextBlock Style="{StaticResource uiTextBlockStyle}" FontWeight="Bold" Text="{Binding ElementName=listControl, Path=Count}"/>
+				</WrapPanel>
+			</StackPanel>
+		</Border>
+		<ListView x:Name="lstChannels"
+			 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=OneWay}"
+			 FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
+			 FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
+			 FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
+			 FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
+			 BorderBrush="White" BorderThickness="0 0 0 1" TextOptions.TextFormattingMode="Display">
+			<ListView.Background>
+				<MultiBinding Converter="{StaticResource opacityConverter}">
+					<Binding Source="{StaticResource ctrlBG}"/>
+					<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
+				</MultiBinding>
+			</ListView.Background>
+			<ListView.View>
+				<GridView AllowsColumnReorder="False">
+					<GridView.ColumnHeaderContainerStyle>
+						<Style TargetType="GridViewColumnHeader">
+							<Setter Property="OverridesDefaultStyle" Value="True"/>
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="GridViewColumnHeader">
+										<TextBlock Text="{TemplateBinding Content}" Padding="0,0,20,0"/>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+						</Style>
+					</GridView.ColumnHeaderContainerStyle>
+					<GridViewColumn Width="Auto" Header="Channel" DisplayMemberBinding="{Binding Name}"/>
+					<GridViewColumn Width="Auto" Header="Users" DisplayMemberBinding="{Binding Count}"/>
+					<GridViewColumn Width="Auto" Header="Topic" DisplayMemberBinding="{Binding Topic}"/>
+				</GridView>
+			</ListView.View>
+			<ListView.ItemContainerStyle>
+				<Style TargetType="ListViewItem">
+					<Setter Property="ContextMenu" Value="{StaticResource cmChannels}"/>
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="{x:Type ListViewItem}">
+							<Border CornerRadius="2" SnapsToDevicePixels="True"
+								 BorderThickness="{TemplateBinding BorderThickness}" 
+								  BorderBrush="{TemplateBinding BorderBrush}" 
+								  Background="{TemplateBinding Background}">
+								<Border Name="InnerBorder" CornerRadius="1" BorderThickness="1">
+									<Grid>
+										<Grid.RowDefinitions>
+											<RowDefinition MaxHeight="11" />
+											<RowDefinition />
+										</Grid.RowDefinitions>
+
+										<Rectangle Name="UpperHighlight" Visibility="Collapsed" Fill="#75FFFFFF" />
+										<GridViewRowPresenter Grid.RowSpan="2" 
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+									</Grid>
+								</Border>
+							</Border>
+
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsSelected" Value="True">
+									<Setter Property="Background" Value="{StaticResource highlightBrush}" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+					<EventSetter Event="MouseDoubleClick" Handler="lstChannels_MouseDoubleClick"/>
+				</Style>
+			</ListView.ItemContainerStyle>
+		</ListView>
+	</DockPanel>
+</local:ChatPage>

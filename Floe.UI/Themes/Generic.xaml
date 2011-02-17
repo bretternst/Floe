@@ -21,6 +21,7 @@
 											 NewMarkerColor="{TemplateBinding NewMarkerColor}"
 											 OldMarkerColor="{TemplateBinding OldMarkerColor}"
 											 AttentionColor="{TemplateBinding AttentionColor}"
+											 HighlightColor="{TemplateBinding HighlightColor}"
 											 DividerBrush="{TemplateBinding DividerBrush}"
 											 Background="{TemplateBinding Background}"
 											 ColumnWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ColumnWidth, Mode=TwoWay}"

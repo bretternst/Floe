@@ -39,6 +39,7 @@ namespace Floe.UI
 
 			InitializeComponent();
 
+			var state = App.Settings.Current.Windows.States[this.Id];
 			if (this.Type == ChatPageType.DccChat)
 			{
 				this.Header = string.Format("[CHAT] {0}", this.Target.Name);
@@ -63,6 +64,9 @@ namespace Floe.UI
 
 				if (this.IsChannel)
 				{
+					colNickList.MinWidth = MinNickListWidth;
+					colNickList.Width = new GridLength(state.NickListWidth);
+
 					this.Write("Join", string.Format("Now talking on {0}", this.Target.Name));
 					this.Session.AddHandler(new IrcCodeHandler((e) =>
 						{
@@ -112,9 +116,6 @@ namespace Floe.UI
 				throw new ArgumentException("Page type is not supported.");
 			}
 
-			var state = App.Settings.Current.Windows.States[this.Id];
-			colNickList.MinWidth = MinNickListWidth;
-			colNickList.Width = new GridLength(state.NickListWidth);
 			boxOutput.ColumnWidth = state.ColumnWidth;
 
 			this.Loaded += new RoutedEventHandler(ChatControl_Loaded);
@@ -310,7 +311,6 @@ namespace Floe.UI
 		public override void Dispose()
 		{
 			var state = App.Settings.Current.Windows.States[this.Id];
-			state.NickListWidth = colNickList.ActualWidth;
 			state.ColumnWidth = boxOutput.ColumnWidth;
 
 			if (this.Type == ChatPageType.DccChat && _dcc != null)
@@ -320,6 +320,10 @@ namespace Floe.UI
 			}
 			else
 			{
+				if (this.IsChannel)
+				{
+					state.NickListWidth = colNickList.ActualWidth;
+				}
 				this.UnsubscribeEvents();
 				if (_logFile != null)
 				{

@@ -94,13 +94,13 @@ namespace Floe.UI
 			var page = e.Parameter as ChatPage;
 			if (page != null)
 			{
-				if (page.Target == null)
+				if (page.Type == ChatPageType.Server)
 				{
-					e.CanExecute = this.Items.Count((i) => i.Page.Type == ChatPageType.Server) > 1;
+					e.CanExecute = this.Items.Count((i) => i.Page.Type == ChatPageType.Server) > 1 && page.IsCloseable;
 				}
 				else
 				{
-					e.CanExecute = true;
+					e.CanExecute = page.IsCloseable;
 				}
 			}
 		}

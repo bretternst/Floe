@@ -190,6 +190,13 @@ namespace Floe.Configuration
 			set { this["windowForeground"] = value; OnPropertyChanged("WindowForeground"); }
 		}
 
+		[ConfigurationProperty("highlight", DefaultValue = "#3399FF")]
+		public string Highlight
+		{
+			get { return (string)this["highlight"]; }
+			set { this["highlight"] = value; OnPropertyChanged("Highlight"); }
+		}
+
 		[ConfigurationProperty("color0", DefaultValue = "#FFFFFF")]
 		public string Color0
 		{

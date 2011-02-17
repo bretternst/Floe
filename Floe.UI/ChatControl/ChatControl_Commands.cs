@@ -33,6 +33,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand DccChatCommand = new RoutedUICommand("Chat", "DccXmit", typeof(ChatWindow));
 		public readonly static RoutedUICommand DccXmitCommand = new RoutedUICommand("Xmit...", "DccXmit", typeof(ChatWindow));
 		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("Send...", "DccSend", typeof(ChatWindow));
+		public readonly static RoutedUICommand JoinCommand = new RoutedUICommand("Join", "Join", typeof(ChatWindow));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -505,14 +506,18 @@ namespace Floe.UI
 					}
 					break;
 				case "LIST":
-					args = Split(command, arguments, 1, 2);
+					args = Split(command, arguments, 0, 2);
 					if (args.Length > 1)
 					{
 						this.Session.List(args[0], args[1]);
 					}
-					else
+					else if (args.Length > 0)
 					{
 						this.Session.List(args[0]);
+					}
+					else
+					{
+						this.Session.List();
 					}
 					break;
 				case "OP":

@@ -12,7 +12,8 @@ namespace Floe.UI
 		Server,
 		Chat,
 		DccFile,
-		DccChat
+		DccChat,
+		ChannelList
 	}
 
 	public class ChatPage : UserControl, IDisposable
@@ -65,6 +66,14 @@ namespace Floe.UI
 			set { this.SetValue(NotifyStateProperty, value); }
 		}
 
+		public static readonly DependencyProperty IsCloseableProperty =
+			DependencyProperty.Register("IsCloseable", typeof(bool), typeof(ChatPage));
+		public bool IsCloseable
+		{
+			get { return (bool)this.GetValue(IsCloseableProperty); }
+			set { this.SetValue(IsCloseableProperty, value); System.Windows.Input.CommandManager.InvalidateRequerySuggested(); }
+		}
+
 		public ChatPage()
 		{
 			this.Header = this.Title = "";
@@ -78,6 +87,7 @@ namespace Floe.UI
 			this.Session = session;
 			this.Target = target;
 			this.Id = id;
+			this.IsCloseable = true;
 		}
 
 		public virtual bool CanClose()

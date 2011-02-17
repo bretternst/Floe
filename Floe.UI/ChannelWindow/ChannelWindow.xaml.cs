@@ -15,10 +15,10 @@ namespace Floe.UI
 
 		public ChannelWindow(ChatPage page)
 		{
-			InitializeComponent();
-			this.DataContext = this;
-
 			this.Page = page;
+			this.DataContext = this;
+			InitializeComponent();
+
 			page.SetValue(Grid.RowProperty, 1);
 			page.SetValue(Grid.ColumnSpanProperty, 2);
 			grdRoot.Children.Add((Control)page);

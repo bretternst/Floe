@@ -35,9 +35,6 @@
 		<CommandBinding Command="local:ChatControl.DccSendCommand" Executed="ExecuteDccSend"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
-		<local:BrushAlphaConverter x:Key="opacityConverter"/>
-		<SolidColorBrush x:Key="editBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground}"/>
-		<SolidColorBrush x:Key="ctrlBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background}"/>
 		<Style TargetType="ListBoxItem">
 			<Style.Resources>
 				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{Binding Source={x:Static SystemColors.HighlightBrush}, Path=Color}"/>
@@ -237,6 +234,7 @@
 					   NewMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=OneWay}"
 					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"
 					AttentionColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=OneWay}"
+						   HighlightColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Highlight, Mode=OneWay}"
 					   DividerBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 						   AutoSizeColumn="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn, Mode=OneWay}"
 					   MouseDoubleClick="boxOutput_MouseDoubleClick">

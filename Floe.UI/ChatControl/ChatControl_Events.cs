@@ -221,6 +221,11 @@ namespace Floe.UI
 						return;
 					}
 					break;
+				case IrcCode.RPL_LIST:
+				case IrcCode.RPL_LISTSTART:
+				case IrcCode.RPL_LISTEND:
+					e.Handled = true;
+					break;
 			}
 
 			if (!e.Handled && ((int)e.Code < 200 && this.IsServer || this.IsDefault))

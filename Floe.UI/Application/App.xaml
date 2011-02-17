@@ -17,6 +17,9 @@
 		<SolidColorBrush x:Key="alertBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Alert}"/>
 		<SolidColorBrush x:Key="noiseBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NoiseActivity}"/>
 		<SolidColorBrush x:Key="chatBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.ChatActivity}"/>
+		<SolidColorBrush x:Key="editBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground}"/>
+		<SolidColorBrush x:Key="ctrlBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background}"/>
+		<SolidColorBrush x:Key="highlightBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Highlight}"/>
 		<LinearGradientBrush x:Key="winFGdownGrad" StartPoint="0,0" EndPoint="0,1" Opacity="0.2">
 			<GradientStop Offset="0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
 			<GradientStop Offset="1" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
@@ -145,7 +148,11 @@
 		<Style x:Key="uiLabelStyle" TargetType="Label">
 			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
 		</Style>
-		
+
+		<Style x:Key="uiTextBlockStyle" TargetType="TextBlock">
+			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+		</Style>
+
 		<Style x:Key="uiTextBoxStyle" TargetType="TextBox">
 			<Setter Property="Foreground" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=OneWay}"/>
 			<Setter Property="Background" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=OneWay}"/>

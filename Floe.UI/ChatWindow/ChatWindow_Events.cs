@@ -189,6 +189,17 @@ namespace Floe.UI
 			}
 		}
 
+		private void session_InfoReceived(object sender, IrcInfoEventArgs e)
+		{
+			var session = sender as IrcSession;
+			switch (e.Code)
+			{
+				case IrcCode.RPL_LISTSTART:
+					App.Create(session, new ListControl(session), true);
+					break;
+			}
+		}
+
 		private void SubscribeEvents(IrcSession session)
 		{
 			session.SelfJoined += new EventHandler<IrcJoinEventArgs>(Session_SelfJoined);
@@ -197,6 +208,7 @@ namespace Floe.UI
 			session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived += new EventHandler<IrcEventArgs>(session_RawMessageReceived);
+			session.InfoReceived += new EventHandler<IrcInfoEventArgs>(session_InfoReceived);
 		}
 
 		public void UnsubscribeEvents(IrcSession session)
@@ -207,6 +219,7 @@ namespace Floe.UI
 			session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived -= new EventHandler<IrcEventArgs>(session_RawMessageReceived);
+			session.InfoReceived -= new EventHandler<IrcInfoEventArgs>(session_InfoReceived);
 		}
 	}
 }

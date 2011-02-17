@@ -47,6 +47,11 @@ namespace Floe.UI
 			this.Close();
 		}
 
+		private void CanExecuteClose(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = this.Page.IsCloseable;
+		}
+
 		private void ExecuteSettings(object sender, ExecutedRoutedEventArgs e)
 		{
 			App.ShowSettings();

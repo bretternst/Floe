@@ -13,7 +13,7 @@
 /INVITE <nick> #<channel>               - Invite a user to a channel
 /JOIN or /J #<channel> [key]            - Join a channel
 /KICK [#channel] <nick> [text]          - Kick a user from a channel
-/LIST [#channel] [target]               - List channel information
+/LIST [channel[,channel...]] [target]   - List channel information
 /ME or /ACTION <message>                - Send an action message
 /MODE <+/-><modes>                      - Set or unset modes for yourself
 /MODE #<channel> <+/-><modes> <params>  - Set or unset channel modes

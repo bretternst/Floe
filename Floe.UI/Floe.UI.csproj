@@ -107,15 +107,20 @@
     <Compile Include="Dialogs\ConfirmDialog.xaml.cs">
       <DependentUpon>ConfirmDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileControl\Enums.cs" />
     <Compile Include="FileControl\FileControl.xaml.cs">
       <DependentUpon>FileControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileControl\FileControl_Properties.cs" />
     <Compile Include="HsvColor.cs" />
     <Compile Include="Interop\ColorPickerHelper.cs" />
     <Compile Include="Interop\FolderBrowser.cs" />
     <Compile Include="Interop\NotifyIcon.cs" />
     <Compile Include="Interop\WindowConstants.cs" />
     <Compile Include="Interop\WindowHelper.cs" />
+    <Compile Include="ListControl\ListControl.xaml.cs">
+      <DependentUpon>ListControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\BufferSettingsControl.xaml.cs">
       <DependentUpon>BufferSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -161,6 +166,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FileControl\FileControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ListControl\ListControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

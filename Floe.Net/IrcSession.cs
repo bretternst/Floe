@@ -682,6 +682,14 @@ namespace Floe.Net
 		}
 
 		/// <summary>
+		/// Retrieves a list of all channels.
+		/// </summary>
+		public void List()
+		{
+			this.Send("LIST");
+		}
+
+		/// <summary>
 		/// Add a handler to capture a specific IRC code. This can be called from components that issue a command and are expecting
 		/// some result code to be sent in the future.
 		/// </summary>

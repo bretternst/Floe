@@ -12,7 +12,7 @@
 		<CommandBinding Command="local:ChannelWindow.ReattachCommand" Executed="ExecuteReattach"/>
 		<CommandBinding Command="local:ChatWindow.MinimizeCommand" Executed="ExecuteMinimize"/>
 		<CommandBinding Command="local:ChatWindow.MaximizeCommand" Executed="ExecuteMaximize"/>
-		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose"/>
+		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose" CanExecute="CanExecuteClose"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<local:BrushAlphaConverter x:Key="opacityConverter"/>
