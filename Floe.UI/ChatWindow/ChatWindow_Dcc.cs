@@ -142,7 +142,15 @@ namespace Floe.UI
 
 		private static string ConvertIPAddressToString(IPAddress address)
 		{
-			return BitConverter.ToUInt32(address.GetAddressBytes(), 0).ToString();
+			byte[] bytes = address.GetAddressBytes();
+			if (bytes.Length == sizeof(uint))
+			{
+				return ((uint)IPAddress.HostToNetworkOrder(BitConverter.ToInt32(bytes, 0))).ToString();
+			}
+			else
+			{
+				return ((ulong)IPAddress.HostToNetworkOrder(BitConverter.ToInt64(bytes, 0))).ToString();
+			}
 		}
 	}
 }

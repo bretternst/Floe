@@ -9,11 +9,13 @@
 /DEOP <nick>                            - De-op user in the current channel
 /DEVOICE <nick>                         - Remove a user's voice in the current channel
 /HELP                                   - Display this message
-/IGNORE <nick!user@host>                - Add a mask to the ignore list
+/IGNORE <nick!usr@host> [type[,type..]] - Add a mask to the ignore list
+                                          Actions: JOIN, PART, QUIT, CHANNEL, PRIVATE,
+                                                   NOTICE, CTCP, NICKCHANGE, ALL
 /INVITE <nick> #<channel>               - Invite a user to a channel
 /JOIN or /J #<channel> [key]            - Join a channel
 /KICK [#channel] <nick> [text]          - Kick a user from a channel
-/LIST [channel[,channel...]] [target]   - List channel information
+/LIST [channel[,channel..]] [target]    - List channel information
 /ME or /ACTION <message>                - Send an action message
 /MODE <+/-><modes>                      - Set or unset modes for yourself
 /MODE #<channel> <+/-><modes> <params>  - Set or unset channel modes

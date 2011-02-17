@@ -11,6 +11,7 @@
 	<UserControl.InputBindings>
 		<KeyBinding Command="local:ChatControl.ClearCommand" Gesture="Alt+C"/>
 		<KeyBinding Command="local:ChatControl.SearchCommand" Gesture="Ctrl+F"/>
+		<KeyBinding Command="local:ChatControl.ChannelPanelCommand" Gesture="Alt+J"/>
 	</UserControl.InputBindings>
 	<UserControl.CommandBindings>
 		<CommandBinding Command="local:ChatControl.WhoisCommand" Executed="ExecuteWhois" CanExecute="CanExecuteConnectedCommand"/>
@@ -33,6 +34,9 @@
 		<CommandBinding Command="local:ChatControl.DccChatCommand" Executed="ExecuteDccChat"/>
 		<CommandBinding Command="local:ChatControl.DccXmitCommand" Executed="ExecuteDccXmit"/>
 		<CommandBinding Command="local:ChatControl.DccSendCommand" Executed="ExecuteDccSend"/>
+		<CommandBinding Command="local:ChatControl.ChannelPanelCommand" Executed="ExecuteChannelPanel"/>
+		<CommandBinding Command="local:ChatControl.ListCommand" Executed="ExecuteList"/>
+		<CommandBinding Command="local:ChatControl.JoinCommand" Executed="ExecuteJoin"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<Style TargetType="ListBoxItem">
@@ -91,11 +95,13 @@
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
+			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlChannel, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ChannelPanelCommand" InputGestureText="Alt+J"/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmChannel">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
+			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlChannel, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ChannelPanelCommand" InputGestureText="Alt+J"/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
 		</ContextMenu>
 		<Style TargetType="MenuItem" x:Key="colorMenuItem">
@@ -137,6 +143,26 @@
 					<Label Style="{StaticResource uiLabelStyle}" x:Name="lblDccChat" FontWeight="Bold"/>
 					<Button x:Name="btnAccept" Padding="3,1,3,1" Content="Accept" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnAccept_Click"/>
 					<Button x:Name="btnDecline" Padding="3,1,3,1" Content="Decline" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Click="btnDecline_Click"/>
+				</WrapPanel>
+				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlChannel" Margin="0,5,10,5" SnapsToDevicePixels="True">
+					<Button x:Name="btnCloseChannel" Command="local:ChatControl.ChannelPanelCommand" VerticalAlignment="Center" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0">
+						<Path Margin="2" SnapsToDevicePixels="True"
+						Data="{StaticResource closeButtonGeometry}"
+						Stroke="{StaticResource winFG}"
+						StrokeThickness="2"
+						StrokeStartLineCap="Round"
+						StrokeEndLineCap="Round"
+						Stretch="Uniform"
+						VerticalAlignment="Top"
+						HorizontalAlignment="Center"/>
+					</Button>
+					<TextBox x:Name="txtChannel" IsTabStop="False" Width="300" Style="{StaticResource uiTextBoxStyle}">
+						<TextBox.InputBindings>
+							<KeyBinding Key="Enter" Command="local:ChatControl.JoinCommand" CommandParameter="{Binding ElementName=txtChannel, Path=Text}"/>
+						</TextBox.InputBindings>
+					</TextBox>
+					<Button x:Name="btnJoin" IsEnabled="{Binding ElementName=txtChannel, Path=Text.Length}" Padding="3,1,3,1" Content="Join" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Command="local:ChatControl.JoinCommand" CommandParameter="{Binding ElementName=txtChannel, Path=Text}"/>
+					<Button x:Name="btnList" Padding="3,1,3,1" Content="List Channels" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Command="local:ChatControl.ListCommand"/>
 				</WrapPanel>
 				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlSearch" Margin="0,5,10,5" SnapsToDevicePixels="True">
 					<Button x:Name="btnCloseSearch" Command="local:ChatControl.SearchCommand" VerticalAlignment="Center" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0">

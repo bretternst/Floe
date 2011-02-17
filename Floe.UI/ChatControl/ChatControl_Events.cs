@@ -59,7 +59,7 @@ namespace Floe.UI
 
 		private void Session_Noticed(object sender, IrcMessageEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Notice))
 			{
 				return;
 			}
@@ -79,7 +79,7 @@ namespace Floe.UI
 
 		private void Session_PrivateMessaged(object sender, IrcMessageEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, e.To.IsChannel ? IgnoreActions.Channel : IgnoreActions.Private))
 			{
 				return;
 			}
@@ -263,7 +263,7 @@ namespace Floe.UI
 
 		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Ctcp))
 			{
 				return;
 			}
@@ -295,7 +295,7 @@ namespace Floe.UI
 
 		private void Session_Joined(object sender, IrcJoinEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Who);
+			bool isIgnored = App.IsIgnoreMatch(e.Who, IgnoreActions.Join);
 
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
@@ -310,7 +310,7 @@ namespace Floe.UI
 
 		private void Session_Parted(object sender, IrcPartEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Who);
+			bool isIgnored = App.IsIgnoreMatch(e.Who, IgnoreActions.Part);
 
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
@@ -325,7 +325,7 @@ namespace Floe.UI
 
 		private void Session_NickChanged(object sender, IrcNickEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Message.From);
+			bool isIgnored = App.IsIgnoreMatch(e.Message.From, IgnoreActions.NickChange);
 
 			if (this.IsChannel && this.IsPresent(e.OldNickname))
 			{
@@ -376,7 +376,7 @@ namespace Floe.UI
 
 		private void Session_UserQuit(object sender, IrcQuitEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Who);
+			bool isIgnored = App.IsIgnoreMatch(e.Who, IgnoreActions.Quit);
 
 			if (this.IsChannel && this.IsPresent(e.Who.Nickname))
 			{
@@ -418,7 +418,7 @@ namespace Floe.UI
 
 		private void Session_Invited(object sender, IrcInviteEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Invite))
 			{
 				return;
 			}
@@ -554,6 +554,10 @@ namespace Floe.UI
 				}
 				else
 				{
+					if (this.Type == ChatPageType.DccChat)
+					{
+						return;
+					}
 					this.SelectedLink = this.GetNickWithoutLevel(this.SelectedLink);
 					boxOutput.ContextMenu = this.Resources["cmNickname"] as ContextMenu;
 				}

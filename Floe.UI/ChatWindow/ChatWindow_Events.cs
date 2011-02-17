@@ -59,7 +59,7 @@ namespace Floe.UI
 
 		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Ctcp))
 			{
 				return;
 			}
@@ -100,11 +100,11 @@ namespace Floe.UI
 				&& (!CtcpCommand.IsCtcpCommand(e.Message.Parameters[1]) ||
 				CtcpCommand.Parse(e.Message.Parameters[1]).Command == "ACTION"))
 			{
-				if (App.IsIgnoreMatch(e.Message.From))
+				var target = new IrcTarget(e.Message.Parameters[0]);
+				if (App.IsIgnoreMatch(e.Message.From, target.IsChannel ? IgnoreActions.Channel : IgnoreActions.Private))
 				{
 					return;
 				}
-				var target = new IrcTarget(e.Message.Parameters[0]);
 				if (!target.IsChannel && e.Message.From is IrcPeer)
 				{
 					if (App.Create(sender as IrcSession, new IrcTarget((IrcPeer)e.Message.From), false)

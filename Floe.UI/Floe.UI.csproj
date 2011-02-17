@@ -68,6 +68,7 @@
     <Compile Include="Application\App_Logging.cs" />
     <Compile Include="Application\App_Patterns.cs" />
     <Compile Include="Application\App_Resources.cs" />
+    <Compile Include="Application\Enums.cs" />
     <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
       <DependentUpon>ChannelWindow.xaml</DependentUpon>
     </Compile>

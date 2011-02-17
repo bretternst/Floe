@@ -30,10 +30,12 @@ namespace Floe.UI
 		public readonly static RoutedUICommand SearchPreviousCommand = new RoutedUICommand("Previous", "SearchPrevious", typeof(ChatControl));
 		public readonly static RoutedUICommand SearchNextCommand = new RoutedUICommand("Next", "SearchNext", typeof(ChatControl));
 		public readonly static RoutedUICommand SlapCommand = new RoutedUICommand("Slap!", "Slap", typeof(ChatControl));
-		public readonly static RoutedUICommand DccChatCommand = new RoutedUICommand("Chat", "DccXmit", typeof(ChatWindow));
-		public readonly static RoutedUICommand DccXmitCommand = new RoutedUICommand("Xmit...", "DccXmit", typeof(ChatWindow));
-		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("Send...", "DccSend", typeof(ChatWindow));
+		public readonly static RoutedUICommand DccChatCommand = new RoutedUICommand("Chat", "DccXmit", typeof(ChatControl));
+		public readonly static RoutedUICommand DccXmitCommand = new RoutedUICommand("Xmit...", "DccXmit", typeof(ChatControl));
+		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("Send...", "DccSend", typeof(ChatControl));
 		public readonly static RoutedUICommand JoinCommand = new RoutedUICommand("Join", "Join", typeof(ChatWindow));
+		public readonly static RoutedUICommand ChannelPanelCommand = new RoutedUICommand("Channel Pane", "ChannelPane", typeof(ChatControl));
+		public readonly static RoutedUICommand ListCommand = new RoutedUICommand("List", "List", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -565,15 +567,16 @@ namespace Floe.UI
 					break;
 				case "IGNORE":
 					{
-						args = Split(command, arguments, 0, 1);
+						args = Split(command, arguments, 0, 2);
 						if (args.Length == 0)
 						{
-							if (App.IgnoreMasks.Any())
+							var ignores = App.GetIgnoreInfo();
+							if (ignores.Any())
 							{
 								this.Write("Own", "Ignore list:");
-								foreach (string m in App.IgnoreMasks)
+								foreach (string i in ignores)
 								{
-									this.Write("Own", "  " + m);
+									this.Write("Own", "  " + i);
 								}
 							}
 							else
@@ -584,25 +587,39 @@ namespace Floe.UI
 						}
 
 						string mask = args[0];
+						string sactions = args.Length > 1 ? args[1] : "All";
+						IgnoreActions actions;
+						if (!Enum.TryParse(sactions, true, out actions))
+						{
+							this.Write("Error", "Invalid ignore action(s).");
+							break;
+						}
 
 						if (!mask.Contains('!') && !mask.Contains('@'))
 						{
 							mask = mask + "!*@*";
 						}
-						App.AddIgnore(mask);
+						App.AddIgnore(mask, actions);
 						this.Write("Own", "Added to ignore list: " + mask);
 					}
 					break;
 				case "UNIGNORE":
 					{
-						args = Split(command, arguments, 1, 1);
+						args = Split(command, arguments, 1, 2);
 						string mask = args[0];
 
+						string sactions = args.Length > 1 ? args[1] : "All";
+						IgnoreActions actions;
+						if (!Enum.TryParse(sactions, true, out actions))
+						{
+							this.Write("Error", "Invalid ignore action(s).");
+							break;
+						}
 						if (!mask.Contains('!') && !mask.Contains('@'))
 						{
 							mask = mask + "!*@*";
 						}
-						if (App.RemoveIgnore(mask))
+						if (App.RemoveIgnore(mask, actions))
 						{
 							this.Write("Own", "Removed from ignore list: " + mask);
 						}
@@ -737,6 +754,11 @@ namespace Floe.UI
 			this.ToggleSearch();
 		}
 
+		private void ExecuteChannelPanel(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ToggleChannelPanel();
+		}
+
 		private void ExecuteSearchPrevious(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.DoSearch(SearchDirection.Previous);
@@ -745,6 +767,20 @@ namespace Floe.UI
 		private void ExecuteSearchNext(object sender, ExecutedRoutedEventArgs e)
 		{
 			this.DoSearch(SearchDirection.Next);
+		}
+
+		private void ExecuteList(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.Session.List();
+		}
+
+		private void ExecuteJoin(object sender, ExecutedRoutedEventArgs e)
+		{
+			string channel = e.Parameter as string;
+			if (!string.IsNullOrEmpty(channel))
+			{
+				this.Session.Join(channel);
+			}
 		}
 
 		private void ToggleSearch()
@@ -759,6 +795,28 @@ namespace Floe.UI
 				pnlSearch.Visibility = Visibility.Visible;
 				txtSearchTerm.Focus();
 				txtSearchTerm.SelectAll();
+			}
+		}
+
+		private void ToggleChannelPanel()
+		{
+			if (pnlChannel.Visibility == Visibility.Visible)
+			{
+				pnlChannel.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				pnlChannel.Visibility = Visibility.Visible;
+				txtChannel.Focus();
+				if (txtChannel.Text.Length < 1 || txtChannel.Text == "#")
+				{
+					txtChannel.Text = "#";
+					txtChannel.CaretIndex = 1;
+				}
+				else
+				{
+					txtChannel.SelectAll();
+				}
 			}
 		}
 
