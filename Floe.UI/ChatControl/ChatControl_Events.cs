@@ -639,8 +639,8 @@ namespace Floe.UI
 				return;
 			}
 
-			if (!Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt) &&
-				!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl) &&
+			if((Keyboard.Modifiers & ModifierKeys.Alt) == 0 &&
+				(Keyboard.Modifiers & ModifierKeys.Control) == 0 &&
 				!(FocusManager.GetFocusedElement(this) is NicknameItem))
 			{
 				e.Handled = true;

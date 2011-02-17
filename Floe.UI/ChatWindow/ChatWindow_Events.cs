@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
-
+using System.Windows.Input;
 using Floe.Configuration;
 using Floe.Net;
 
@@ -198,6 +198,21 @@ namespace Floe.UI
 					App.Create(session, new ListControl(session), true);
 					break;
 			}
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			if ((Keyboard.Modifiers & ModifierKeys.Alt) > 0 && e.SystemKey >= Key.D0 && e.SystemKey <= Key.D9)
+			{
+				int index = e.SystemKey == Key.D0 ? 9 : (int)e.SystemKey - (int)Key.D0 - 1;
+				if (index < this.Items.Count)
+				{
+					tabsChat.SelectedIndex = index;
+				}
+				e.Handled = true;
+			}
+
+			base.OnKeyDown(e);
 		}
 
 		private void SubscribeEvents(IrcSession session)
