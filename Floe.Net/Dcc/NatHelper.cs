@@ -101,7 +101,11 @@ namespace Floe.Net
 						}
 						catch (Exception ex)
 						{
-							System.Diagnostics.Debug.WriteLine(ex.ToString());
+							// ignore timeout exceptions
+							if (!(ex is SocketException && ((SocketException)ex).ErrorCode == 10060))
+							{
+								System.Diagnostics.Debug.WriteLine(ex.ToString());
+							}
 						}
 					}
 

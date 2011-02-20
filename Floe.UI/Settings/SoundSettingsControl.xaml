@@ -14,8 +14,8 @@
 	</UserControl.Resources>
 	<Canvas>
 		<CheckBox Canvas.Left="12" Canvas.Top="12" Content="Enable Sounds" Height="16" Name="chkIsLoggingEnabled"
-						  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Buffer.IsLoggingEnabled}"/>
-		<ListBox Canvas.Left="12" Canvas.Top="41" Height="194" Name="lstEvents" Width="138" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+						  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.IsEnabled}"/>
+		<ListBox Canvas.Left="12" Canvas.Top="41" Height="194" Name="lstEvents" Width="138" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
 			<ListBox.Items>
 				<ListBoxItem Content="Active Alert" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.ActiveAlert, Mode=TwoWay}" ToolTip="Played whenever one of your attention patterns is matched in the active window and tab."/>
 				<ListBoxItem Content="Inactive Alert" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.InactiveAlert, Mode=TwoWay}" ToolTip="Played whenever one of your attention patterns is matched in an inactive tab or window."/>
