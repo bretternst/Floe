@@ -62,11 +62,11 @@
 			</TextBox.Text>
 		</TextBox>
 		<CheckBox ToolTip="{StaticResource ttUseTabularView}" Canvas.Left="18" Canvas.Top="154" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
+		<CheckBox ToolTip="{StaticResource ttAutoSizeColumn}" Canvas.Left="37" Canvas.Top="176" IsEnabled="{Binding ElementName=chkUseTabularView, Path=IsChecked}" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn}" Content="Auto Size Column" Height="16" Name="checkBox2" />
 		<CheckBox ToolTip="{StaticResource ttAttentionOnOwnNick}" Canvas.Left="18" Canvas.Top="207" Content="Attention On Own Nickname" Height="16" Name="checkBox1"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionOnOwnNickname}"/>
 		<TextBox ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="149" Height="118" Name="textBox1" Width="170" AcceptsReturn="True"
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionPatterns}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 		<Label ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="127" Content="Attention RegEx Patterns" Height="28" Name="label2" />
-		<CheckBox ToolTip="{StaticResource ttAutoSizeColumn}" Canvas.Left="37" Canvas.Top="176" IsEnabled="{Binding ElementName=chkUseTabularView, Path=IsChecked}" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn}" Content="Auto Size Column" Height="16" Name="checkBox2" />
 	</Canvas>
 </UserControl>

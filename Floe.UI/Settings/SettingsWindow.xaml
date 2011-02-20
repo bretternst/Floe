@@ -78,9 +78,9 @@
 				</LinearGradientBrush>
 			</Grid.Background>
 			<Label Content="{Binding Source={x:Static local:App.Version}}" VerticalAlignment="Bottom"/>
-			<Button Content="Cancel" Height="23" Name="btnCancel" Width="75" Click="btnCancel_Click" FlowDirection="LeftToRight" Margin="0,11,6,11" HorizontalAlignment="Right" />
 			<Button Content="Apply" Height="23" Name="btnApply" Width="75" Click="btnApply_Click" Margin="367,11,87,11" />
-		</Grid>
+			<Button Content="Cancel" Height="23" Name="btnCancel" Width="75" Click="btnCancel_Click" FlowDirection="LeftToRight" Margin="0,11,6,11" HorizontalAlignment="Right" />
+			</Grid>
 		</Border>
 		<ListBox Name="lstCategories" Style="{StaticResource styleBigListBox}" Width="150" Padding="0" FontSize="14" AlternationCount="0" OverridesDefaultStyle="False" SnapsToDevicePixels="True" IsTextSearchEnabled="False" BorderThickness="0,0,1,0" SelectionChanged="lstCategories_SelectionChanged">
 			<ListBoxItem Content="User Information" />

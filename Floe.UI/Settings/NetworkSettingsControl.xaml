@@ -9,10 +9,10 @@
              mc:Ignorable="d"
              d:DesignHeight="235" d:DesignWidth="384">
 	<Canvas>
+		<CheckBox Canvas.Left="12" Canvas.Top="12" Content="Use SOCKS5 Proxy" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.UseSocks5Proxy}" Name="chkUseSocks5Proxy" ToolTip="Use a SOCKS5 proxy server to make outgoing connections." />
 		<TextBox Canvas.Left="12" Canvas.Top="64" Height="23" Name="txtProxyHostname" Width="159" ToolTip="The hostname or IP address of your proxy server."
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.ProxyHostname, Mode=TwoWay}"
 				 IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"/>
-		<CheckBox Canvas.Left="12" Canvas.Top="12" Content="Use SOCKS5 Proxy" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.UseSocks5Proxy}" Name="chkUseSocks5Proxy" ToolTip="Use a SOCKS5 proxy server to make outgoing connections." />
 		<TextBox Canvas.Left="194" Canvas.Top="64" Height="23" Name="textBox1" ToolTip="The port that your proxy listens on." Width="54"
 				 IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}">
 			<Binding Mode="TwoWay" Path="Current.Network.ProxyPort" Source="{x:Static local:App.Settings}">
