@@ -45,9 +45,6 @@ namespace Floe.UI
 							}
 						}
 						break;
-					case IrcSessionState.Disconnected:
-						App.DoEvent("disconnect");
-						break;
 				}
 				this.SetTitle();
 			}
@@ -126,6 +123,10 @@ namespace Floe.UI
 							this.SetTitle();
 						}
 						Interop.WindowHelper.FlashWindow(_window);
+						if (this.VisualParent == null)
+						{
+							App.DoEvent("privateMessage");
+						}
 					}
 				}
 			}

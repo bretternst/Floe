@@ -46,14 +46,23 @@ namespace Floe.UI
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
-			if (((IrcSession)sender).State == IrcSessionState.Connecting)
+			var session = (IrcSession)sender;
+			switch (session.State)
 			{
-				foreach (var p in (from i in this.Items
-								   where i.Page.Session == sender && i.Page.Target != null
-								   select i).ToArray())
-				{
-					this.RemovePage(p.Page);
-				}
+				case IrcSessionState.Connecting:
+					foreach (var p in (from i in this.Items
+									   where i.Page.Session == sender && i.Page.Target != null
+									   select i).ToArray())
+					{
+						this.RemovePage(p.Page);
+					}
+					break;
+				case IrcSessionState.Disconnected:
+					if(!_isShuttingDown)
+					{
+						App.DoEvent("disconnect");
+					}
+					break;
 			}
 		}
 
@@ -164,6 +173,7 @@ namespace Floe.UI
 					return;
 				}
 			}
+			_isShuttingDown = true;
 
 			this.QuitAllSessions();
 
