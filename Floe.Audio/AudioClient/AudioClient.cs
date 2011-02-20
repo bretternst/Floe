@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-
 using Floe.Audio.Interop;
 
 namespace Floe.Audio
@@ -29,25 +26,37 @@ namespace Floe.Audio
 		protected int FrameSize { get { return this.Format.BlockAlign; } }
 		protected byte[] Buffer { get; private set; }
 
-		internal AudioClient(IAudioClient client, WaveFormat format)
+		internal AudioClient(IAudioClient client, WaveFormat format = null)
 		{
 			this.Client = client;
 			this.Format = format;
 
-			var sessionId = Guid.Empty;
-
-			if (format.Encoding != WaveEncoding.Pcm)
+			if (format == null)
 			{
-				throw new NotSupportedException("Only PCM formats are supported.");
+				IntPtr p;
+				client.GetMixFormat(out p);
+				format = Marshal.PtrToStructure(p, typeof(WaveFormat)) as WaveFormat;
+				Marshal.FreeCoTaskMem(p);
+				format = new WaveFormat(format.Channels, format.SampleRate, BitsPerSample.Sixteen);
+				var sessionId = Guid.Empty;
 			}
 
-			this.Client.Initialize(AudioShareMode.Shared, AudioStreamFlags.EventCallback, 0, 0, format, ref sessionId);
-			this.BufferEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
-			this.Client.SetEventHandle(this.BufferEvent.SafeWaitHandle.DangerousGetHandle());
-			int bufSize;
-			this.Client.GetBufferSize(out bufSize);
-			this.BufferSize = bufSize;
-			this.Buffer = new byte[bufSize * this.FrameSize];
+			this.Format = format;
+			try
+			{
+				var sessionId = Guid.Empty;
+				this.Client.Initialize(AudioShareMode.Shared, AudioStreamFlags.EventCallback, 0, 0, format, ref sessionId);
+			}
+			catch (COMException ex)
+			{
+				if ((uint)ex.ErrorCode == ResultCodes.AudioClientFormatNotSupported)
+				{
+					throw new WaveFormatException("Unsupported wave format.");
+				}
+				throw;
+			}
+
+			this.Initialize();
 		}
 
 		public void Start(Stream stream)
@@ -66,6 +75,7 @@ namespace Floe.Audio
 		{
 			_cts.Cancel();
 			_task.Wait();
+			this.Client.Reset();
 		}
 
 		protected virtual void Loop(object state)
@@ -87,6 +97,16 @@ namespace Floe.Audio
 				}
 			}
 			return null;
+		}
+
+		private void Initialize()
+		{
+			this.BufferEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
+			this.Client.SetEventHandle(this.BufferEvent.SafeWaitHandle.DangerousGetHandle());
+			int bufSize;
+			this.Client.GetBufferSize(out bufSize);
+			this.BufferSize = bufSize;
+			this.Buffer = new byte[bufSize * this.FrameSize];
 		}
 	}
 }

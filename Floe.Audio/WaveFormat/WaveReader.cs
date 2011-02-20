@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Floe.Audio
 {
@@ -29,7 +25,7 @@ namespace Floe.Audio
 				}
 
 				int fmtSize = br.ReadInt32();
-				this.Format = new WaveFormat(br, fmtSize);
+				this.Format = new WaveFormatFull(br, fmtSize);
 
 				while (true)
 				{

@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace Floe.Audio.Interop
 {
-
 	struct PropertyKey
 	{
 		public Guid FormatId;

@@ -34,12 +34,12 @@ namespace Floe.Audio
 			this.Name = val.Value.ToString();
 		}
 
-		public AudioOutputClient GetOutputClient(WaveFormat format)
+		public AudioOutputClient GetOutputClient(WaveFormat format = null)
 		{
 			return new AudioOutputClient(this.CreateClient(), format);
 		}
 
-		public AudioInputClient GetInputClient(WaveFormat format)
+		public AudioInputClient GetInputClient(WaveFormat format = null)
 		{
 			return new AudioInputClient(this.CreateClient(), format);
 		}

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 
 namespace Floe.Audio.Interop
@@ -14,9 +11,8 @@ namespace Floe.Audio.Interop
 		void GetBufferSize(out int numBufferFrames);
 		void GetStreamLatency(out long latency);
 		void GetCurrentPadding(out int numPaddingFrames);
-		int IsFormatSupported(AudioShareMode shareMode, WaveFormat format,
-			[MarshalAs(UnmanagedType.LPStruct)] out WaveFormat closestMatch);
-		void GetMixFormat([MarshalAs(UnmanagedType.LPStruct)] out WaveFormat deviceFormat);
+		int IsFormatSupported(AudioShareMode shareMode, WaveFormat format, out IntPtr closestMatch);
+		void GetMixFormat(out IntPtr deviceFormat);
 		void GetDevicePeriod(out long defaultDevicePeriod, out long minimumDevicePeriod);
 		void Start();
 		void Stop();

@@ -40,28 +40,45 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AudioDevice.cs" />
+    <Compile Include="AudioClient\AudioDevice.cs" />
     <Compile Include="AudioClient\AudioClient.cs" />
     <Compile Include="AudioClient\AudioInputClient.cs" />
-    <Compile Include="Interop\IAudioCaptureClient.cs" />
-    <Compile Include="Interop\IAudioRenderClient.cs" />
-    <Compile Include="Interop\ISimpleAudioVolume.cs" />
+    <Compile Include="Interop\DirectShow\Constants.cs" />
+    <Compile Include="Interop\DirectShow\Enums.cs" />
+    <Compile Include="Interop\DirectShow\IBaseFilter.cs" />
+    <Compile Include="Interop\DirectShow\IEnums.cs" />
+    <Compile Include="Interop\DirectShow\IFilterGraph.cs" />
+    <Compile Include="Interop\DirectShow\IGraphBuilder.cs" />
+    <Compile Include="Interop\DirectShow\IMediaControl.cs" />
+    <Compile Include="Interop\DirectShow\IMediaEvent.cs" />
+    <Compile Include="Interop\DirectShow\IMediaFilter.cs" />
+    <Compile Include="Interop\DirectShow\IPin.cs" />
+    <Compile Include="Interop\DirectShow\IReferenceClock.cs" />
+    <Compile Include="Interop\DirectShow\Structs.cs" />
+    <Compile Include="Interop\Enums.cs" />
+    <Compile Include="Interop\CoreAudio\IAudioCaptureClient.cs" />
+    <Compile Include="Interop\CoreAudio\IAudioRenderClient.cs" />
+    <Compile Include="Interop\CoreAudio\ISimpleAudioVolume.cs" />
     <Compile Include="AudioClient\AudioOutputClient.cs" />
+    <Compile Include="Interop\IPersist.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="WaveFormat\Enums.cs" />
     <Compile Include="EventArgs\DeviceChangedEventArgs.cs" />
-    <Compile Include="Interop\Constants.cs" />
-    <Compile Include="Interop\Enums.cs" />
-    <Compile Include="Interop\IAudioClient.cs" />
-    <Compile Include="Interop\IMMDevice.cs" />
-    <Compile Include="Interop\IMMDeviceEnumerator.cs" />
-    <Compile Include="Interop\IMMNotificationClient.cs" />
-    <Compile Include="Interop\IPropertyStore.cs" />
-    <Compile Include="Interop\Structs.cs" />
+    <Compile Include="Interop\CoreAudio\Constants.cs" />
+    <Compile Include="Interop\CoreAudio\Enums.cs" />
+    <Compile Include="Interop\CoreAudio\IAudioClient.cs" />
+    <Compile Include="Interop\CoreAudio\IMMDevice.cs" />
+    <Compile Include="Interop\CoreAudio\IMMDeviceEnumerator.cs" />
+    <Compile Include="Interop\CoreAudio\IMMNotificationClient.cs" />
+    <Compile Include="Interop\CoreAudio\IPropertyStore.cs" />
+    <Compile Include="Interop\CoreAudio\Structs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WaveFormat\WaveFormat.cs" />
     <Compile Include="WaveFormat\WaveFormatException.cs" />
+    <Compile Include="WaveFormat\WaveFormatFull.cs" />
     <Compile Include="WaveFormat\WaveReader.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -12,8 +12,7 @@ namespace test
 	{
 		static void Main(string[] args)
 		{
-			var sp = new System.Media.SoundPlayer(Environment.ExpandEnvironmentVariables("%SYSTEMROOT%\\Media\\Windows Ding.wav"));
-			sp.PlaySync();
+			Floe.Audio.Test.Run();
 		}
 	}
 }

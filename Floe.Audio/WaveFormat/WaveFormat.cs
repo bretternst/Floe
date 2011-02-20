@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -10,8 +7,6 @@ namespace Floe.Audio
 	[StructLayout(LayoutKind.Sequential, Pack=2)]
 	public class WaveFormat
 	{
-		private const int MaxDataSize = 32;
-
 		private WaveEncoding _formatTag;
 		private AudioChannels _channels;
 		private int _samplesPerSecond;
@@ -19,8 +14,6 @@ namespace Floe.Audio
 		private short _blockAlign;
 		private BitsPerSample _bitsPerSample;
 		private short _size;
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst=MaxDataSize)]
-		private byte[] _data = new byte[MaxDataSize];
 
 		public WaveEncoding Encoding { get { return _formatTag; } }
 		public AudioChannels Channels { get { return _channels; } }
@@ -28,6 +21,7 @@ namespace Floe.Audio
 		public int BytesPerSecond { get { return _avgBytesPerSecond; } }
 		public short BlockAlign { get { return _blockAlign; } }
 		public BitsPerSample BitsPerSample { get { return _bitsPerSample; } }
+		public int DataSize { get { return _size; } }
 
 		public WaveFormat(AudioChannels channels, int samplesPerSecond, BitsPerSample bitsPerSample)
 		{
@@ -57,20 +51,16 @@ namespace Floe.Audio
 			if (size > 16)
 			{
 				_size = reader.ReadInt16();
-				if (size - 18 != _size)
-				{
-					throw new WaveFormatException("Custom data size does not match total WaveFormat size.");
-				}
-				if (_size > MaxDataSize)
-				{
-					throw new WaveFormatException("Custom WaveFormat data is too large.");
-				}
-
-				if (_size > 0)
-				{
-					reader.Read(_data, 0, _size);
-				}
 			}
+
+			if (size > 18)
+			{
+				throw new WaveFormatException("Structure is too big, use WaveFormatFull instead.");
+			}
+		}
+
+		internal WaveFormat()
+		{
 		}
 	}
 }
