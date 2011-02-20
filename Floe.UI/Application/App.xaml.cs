@@ -37,6 +37,18 @@ namespace Floe.UI
 			}
 		}
 
+		public static ProxyInfo ProxyInfo
+		{
+			get
+			{
+				return App.Settings.Current.Network.UseSocks5Proxy ?
+					new ProxyInfo(App.Settings.Current.Network.ProxyHostname,
+						App.Settings.Current.Network.ProxyPort,
+						App.Settings.Current.Network.ProxyUsername,
+						App.Settings.Current.Network.ProxyPassword) : null;
+			}
+		}
+
 		public App()
 		{
 			this.Startup += new StartupEventHandler(App_Startup);

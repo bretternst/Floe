@@ -44,6 +44,7 @@ namespace Floe.Net
 		private bool _isWaitingForActivity;
 		private bool _findExternalAddress;
 		private SynchronizationContext _syncContext;
+		private Timer _reconnectTimer;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -97,6 +98,11 @@ namespace Floe.Net
 		/// is provided.
 		/// </summary>
 		public IPAddress ExternalAddress { get; private set; }
+
+		/// <summary>
+		/// Gets or sets proxy information, identifying the SOCKS5 proxy server to use when connecting to a server.
+		/// </summary>
+		public ProxyInfo Proxy { get; set; }
 
 		/// <summary>
 		/// Gets the current state of the session.
@@ -255,7 +261,8 @@ namespace Floe.Net
 		/// <param name="invisible">Determines whether the +i flag will be set by default.</param>
 		/// <param name="findExternalAddress">Determines whether to find the external IP address by querying the IRC server upon connect.</param>
 		public void Open(string server, int port, bool isSecure, string nickname,
-			string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false, bool findExternalAddress = true)
+			string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false, bool findExternalAddress = true,
+			ProxyInfo proxy = null)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -273,9 +280,10 @@ namespace Floe.Net
 			this.NetworkName = this.Server;
 			this.UserModes = new char[0];
 			this.AutoReconnect = autoReconnect;
+			this.Proxy = proxy;
 
 			_captures = new List<IrcCodeHandler>();
-			_conn.Open(server, port, isSecure);
+			_conn.Open(server, port, isSecure, this.Proxy);
 			this.State = IrcSessionState.Connecting;
 		}
 
@@ -791,14 +799,12 @@ namespace Floe.Net
 			}
 		}
 
-		Timer _reconnectTimer;
-
 		private void OnReconnect()
 		{
 			if (this.State == IrcSessionState.Disconnected)
 			{
 				this.State = IrcSessionState.Connecting;
-				_conn.Open(this.Server, this.Port, this.IsSecure);
+				_conn.Open(this.Server, this.Port, this.IsSecure, this.Proxy);
 			}
 		}
 

@@ -127,8 +127,7 @@ namespace Floe.UI
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			var session = new IrcSession();
-			this.AddPage(new ChatControl(ChatPageType.Server, session, null), true);
+			this.AddPage(new ChatControl(ChatPageType.Server, new IrcSession(), null), true);
 
 			if (Application.Current.MainWindow == this)
 			{

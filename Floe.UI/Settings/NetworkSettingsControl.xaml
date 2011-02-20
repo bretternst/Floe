@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="Floe.UI.Settings.NetworkSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+			 xmlns:local="clr-namespace:Floe.UI"
+			 xmlns:config="clr-namespace:Floe.Configuration;assembly=Floe.Configuration"
+             mc:Ignorable="d"
+             d:DesignHeight="235" d:DesignWidth="384">
+	<Canvas>
+		<TextBox Canvas.Left="12" Canvas.Top="64" Height="23" Name="txtProxyHostname" Width="159" ToolTip="The hostname or IP address of your proxy server."
+				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.ProxyHostname, Mode=TwoWay}"
+				 IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"/>
+		<CheckBox Canvas.Left="12" Canvas.Top="12" Content="Use SOCKS5 Proxy" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.UseSocks5Proxy}" Name="chkUseSocks5Proxy" ToolTip="Use a SOCKS5 proxy server to make outgoing connections." />
+		<TextBox Canvas.Left="194" Canvas.Top="64" Height="23" Name="textBox1" ToolTip="The port that your proxy listens on." Width="54"
+				 IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}">
+			<Binding Mode="TwoWay" Path="Current.Network.ProxyPort" Source="{x:Static local:App.Settings}">
+				<Binding.ValidationRules>
+					<ExceptionValidationRule />
+				</Binding.ValidationRules>
+			</Binding>
+		</TextBox>
+		<TextBlock Canvas.Left="11" Canvas.Top="44" Height="23" Name="textBlock1" Text="Proxy Server:" Width="116" />
+		<Label Canvas.Left="177" Canvas.Top="64" Content=":" Height="23" Name="label3" Width="19" />
+		<TextBox Canvas.Left="11" Canvas.Top="114" Height="23" Name="txtUsername" Width="116" IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"
+				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.ProxyUsername}"/>
+		<TextBox Canvas.Left="132" Canvas.Top="114" Height="23" Name="txtPassword" Width="116" IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"
+				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.ProxyPassword}"/>
+		<TextBlock Canvas.Left="12" Canvas.Top="94" Height="23" Name="textBlock2" Text="Username" Width="116" />
+		<TextBlock Canvas.Left="132" Canvas.Top="94" Height="23" Name="textBlock3" Text="Password" Width="116" />
+	</Canvas>
+</UserControl>

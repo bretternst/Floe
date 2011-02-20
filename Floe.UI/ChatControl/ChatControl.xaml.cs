@@ -161,7 +161,8 @@ namespace Floe.UI
 				autoReconnect,
 				password,
 				App.Settings.Current.User.Invisible,
-				App.Settings.Current.Dcc.FindExternalAddress);
+				App.Settings.Current.Dcc.FindExternalAddress,
+				App.ProxyInfo);
 		}
 
 		private void ParseInput(string text)

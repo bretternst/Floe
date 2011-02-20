@@ -13,9 +13,8 @@ namespace Floe.Audio
 			var fg = FilterGraph.Create();
 			var mc = (IMediaControl)fg;
 			var me = (IMediaEvent)fg;
-			fg.RenderFile("\\test.wav", IntPtr.Zero);
-			IBaseFilter filter;
-//			fg.AddSourceFilter("\test.wav", "Source1", out filter);
+			fg.RenderFile("c:\\test.mp3", IntPtr.Zero);
+
 			IEnumFilters ief;
 			var filters = new IBaseFilter[8];
 			fg.EnumFilters(out ief);

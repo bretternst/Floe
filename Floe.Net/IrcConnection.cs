@@ -16,6 +16,7 @@ namespace Floe.Net
 		private string _server;
 		private int _port;
 		private bool _isSecure;
+		private ProxyInfo _proxy;
 
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
@@ -38,7 +39,7 @@ namespace Floe.Net
 			_syncContext = SynchronizationContext.Current;
 		}
 
-		public void Open(string server, int port, bool isSecure)
+		public void Open(string server, int port, bool isSecure, ProxyInfo proxy = null)
 		{
 			if (string.IsNullOrEmpty(server))
 				throw new ArgumentNullException("server");
@@ -53,6 +54,7 @@ namespace Floe.Net
 			_server = server;
 			_port = port;
 			_isSecure = isSecure;
+			_proxy = proxy;
 			_writeQueue = new ConcurrentQueue<IrcMessage>();
 			_writeWaitHandle = new ManualResetEvent(false);
 			_endWaitHandle = new ManualResetEvent(false);
@@ -109,7 +111,11 @@ namespace Floe.Net
 			{
 				this.Dispatch(this.OnError, ex);
 			}
-			if (_tcpClient.Connected)
+			catch (SocksException ex)
+			{
+				this.Dispatch(this.OnError, ex);
+			}
+			if (_tcpClient != null && _tcpClient.Connected)
 			{
 				_tcpClient.Close();
 			}
@@ -118,14 +124,27 @@ namespace Floe.Net
 		private void SocketLoop()
 		{
 			Stream stream = null;
-			_tcpClient = new TcpClient();
 
-			IAsyncResult ar = _tcpClient.BeginConnect(_server, _port, null, null);
-			if (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endWaitHandle }) == 1)
+			if (_proxy != null && !string.IsNullOrEmpty(_proxy.ProxyHostname))
 			{
-				return;
+				var proxy = new SocksTcpClient(_proxy);
+				var ar = proxy.BeginConnect(_server, _port, null, null);
+				if (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endWaitHandle }) == 1)
+				{
+					return;
+				}
+				_tcpClient = proxy.EndConnect(ar);
 			}
-			_tcpClient.EndConnect(ar);
+			else
+			{
+				_tcpClient = new TcpClient();
+				var ar = _tcpClient.BeginConnect(_server, _port, null, null);
+				if (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endWaitHandle }) == 1)
+				{
+					return;
+				}
+				_tcpClient.EndConnect(ar);
+			}
 			stream = _tcpClient.GetStream();
 
 			if (_isSecure)

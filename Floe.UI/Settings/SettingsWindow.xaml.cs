@@ -20,6 +20,7 @@ namespace Floe.UI.Settings
 			grdSettings.Children.Add(new WindowSettingsControl());
 			grdSettings.Children.Add(new DccSettingsControl());
 			grdSettings.Children.Add(new SoundSettingsControl());
+			grdSettings.Children.Add(new NetworkSettingsControl());
 
 			if (lstCategories.SelectedIndex < 0)
 			{
