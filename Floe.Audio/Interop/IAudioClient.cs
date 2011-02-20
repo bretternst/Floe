@@ -10,11 +10,11 @@ namespace Floe.Audio.Interop
 	interface IAudioClient
 	{
 		void Initialize(AudioShareMode shareMode, AudioStreamFlags streamFlags, long bufferDuration,
-			long periodicity, [In] ref WaveFormat format, [In] ref Guid audioSessionId);
-		void GetBufferSize(out uint numBufferFrames);
+			long periodicity, [In] WaveFormat format, [In] ref Guid audioSessionId);
+		void GetBufferSize(out int numBufferFrames);
 		void GetStreamLatency(out long latency);
-		void GetCurrentPadding(out uint numPaddingFrames);
-		void IsFormatSupported(AudioShareMode shareMode, ref WaveFormat format,
+		void GetCurrentPadding(out int numPaddingFrames);
+		int IsFormatSupported(AudioShareMode shareMode, WaveFormat format,
 			[MarshalAs(UnmanagedType.LPStruct)] out WaveFormat closestMatch);
 		void GetMixFormat([MarshalAs(UnmanagedType.LPStruct)] out WaveFormat deviceFormat);
 		void GetDevicePeriod(out long defaultDevicePeriod, out long minimumDevicePeriod);

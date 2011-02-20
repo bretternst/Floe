@@ -10,6 +10,8 @@ namespace Floe.UI
 	{
 		private ChatPresenter _presenter;
 
+		public bool IsAutoScrolling { get { return _presenter.IsAutoScrolling; } }
+
 		public ChatBox()
 		{
 			this.DefaultStyleKey = typeof(ChatBox);

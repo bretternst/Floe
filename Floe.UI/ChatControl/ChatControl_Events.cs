@@ -36,6 +36,7 @@ namespace Floe.UI
 						break;
 					case IrcSessionState.Connected:
 						this.Header = this.Session.NetworkName;
+						App.DoEvent("connect");
 						if (this.Perform != null)
 						{
 							foreach (var cmd in this.Perform.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0))
@@ -43,6 +44,9 @@ namespace Floe.UI
 								this.Execute(cmd, false);
 							}
 						}
+						break;
+					case IrcSessionState.Disconnected:
+						App.DoEvent("disconnect");
 						break;
 				}
 				this.SetTitle();
@@ -74,6 +78,7 @@ namespace Floe.UI
 				{
 					this.Write("Notice", e.Text);
 				}
+				App.DoEvent("notice");
 			}
 		}
 
@@ -100,6 +105,15 @@ namespace Floe.UI
 						if (this.VisualParent == null)
 						{
 							this.NotifyState = NotifyState.Alert;
+							App.DoEvent("inactiveAlert");
+						}
+						else if (_window != null && !_window.IsActive)
+						{
+							App.DoEvent("inactiveAlert");
+						}
+						else
+						{
+							App.DoEvent("activeAlert");
 						}
 					}
 

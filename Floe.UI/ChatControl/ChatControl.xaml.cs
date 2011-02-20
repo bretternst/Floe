@@ -219,6 +219,10 @@ namespace Floe.UI
 		{
 			this.Write(styleKey, string.Format("{0}@{1}", peer.Username, peer.Hostname).GetHashCode(),
 				this.GetNickWithLevel(peer.Nickname), text, attn);
+			if (!boxOutput.IsAutoScrolling)
+			{
+				App.DoEvent("beep");
+			}
 		}
 
 		private void Write(string styleKey, string text)

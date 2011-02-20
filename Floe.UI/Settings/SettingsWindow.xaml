@@ -90,6 +90,7 @@
 			<ListBoxItem Content="Buffer"/>
 			<ListBoxItem Content="Windows"/>
 			<ListBoxItem Content="DCC"/>
+			<ListBoxItem Content="Sounds"/>
 		</ListBox>
 		<Grid Name="grdSettings" DockPanel.Dock="Right" Background="#FFEEEEEE">
 		</Grid>

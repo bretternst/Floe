@@ -295,6 +295,10 @@ namespace Floe.UI
 						this.Write("Error", "Can't talk in this window.");
 					}
 				}
+				else
+				{
+					App.DoEvent("beep");
+				}
 			}
 		}
 

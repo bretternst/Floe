@@ -68,6 +68,7 @@
     <Compile Include="Application\App_Logging.cs" />
     <Compile Include="Application\App_Patterns.cs" />
     <Compile Include="Application\App_Resources.cs" />
+    <Compile Include="Application\App_Sounds.cs" />
     <Compile Include="Application\Enums.cs" />
     <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
       <DependentUpon>ChannelWindow.xaml</DependentUpon>
@@ -128,6 +129,9 @@
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Settings\SoundSettingsControl.xaml.cs">
+      <DependentUpon>SoundSettingsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\DccSettingsControl.xaml.cs">
       <DependentUpon>DccSettingsControl.xaml</DependentUpon>
     </Compile>
@@ -179,6 +183,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\ColorsSettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\SoundSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

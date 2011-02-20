@@ -102,6 +102,7 @@ namespace Floe.UI
 			{
 				this.Accept(false);
 			}
+			App.DoEvent("dccRequest");
 		}
 
 		public override bool CanClose()
@@ -224,12 +225,14 @@ namespace Floe.UI
 				{
 					this.Status = FileStatus.Cancelled;
 					this.StatusText = "Connection lost";
+					App.DoEvent("dccError");
 				}
 			}
 			else
 			{
 				this.Status = (_dcc is DccXmitReceiver || _dcc is DccSendReceiver) ? FileStatus.Received : FileStatus.Sent;
 				this.StatusText = "Finished";
+				App.DoEvent("dccComplete");
 			}
 			this.DeletePortForwarding();
 		}
@@ -243,6 +246,7 @@ namespace Floe.UI
 				_pollTimer.Dispose();
 			}
 			this.DeletePortForwarding();
+			App.DoEvent("dccError");
 		}
 
 		private void btnCancel_Click(object sender, RoutedEventArgs e)

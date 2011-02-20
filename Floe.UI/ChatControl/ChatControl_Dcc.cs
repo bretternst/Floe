@@ -63,6 +63,7 @@ namespace Floe.UI
 				lblDccChat.Content = string.Format("Do you want DCC chat with {0}?", this.Target.Name);
 				pnlDccChat.Visibility = Visibility.Visible;
 			}
+			App.DoEvent("dccRequest");
 		}
 
 		private void DeletePortForwarding()

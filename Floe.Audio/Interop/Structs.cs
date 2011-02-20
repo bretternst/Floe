@@ -3,29 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace Floe.Audio.Interop
 {
-	struct WaveFormat
-	{
-		public const ushort Pcm = 0x0001;
-
-		public ushort FormatTag;
-		public ushort Channels;
-		public uint SamplesPerSecond;
-		public uint AvgBytesPerSecond;
-		public ushort BlockAlign;
-		public ushort BitsPerSample;
-		public ushort Size;
-
-		public WaveFormat(ushort channels, uint samplesPerSecond, ushort bitsPerSample)
-		{
-			this.FormatTag = WaveFormat.Pcm;
-			this.Channels = channels;
-			this.SamplesPerSecond = samplesPerSecond;
-			this.BitsPerSample = bitsPerSample;
-			this.BlockAlign = (ushort)((channels * bitsPerSample) / 8);
-			this.AvgBytesPerSecond = samplesPerSecond * this.BlockAlign;
-			this.Size = 0;
-		}
-	}
 
 	struct PropertyKey
 	{

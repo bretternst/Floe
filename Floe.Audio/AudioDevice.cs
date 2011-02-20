@@ -6,7 +6,6 @@ namespace Floe.Audio
 	public class AudioDevice
 	{
 		private IMMDevice _device;
-		private IAudioClient _client;
 
 		public string DeviceId { get; private set; }
 		public string Name { get; private set; }
@@ -33,35 +32,25 @@ namespace Floe.Audio
 			PropertyVariant val;
 			ips.GetValue(ref pk, out val);
 			this.Name = val.Value.ToString();
+		}
+
+		public AudioOutputClient GetOutputClient(WaveFormat format)
+		{
+			return new AudioOutputClient(this.CreateClient(), format);
+		}
+
+		public AudioInputClient GetInputClient(WaveFormat format)
+		{
+			return new AudioInputClient(this.CreateClient(), format);
+		}
+
+		private IAudioClient CreateClient()
+		{
 			var iid = Interfaces.IAudioclient;
 			object obj;
 			_device.Activate(ref iid, ClsCtx.All, IntPtr.Zero, out obj);
-			_client = obj as IAudioClient;
+			return obj as IAudioClient;
 		}
-
-		public void Initialize(AudioChannels channels, long sampleRate, BitsPerSample bitsPerSample, bool exclusive = false)
-		{
-			var fmt = new WaveFormat((ushort)channels, (uint)sampleRate, (ushort)bitsPerSample);
-			var sessionId = Guid.Empty;
-			_client.Initialize(exclusive ? AudioShareMode.Exclusive : AudioShareMode.Shared,
-				AudioStreamFlags.None, 10000000, 0, ref fmt, ref sessionId);
-		}
-
-		public OutputStream GetOutputStream()
-		{
-			return new OutputStream(_client);
-		}
-
-		public InputStream GetInputStream()
-		{
-			return new InputStream(_client);
-		}
-
-		public static AudioDevice DefaultOutputDevice { get; private set; }
-		public static AudioDevice DefaultInputDevice { get; private set; }
-
-		public static event EventHandler<DeviceChangedEventArgs> DefaultOutputDeviceChanged;
-		public static event EventHandler<DeviceChangedEventArgs> DefaultInputDeviceChanged;
 
 		static AudioDevice()
 		{
@@ -69,6 +58,12 @@ namespace Floe.Audio
 			DefaultOutputDevice = GetDefaultDevice(DataFlow.Reader);
 			DefaultInputDevice = GetDefaultDevice(DataFlow.Capture);
 		}
+
+		public static AudioDevice DefaultOutputDevice { get; private set; }
+		public static AudioDevice DefaultInputDevice { get; private set; }
+
+		public static event EventHandler<DeviceChangedEventArgs> DefaultOutputDeviceChanged;
+		public static event EventHandler<DeviceChangedEventArgs> DefaultInputDeviceChanged;
 
 		private static void Current_DefaultDeviceChanged(object sender, MMNotificationEventArgs e)
 		{

@@ -41,12 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioDevice.cs" />
-    <Compile Include="InputStream.cs" />
+    <Compile Include="AudioClient\AudioClient.cs" />
+    <Compile Include="AudioClient\AudioInputClient.cs" />
     <Compile Include="Interop\IAudioCaptureClient.cs" />
     <Compile Include="Interop\IAudioRenderClient.cs" />
     <Compile Include="Interop\ISimpleAudioVolume.cs" />
-    <Compile Include="OutputStream.cs" />
-    <Compile Include="Enums.cs" />
+    <Compile Include="AudioClient\AudioOutputClient.cs" />
+    <Compile Include="WaveFormat\Enums.cs" />
     <Compile Include="EventArgs\DeviceChangedEventArgs.cs" />
     <Compile Include="Interop\Constants.cs" />
     <Compile Include="Interop\Enums.cs" />
@@ -57,7 +58,9 @@
     <Compile Include="Interop\IPropertyStore.cs" />
     <Compile Include="Interop\Structs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Test.cs" />
+    <Compile Include="WaveFormat\WaveFormat.cs" />
+    <Compile Include="WaveFormat\WaveFormatException.cs" />
+    <Compile Include="WaveFormat\WaveReader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
