@@ -21,10 +21,22 @@ namespace Floe.Audio
 			int fetched;
 			ief.Next(8, filters, out fetched);
 
-			mc.Run();
-			int eventCode;
-			int ret = me.WaitForCompletion(40000, out eventCode);
-			Console.WriteLine(ret + " " + eventCode);
+			for (int i = 0; i < fetched; i++)
+			{
+				var ibf = filters[i];
+				FilterInfo fi;
+				ibf.QueryFilterInfo(out fi);
+				string vendorInfo = "";
+				try
+				{
+					ibf.QueryVendorInfo(out vendorInfo);
+				}
+				catch (Exception)
+				{
+				}
+				Console.WriteLine(fi.Name + " " + vendorInfo);
+			}
+
 			Console.ReadLine();
 		}
 	}

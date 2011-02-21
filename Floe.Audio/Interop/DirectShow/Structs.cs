@@ -41,7 +41,7 @@ namespace Floe.Audio.Interop
 	{
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst=128)]
 		public string RawName;
-		public IFilterGraph graph;
+		public IFilterGraph Graph;
 
 		public string Name { get { return this.RawName.Split('\0')[0]; } }
 	}

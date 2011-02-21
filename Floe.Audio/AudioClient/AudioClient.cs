@@ -37,7 +37,7 @@ namespace Floe.Audio
 				client.GetMixFormat(out p);
 				format = Marshal.PtrToStructure(p, typeof(WaveFormat)) as WaveFormat;
 				Marshal.FreeCoTaskMem(p);
-				format = new WaveFormat(format.Channels, format.SampleRate, BitsPerSample.Sixteen);
+				format = new WaveFormat(format.Channels, format.SampleRate, 16);
 				var sessionId = Guid.Empty;
 			}
 

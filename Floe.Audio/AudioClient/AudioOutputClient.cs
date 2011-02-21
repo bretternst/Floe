@@ -56,11 +56,21 @@ namespace Floe.Audio
 
 		private bool ReadBuffer(Stream stream, int count)
 		{
-			int bytes = stream.Read(this.Buffer, 0, count * this.FrameSize);
-			if (bytes == 0)
+			int total = 0, remainder = 0, bytes;
+
+			do
+			{
+				bytes = stream.Read(this.Buffer, total, remainder > 0 ? remainder : count * this.FrameSize);
+				total += bytes;
+				remainder = remainder > 0 ? (remainder -= bytes) : total % this.FrameSize;
+			}
+			while (remainder != 0 && bytes > 0);
+
+			if (total == 0)
 			{
 				return false;
 			}
+
 			IntPtr p;
 			_render.GetBuffer(count, out p);
 			Marshal.Copy(this.Buffer, 0, p, bytes);

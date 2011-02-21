@@ -76,7 +76,7 @@
     <Compile Include="WaveFormat\WaveFormat.cs" />
     <Compile Include="WaveFormat\WaveFormatException.cs" />
     <Compile Include="WaveFormat\WaveFormatFull.cs" />
-    <Compile Include="WaveFormat\WaveReader.cs" />
+    <Compile Include="WaveFormat\WaveFile.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
