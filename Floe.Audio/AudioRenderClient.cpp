@@ -9,35 +9,31 @@ namespace Floe
 		const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 
 		AudioRenderClient::AudioRenderClient()
-			: AudioClient()
+			: AudioClient(AudioMode::Render)
 		{
 			IAudioRenderClient *iarc;
-			ThrowOnFailure(m_iac->GetService(IID_IAudioRenderClient, &iarc));
+			ThrowOnFailure(this->Client->GetService(IID_IAudioRenderClient, (void**)&iarc));
 			m_iarc = iarc;
 		}
 
 		void AudioRenderClient::Loop()
 		{
-			array<WaitHandle^>^ handles = { this->CancelEvent, this->BufferEvent };
-			if(!this->RenderBuffer(this->BufferSize))
-			{
-				return;
-			}
-
+			array<WaitHandle^>^ handles = { this->CancelHandle, this->BufferHandle };
+			this->RenderBuffer(this->BufferSizeInFrames);
 			ThrowOnFailure(this->Client->Start());
 
 			try
 			{
-				switch(WaitHandle::WaitAny(handles))
+				while(true)
 				{
-				case 0:
-					return;
-				case 1:
-					int padding;
-					this->Client->GetCurrentPadding(&padding);
-					if(!this->RenderBuffer(this->BufferSize - padding))
+					switch(WaitHandle::WaitAny(handles))
 					{
+					case 0:
 						return;
+					case 1:
+						int padding;
+						this->Client->GetCurrentPadding((UINT32*)&padding);
+						this->RenderBuffer(this->BufferSizeInFrames - padding);
 					}
 				}
 			}
@@ -51,9 +47,9 @@ namespace Floe
 		{
 			BYTE *buffer;
 			ThrowOnFailure(m_iarc->GetBuffer(count, &buffer));
-			count = this->OnRender(count, (IntPtr)buffer);
-			ThrowOnFailure(m_iarc->ReleaseBuffer(count, 0));
-			return count > 0;
+			int realCount = this->OnRender(count, (IntPtr)buffer);
+			count = realCount > 0 ? realCount : count;
+			ThrowOnFailure(m_iarc->ReleaseBuffer(count, realCount > 0 ? 0 : AUDCLNT_BUFFERFLAGS_SILENT));
 		}
 
 		AudioRenderClient::~AudioRenderClient()

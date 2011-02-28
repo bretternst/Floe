@@ -18,10 +18,10 @@ namespace Floe
 
 		protected:
 			virtual void Loop() override;
-			virtual int OnRender(int count, IntPtr buffer);
+			virtual int OnRender(int count, IntPtr buffer) abstract;
 
 		private:
-			bool RenderBuffer(int count);
+			void RenderBuffer(int count);
 			~AudioRenderClient();
 			!AudioRenderClient();
 		};

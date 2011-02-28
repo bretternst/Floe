@@ -9,6 +9,7 @@ namespace Floe
 		const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 		AudioCaptureClient::AudioCaptureClient()
+			: AudioClient(AudioMode::Capture)
 		{
 			IAudioCaptureClient *iacc;
 			ThrowOnFailure(this->Client->GetService(IID_IAudioCaptureClient, (void**)&iacc));
@@ -23,13 +24,16 @@ namespace Floe
 
 			try
 			{
-				switch(WaitHandle::WaitAny(handles))
+				while(true)
 				{
-				case 0:
-					return;
-				case 1:
-					this->CaptureBuffer();
-					break;
+					switch(WaitHandle::WaitAny(handles))
+					{
+					case 0:
+						return;
+					case 1:
+						this->CaptureBuffer();
+						break;
+					}
 				}
 			}
 			finally

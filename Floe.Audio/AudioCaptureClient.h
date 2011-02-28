@@ -18,7 +18,7 @@ namespace Floe
 
 		protected:
 			virtual void Loop() override;
-			virtual int OnCapture(int count, IntPtr buffer) abstract;
+			virtual void OnCapture(int count, IntPtr buffer) abstract;
 
 		private:
 			void CaptureBuffer();

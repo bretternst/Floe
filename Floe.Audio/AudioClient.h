@@ -9,6 +9,12 @@ namespace Floe
 		using namespace System::Threading;
 		using namespace System::Threading::Tasks;
 
+		public enum class AudioMode
+		{
+			Capture,
+			Render
+		};
+
 		public ref class AudioClient abstract
 		{
 		private:
@@ -20,7 +26,7 @@ namespace Floe
 			int m_bufferSize;
 
 		public:
-			AudioClient();
+			AudioClient(AudioMode mode);
 			void Start();
 			void Stop();
 
@@ -41,7 +47,7 @@ namespace Floe
 				}
 			}
 
-			property int BufferSize
+			property int BufferSizeInFrames
 			{
 				int get()
 				{
@@ -49,7 +55,15 @@ namespace Floe
 				}
 			}
 
-			property int BlockSize
+			property int BufferSizeInBytes
+			{
+				int get()
+				{
+					return m_bufferSize * m_format->nBlockAlign;
+				}
+			}
+
+			property int FrameSize
 			{
 				int get()
 				{

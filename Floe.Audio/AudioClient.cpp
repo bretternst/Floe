@@ -8,16 +8,15 @@ namespace Floe
 		const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 		const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 		const IID IID_IAudioClient = __uuidof(IAudioClient);
-		const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-		AudioClient::AudioClient()
+		AudioClient::AudioClient(AudioMode mode)
 		{
 			IMMDeviceEnumerator *immde = 0;
 			IMMDevice *immd = 0;
 			try
 			{
 				ThrowOnFailure(CoCreateInstance(CLSID_MMDeviceEnumerator, 0, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void**)&immde));
-				immde->GetDefaultAudioEndpoint(eCapture, eMultimedia, &immd);
+				immde->GetDefaultAudioEndpoint(mode == AudioMode::Capture ? eCapture : eRender, eMultimedia, &immd);
 				if(immd == 0)
 				{
 					throw gcnew AudioException("Unable to locate default capture device.");
@@ -40,6 +39,11 @@ namespace Floe
 
 			WAVEFORMATEX* fmt;
 			ThrowOnFailure(m_iac->GetMixFormat(&fmt));
+			fmt->wFormatTag = WAVE_FORMAT_PCM;
+			fmt->cbSize = 0;
+			fmt->wBitsPerSample = 16;
+			fmt->nBlockAlign = fmt->nChannels * fmt->wBitsPerSample / 8;
+			fmt->nAvgBytesPerSec = fmt->nSamplesPerSec * fmt->nBlockAlign;
 			m_format = fmt;
 			m_cancelEvent = gcnew ManualResetEvent(false);
 			m_bufferEvent = gcnew AutoResetEvent(false);
