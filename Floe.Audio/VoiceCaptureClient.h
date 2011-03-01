@@ -1,6 +1,7 @@
 #pragma once
 #include "Stdafx.h"
 #include "AudioCaptureClient.h"
+#include "AudioConverter.h"
 
 namespace Floe
 {
@@ -9,40 +10,25 @@ namespace Floe
 		public ref class VoiceCaptureClient abstract : AudioCaptureClient
 		{
 		private:
-			WAVEFORMATEX *m_format;
-			HACMSTREAM m_acmStream;
-			LPACMSTREAMHEADER m_acmHeader;
+			AudioConverter ^m_converter;
+			int m_packetSize;
+			BYTE *m_buffer;
+			int m_used;
 
 		public:
-			VoiceCaptureClient();
+			VoiceCaptureClient(AudioDevice^ device);
 
-			property WAVEFORMATEX *VoiceFormat
-			{
-				WAVEFORMATEX *get()
-				{
-					return m_format;
-				}
-			}
-
-			property int VoiceFrameSize
+			property int PacketSize
 			{
 				int get()
 				{
-					return m_format->nBlockAlign;
-				}
-			}
-
-			property int VoiceBufferSize
-			{
-				int get()
-				{
-					return m_acmHeader->cbDstLength;
+					return m_packetSize;
 				}
 			}
 
 		protected:
 			virtual void OnCapture(int count, IntPtr buffer) override;
-			virtual void OnPacketReady(int size, IntPtr buffer) abstract;
+			virtual void OnWritePacket(IntPtr buffer) abstract;
 
 		private:
 			~VoiceCaptureClient();

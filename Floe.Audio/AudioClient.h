@@ -1,6 +1,7 @@
 #pragma once
 #include "Stdafx.h"
 #include "Common.h"
+#include "AudioDevice.h"
 
 namespace Floe
 {
@@ -8,12 +9,6 @@ namespace Floe
 	{
 		using namespace System::Threading;
 		using namespace System::Threading::Tasks;
-
-		public enum class AudioMode
-		{
-			Capture,
-			Render
-		};
 
 		public ref class AudioClient abstract
 		{
@@ -26,7 +21,7 @@ namespace Floe
 			int m_bufferSize;
 
 		public:
-			AudioClient(AudioMode mode);
+			AudioClient(AudioDevice^ device);
 			void Start();
 			void Stop();
 

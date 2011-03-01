@@ -8,8 +8,8 @@ namespace Floe
 		using namespace System::Threading;
 		const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 
-		AudioRenderClient::AudioRenderClient()
-			: AudioClient(AudioMode::Render)
+		AudioRenderClient::AudioRenderClient(AudioDevice^ device)
+			: AudioClient(device)
 		{
 			IAudioRenderClient *iarc;
 			ThrowOnFailure(this->Client->GetService(IID_IAudioRenderClient, (void**)&iarc));

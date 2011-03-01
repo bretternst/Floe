@@ -8,8 +8,8 @@ namespace Floe
 		using namespace System::Threading;
 		const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-		AudioCaptureClient::AudioCaptureClient()
-			: AudioClient(AudioMode::Capture)
+		AudioCaptureClient::AudioCaptureClient(AudioDevice^ device)
+			: AudioClient(device)
 		{
 			IAudioCaptureClient *iacc;
 			ThrowOnFailure(this->Client->GetService(IID_IAudioCaptureClient, (void**)&iacc));

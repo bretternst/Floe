@@ -14,7 +14,7 @@ namespace Floe
 			IAudioCaptureClient *m_iacc;
 
 		public:
-			AudioCaptureClient();
+			AudioCaptureClient(AudioDevice^ device);
 
 		protected:
 			virtual void Loop() override;

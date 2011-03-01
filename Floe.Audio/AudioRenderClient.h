@@ -14,7 +14,7 @@ namespace Floe
 			IAudioRenderClient *m_iarc;
 
 		public:
-			AudioRenderClient();
+			AudioRenderClient(AudioDevice^ device);
 
 		protected:
 			virtual void Loop() override;

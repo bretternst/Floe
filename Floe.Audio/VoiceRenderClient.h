@@ -1,6 +1,7 @@
 #pragma once
 #include "Stdafx.h"
 #include "AudioRenderClient.h"
+#include "AudioConverter.h"
 
 namespace Floe
 {
@@ -9,40 +10,23 @@ namespace Floe
 		public ref class VoiceRenderClient abstract : AudioRenderClient
 		{
 		private:
-			WAVEFORMATEX *m_format;
-			HACMSTREAM m_acmStream;
-			LPACMSTREAMHEADER m_acmHeader;
+			AudioConverter ^m_converter;
+			int m_packetSize;
 
 		public:
-			VoiceRenderClient();
+			VoiceRenderClient(AudioDevice^ device);
 
-			property WAVEFORMATEX *VoiceFormat
-			{
-				WAVEFORMATEX *get()
-				{
-					return m_format;
-				}
-			}
-
-			property int VoiceFrameSize
+			property int PacketSize
 			{
 				int get()
 				{
-					return m_format->nBlockAlign;
-				}
-			}
-
-			property int VoiceBufferSize
-			{
-				int get()
-				{
-					return m_acmHeader->cbDstLength;
+					return m_packetSize;
 				}
 			}
 
 		protected:
 			virtual int OnRender(int count, IntPtr buffer) override;
-			virtual int OnPacketNeeded(int size, IntPtr buffer) abstract;
+			virtual bool OnReadPacket(IntPtr buffer) abstract;
 
 		private:
 			~VoiceRenderClient();

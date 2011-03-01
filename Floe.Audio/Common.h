@@ -1,3 +1,4 @@
+#pragma once
 #include "Stdafx.h"
 
 using System::String;
