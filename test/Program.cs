@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Collections.Concurrent;
 
 using Floe.Audio;
 
@@ -11,57 +12,78 @@ namespace test
 {
 	class MemoryCapture : VoiceCaptureClient
 	{
-		private MemoryStream _stream;
-		private byte[] _buffer;
-
-		public MemoryCapture(AudioDevice device, MemoryStream stream)
+		public MemoryCapture(AudioDevice device)
 			: base(device)
 		{
-			_stream = stream;
-			_buffer = new byte[this.PacketSize];
 		}
 
 		protected override void OnWritePacket(IntPtr buffer)
 		{
-			Marshal.Copy(buffer, _buffer, 0, this.PacketSize);
-			_stream.Write(_buffer, 0, this.PacketSize);
+			int pos = Program.WritePos + 1;
+			if(pos == Program.Packets.Length)
+			{
+				pos = 0;
+			}
+			Marshal.Copy(buffer, Program.Packets[pos], 0, this.PacketSize);
+			Program.WritePos = pos;
 		}
 	}
 
 	class MemoryRender : VoiceRenderClient
 	{
-		private MemoryStream _stream;
-		private byte[] _buffer;
-
-		public MemoryRender(AudioDevice device, MemoryStream stream)
+		public MemoryRender(AudioDevice device)
 			: base(device)
 		{
-			_stream = stream;
-			_buffer = new byte[this.BufferSizeInBytes];
 		}
 
 		protected override bool OnReadPacket(IntPtr buffer)
 		{
-			int size = _stream.Read(_buffer, 0, this.PacketSize);
-			Marshal.Copy(_buffer, 0, buffer, size);
-			return size == this.PacketSize;
+			int pos = Program.ReadPos;
+			if (pos == Program.WritePos)
+			{
+				return false;
+			}
+			pos++;
+			if (pos == Program.Packets.Length)
+			{
+				pos = 0;
+			}
+			Marshal.Copy(Program.Packets[pos], 0, buffer, this.PacketSize);
+			Program.ReadPos = pos;
+			return true;
 		}
 	}
 
 	class Program
 	{
+		public static byte[][] Packets = new byte[12][];
+		public volatile static int ReadPos = -1;
+		public volatile static int WritePos = -1;
+
 		static void Main(string[] args)
 		{
-			var stream = new MemoryStream();
-			var capture = new MemoryCapture(AudioDevice.DefaultCaptureDevice, stream);
+			var capture = new MemoryCapture(AudioDevice.DefaultCaptureDevice);
+			var render = new MemoryRender(AudioDevice.DefaultRenderDevice);
+			for (int i = 0; i < Packets.Length; i++)
+			{
+				Packets[i] = new byte[capture.PacketSize];
+			}
 			capture.Start();
-			Console.ReadLine();
-			capture.Stop();
-			stream.Position = 0;
-			Console.WriteLine(stream.Length);
-			var render = new MemoryRender(AudioDevice.DefaultRenderDevice, stream);
+			System.Threading.Thread.Sleep(100);
 			render.Start();
-			Console.ReadLine();
+			while (true)
+			{
+				System.Threading.Thread.Sleep(50);
+				if (ReadPos > WritePos)
+				{
+					Console.WriteLine(WritePos + Packets.Length - ReadPos);
+				}
+				else
+				{
+					Console.WriteLine(WritePos - ReadPos);
+				}
+			}
+			capture.Stop();
 			render.Stop();
 		}
 	}

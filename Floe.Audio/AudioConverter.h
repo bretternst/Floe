@@ -19,7 +19,31 @@ namespace Floe
 
 		public:
 			AudioConverter(int maxSrcSize, WAVEFORMATEX *srcFormat, ...array<WAVEFORMATEX*> ^dstFormats);
-			int Convert(IntPtr srcBuffer, int size, [Out] IntPtr &dstBuffer);
+			int Convert(int size, [Out] IntPtr &dstBuffer);
+
+			property IntPtr Buffer
+			{
+				IntPtr get()
+				{
+					return (IntPtr)m_headers[0]->pbSrc;
+				}
+			}
+
+			property int SourceBufferSize
+			{
+				int get()
+				{
+					return m_headers[0]->dwSrcUser;
+				}
+			}
+
+			property int DestBufferSize
+			{
+				int get()
+				{
+					return m_headers[m_count - 1]->dwDstUser;
+				}
+			}
 
 		private:
 			~AudioConverter();

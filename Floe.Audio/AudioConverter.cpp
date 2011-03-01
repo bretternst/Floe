@@ -32,9 +32,8 @@ namespace Floe
 			}
 		}
 
-		int AudioConverter::Convert(IntPtr srcBuffer, int size, [Out] IntPtr &dstBuffer)
+		int AudioConverter::Convert(int size, [Out] IntPtr &dstBuffer)
 		{
-			memcpy((void*)m_headers[0]->pbSrc, (void*)srcBuffer, size);
 			for(int i = 0; i < m_count; i++)
 			{
 				m_headers[i]->cbSrcLength = m_headers[i]->cbSrcLengthUsed = i == 0 ? size : m_headers[i-1]->cbDstLengthUsed;
@@ -50,6 +49,8 @@ namespace Floe
 			{
 				for(int i = 0; i < m_count; i++)
 				{
+					m_headers[i]->cbSrcLength = m_headers[i]->dwSrcUser;
+					m_headers[i]->cbDstLength = m_headers[i]->dwDstUser;
 					acmStreamUnprepareHeader(m_streams[i], m_headers[i], 0);
 					acmStreamClose(m_streams[i], 0);
 					delete m_headers[i]->pbSrc;

@@ -12,6 +12,8 @@ namespace Floe
 		private:
 			AudioConverter ^m_converter;
 			int m_packetSize;
+			BYTE *m_buffer;
+			int m_used;
 
 		public:
 			VoiceRenderClient(AudioDevice^ device);
