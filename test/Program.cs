@@ -10,10 +10,10 @@ using Floe.Audio;
 
 namespace test
 {
-	class MemoryCapture : VoiceCaptureClient
+	class MemoryCapture : AudioCaptureClient
 	{
 		public MemoryCapture(AudioDevice device)
-			: base(device)
+			: base(device, 195, new WaveFormatPcm(Program.SampleRate, 16, 1), new WaveFormatGsm610(Program.SampleRate))
 		{
 		}
 
@@ -29,10 +29,10 @@ namespace test
 		}
 	}
 
-	class MemoryRender : VoiceRenderClient
+	class MemoryRender : AudioRenderClient
 	{
 		public MemoryRender(AudioDevice device)
-			: base(device)
+			: base(device, 195, new WaveFormatGsm610(Program.SampleRate), new WaveFormatPcm(Program.SampleRate, 16, 1))
 		{
 		}
 
@@ -56,6 +56,7 @@ namespace test
 
 	class Program
 	{
+		public const int SampleRate = 21760;
 		public static byte[][] Packets = new byte[12][];
 		public volatile static int ReadPos = -1;
 		public volatile static int WritePos = -1;
@@ -83,6 +84,8 @@ namespace test
 					Console.WriteLine(WritePos - ReadPos);
 				}
 			}
+			Console.ReadLine();
+
 			capture.Stop();
 			render.Stop();
 		}

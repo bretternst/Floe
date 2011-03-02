@@ -16,11 +16,12 @@ namespace Floe
 			fmt->wBitsPerSample = 16;
 			fmt->nBlockAlign = fmt->nChannels * fmt->wBitsPerSample / 8;
 			fmt->nAvgBytesPerSec = fmt->nSamplesPerSec * fmt->nBlockAlign;
-			m_format = fmt;
+			m_format = gcnew WaveFormat(fmt);
+			CoTaskMemFree(fmt);
 			m_cancelEvent = gcnew ManualResetEvent(false);
 			m_bufferEvent = gcnew AutoResetEvent(false);
 
-			ThrowOnFailure(m_iac->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 0, 0, m_format, 0));
+			ThrowOnFailure(m_iac->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 0, 0, m_format->Data, 0));
 			ThrowOnFailure(m_iac->SetEventHandle((HANDLE)m_bufferEvent->Handle));
 			int bufferSize;
 			ThrowOnFailure(m_iac->GetBufferSize((UINT32*)&bufferSize));
@@ -46,11 +47,6 @@ namespace Floe
 			{
 				m_iac->Release();
 				m_iac = 0;
-			}
-			if(m_format != 0)
-			{
-				CoTaskMemFree(m_format);
-				m_format = 0;
 			}
 			if(m_cancelEvent != nullptr)
 			{

@@ -14,7 +14,7 @@ namespace Floe
 		{
 		private:
 			IAudioClient *m_iac;
-			WAVEFORMATEX *m_format;
+			WaveFormat ^m_format;
 			Task ^m_task;
 			ManualResetEvent ^m_cancelEvent;
 			AutoResetEvent ^m_bufferEvent;
@@ -34,9 +34,9 @@ namespace Floe
 				}
 			}
 
-			property WAVEFORMATEX *Format
+			property WaveFormat ^Format
 			{
-				WAVEFORMATEX *get()
+				WaveFormat ^get()
 				{
 					return m_format;
 				}
@@ -54,7 +54,7 @@ namespace Floe
 			{
 				int get()
 				{
-					return m_bufferSize * m_format->nBlockAlign;
+					return m_bufferSize * m_format->FrameSize;
 				}
 			}
 
@@ -62,7 +62,7 @@ namespace Floe
 			{
 				int get()
 				{
-					return m_format->nBlockAlign;
+					return m_format->FrameSize;
 				}
 			}
 

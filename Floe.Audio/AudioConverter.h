@@ -18,16 +18,8 @@ namespace Floe
 			int m_count;
 
 		public:
-			AudioConverter(int maxSrcSize, WAVEFORMATEX *srcFormat, ...array<WAVEFORMATEX*> ^dstFormats);
-			int Convert(int size, [Out] IntPtr &dstBuffer);
-
-			property IntPtr Buffer
-			{
-				IntPtr get()
-				{
-					return (IntPtr)m_headers[0]->pbSrc;
-				}
-			}
+			AudioConverter(int maxSrcSize, WaveFormat ^srcFormat, ...array<WaveFormat^> ^dstFormats);
+			int Convert(IntPtr srcBuffer, int size, [Out] IntPtr &dstBuffer);
 
 			property int SourceBufferSize
 			{

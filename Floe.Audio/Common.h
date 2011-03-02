@@ -1,5 +1,6 @@
 #pragma once
 #include "Stdafx.h"
+#include "WaveFormat.h"
 
 using System::String;
 using System::Exception;
