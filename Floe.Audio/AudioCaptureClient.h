@@ -19,7 +19,7 @@ namespace Floe
 			int m_used;
 
 		public:
-			AudioCaptureClient(AudioDevice^ device, int packetSize, ...array<WaveFormat^> ^conversions);
+			AudioCaptureClient(AudioDevice^ device, int packetSize, int minBufferSize, ...array<WaveFormat^> ^conversions);
 
 			property int PacketSize
 			{

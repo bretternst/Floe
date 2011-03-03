@@ -8,7 +8,7 @@ namespace Floe
 		using namespace System::Threading;
 		const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 
-		AudioRenderClient::AudioRenderClient(AudioDevice^ device, int packetSize, ...array<WaveFormat^> ^conversions)
+		AudioRenderClient::AudioRenderClient(AudioDevice^ device, int packetSize, int minBufferSize, ...array<WaveFormat^> ^conversions)
 			: AudioClient(device)
 		{
 			IAudioRenderClient *iarc;
@@ -26,7 +26,7 @@ namespace Floe
 				System::Array::Copy(conversions, 1, waveConversions, 0, conversions->Length - 1);
 			}
 			waveConversions[conversions->Length - 1] = this->Format;
-			m_converter = gcnew AudioConverter(m_packetSize, conversions[0], waveConversions);
+			m_converter = gcnew AudioConverter(System::Math::Max(minBufferSize, m_packetSize), conversions[0], waveConversions);
 			m_buffer = new BYTE[this->BufferSizeInBytes + m_converter->DestBufferSize];
 			m_packet = new BYTE[packetSize];
 		}

@@ -135,10 +135,10 @@ namespace Floe
 		public:
 			WaveFormatGsm610(int sampleRate)
 			{
-				//if(sampleRate != 8000 && sampleRate != 11025 && sampleRate != 22050)
-				//{
-				//	throw gcnew System::ArgumentException("Invalid sample rate for GSM 6.10");
-				//}
+				if(sampleRate % 320 != 0)
+				{
+					throw gcnew System::ArgumentException("Invalid sample rate for GSM 6.10.");
+				}
 
 				GSM610WAVEFORMAT format;
 				format.wfx.wFormatTag = WAVE_FORMAT_GSM610;

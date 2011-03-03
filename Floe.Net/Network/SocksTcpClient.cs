@@ -28,12 +28,13 @@ namespace Floe.Net
 			public bool CompletedSynchronously { get { return false; } }
 			public bool IsCompleted { get { return this.AsyncWaitHandle.WaitOne(0); } }
 			public EventWaitHandle Event { get; private set; }
+			public AsyncCallback Callback { get; private set; }
 			public string Hostname { get; set; }
 			public int Port { get; set; }
 			public Exception Exception { get; set; }
 			public TcpClient Client { get; set; }
 
-			public AsyncResult(object state)
+			public AsyncResult(AsyncCallback callback, object state)
 			{
 				this.Event = new ManualResetEvent(false);
 				this.AsyncState = state;
@@ -49,7 +50,7 @@ namespace Floe.Net
 
 		public IAsyncResult BeginConnect(string hostName, int port, AsyncCallback callback = null, object state = null)
 		{
-			var ar = new AsyncResult(state) { Hostname = hostName, Port = port };
+			var ar = new AsyncResult(callback, state) { Hostname = hostName, Port = port };
 			ar.Client = new TcpClient();
 			ar.Client.BeginConnect(_info.ProxyHostname, _info.ProxyPort, OnConnected, ar);
 			return ar;
@@ -87,6 +88,10 @@ namespace Floe.Net
 			finally
 			{
 				result.Event.Set();
+				if (result.Callback != null)
+				{
+					result.Callback(result);
+				}
 			}
 		}
 

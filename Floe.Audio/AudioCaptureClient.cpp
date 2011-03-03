@@ -8,7 +8,7 @@ namespace Floe
 		using namespace System::Threading;
 		const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-		AudioCaptureClient::AudioCaptureClient(AudioDevice^ device, int packetSize, ...array<WaveFormat^> ^conversions)
+		AudioCaptureClient::AudioCaptureClient(AudioDevice^ device, int packetSize, int minBufferSize, ...array<WaveFormat^> ^conversions)
 			: AudioClient(device)
 		{
 			IAudioCaptureClient *iacc;
@@ -16,7 +16,7 @@ namespace Floe
 			m_iacc = iacc;
 			m_packetSize = packetSize;
 			m_buffer = new BYTE[packetSize];
-			m_converter = gcnew AudioConverter(this->BufferSizeInBytes, this->Format, conversions);
+			m_converter = gcnew AudioConverter(System::Math::Max(this->BufferSizeInBytes, minBufferSize), this->Format, conversions);
 		}
 
 		void AudioCaptureClient::OnCapture(int count, IntPtr buffer)

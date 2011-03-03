@@ -16,8 +16,6 @@ namespace Floe
 			m_streams = new HACMSTREAM[m_count];
 			m_headers = new LPACMSTREAMHEADER[m_count];
 
-			maxSrcSize *= 2;
-
 			int srcSize, dstSize;
 			for(int i = 0; i < m_count; i++)
 			{

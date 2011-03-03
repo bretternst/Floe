@@ -51,6 +51,10 @@
       <Project>{3CEFFCEB-C836-47CC-8B8A-EC5655E1B5B7}</Project>
       <Name>Floe.Audio</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Floe.Net\Floe.Net.csproj">
+      <Project>{1D4AD463-4355-4DA6-B8E6-0E8BB75B50D9}</Project>
+      <Name>Floe.Net</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

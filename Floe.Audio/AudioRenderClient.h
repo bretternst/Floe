@@ -20,7 +20,7 @@ namespace Floe
 			int m_used;
 
 		public:
-			AudioRenderClient(AudioDevice^ device, int packetSize, ...array<WaveFormat^> ^conversions);
+			AudioRenderClient(AudioDevice^ device, int packetSize, int minBufferSize, ...array<WaveFormat^> ^conversions);
 
 			property int PacketSize
 			{
