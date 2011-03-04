@@ -290,6 +290,7 @@ namespace Floe.Net
 			var readBuffer = new byte[BufferSize];
 			Tuple<byte[], int, int> outgoing = null;
 			IAsyncResult arr = null, arw = null;
+			var handles = new WaitHandle[] { null, null, _endHandle };
 
 			try
 			{
@@ -308,13 +309,10 @@ namespace Floe.Net
 						}
 						arw = _stream.BeginWrite(outgoing.Item1, outgoing.Item2, outgoing.Item3, null, null);
 					}
-					int idx = WaitHandle.WaitAny(
-						new[] {
-							arr.AsyncWaitHandle,
-							arw != null ? arw.AsyncWaitHandle : _writeHandle,
-							_endHandle
-						});
-					switch (idx)
+					handles[0] = arr.AsyncWaitHandle;
+					handles[1] = arw != null ? arw.AsyncWaitHandle : _writeHandle;
+
+					switch (WaitHandle.WaitAny(handles))
 					{
 						case 0:
 							int count = _stream.EndRead(arr);

@@ -168,6 +168,7 @@ namespace Floe.Net
 			var input = new List<byte>(512);
 			IrcMessage outgoing = null;
 			IAsyncResult arr = null, arw = null;
+			var handles = new WaitHandle[] { null, null, _endWaitHandle };
 
 			while (_tcpClient.Connected)
 			{
@@ -185,12 +186,9 @@ namespace Floe.Net
 					writeBuffer[count + 1] = 0xa;
 					arw = stream.BeginWrite(writeBuffer, 0, count + 2, null, null);
 				}
-				int idx = WaitHandle.WaitAny(
-					new[] {
-						arr.AsyncWaitHandle,
-						arw != null ? arw.AsyncWaitHandle : _writeWaitHandle,
-						_endWaitHandle },
-					HeartbeatInterval);
+				handles[0] = arr.AsyncWaitHandle;
+				handles[1] = arw != null ? arw.AsyncWaitHandle : _writeWaitHandle;
+				int idx = WaitHandle.WaitAny(handles, HeartbeatInterval);
 
 				switch (idx)
 				{

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -25,32 +23,17 @@ namespace Floe.Net
 		}
 	}
 
-	public struct StunInfo
-	{
-		private int _localPort;
-		private IPEndPoint _publicEndPoint;
-
-		internal StunInfo(int localPort, IPEndPoint publicEndPoint)
-		{
-			_localPort = localPort;
-			_publicEndPoint = publicEndPoint;
-		}
-
-		public int LocalPort { get { return _localPort; } }
-		public IPEndPoint PublicEndPoint { get { return _publicEndPoint; } }
-	}
-
 	/// <summary>
-	/// Provides facilities for discovering a user's public IP address and public UDP port associated with an internal address and port. This class uses the STUN
-	/// protocol to query a STUN server for the needed information. Once a public IP address and port are discovered, they can be delivered to peers who will then
-	/// communicate directly to that endpoint.
+	/// Provides facilities for creating a UDP socket binding where the public endpoint for that binding is known. This endpoint can be communicated to
+	/// peers so that they know how to communicate with this host. The endpoint is discovered using a STUN v2 server.
 	/// </summary>
 	public class StunUdpClient
 	{
 		private const int StunTimeout = 1000;
-		private const int Tries = 3;
+		private const int MaxTries = 3;
 		private const int HeaderLength = 20;
 		private const int StunPort = 3478;
+		private static readonly byte[] StunCookie = { 0x21, 0x12, 0xa4, 0x42 };
 
 		private class AsyncResult : IAsyncResult
 		{
@@ -60,7 +43,8 @@ namespace Floe.Net
 			public bool IsCompleted { get { return this.AsyncWaitHandle.WaitOne(0); } }
 			public EventWaitHandle Event { get; private set; }
 			public Exception Exception { get; set; }
-			public StunInfo Info { get; set; }
+			public IPEndPoint PublicEndPoint { get; set; }
+			public UdpClient Client { get; set; }
 			public AsyncCallback Callback { get; private set; }
 
 			public AsyncResult(AsyncCallback callback, object state)
@@ -87,12 +71,12 @@ namespace Floe.Net
 		}
 
 		/// <summary>
-		/// Begins an asynchronous operation to query the specified STUN servers for the user's public IP address and port for a given UDP port number.
+		/// Begins an asynchronous operation to construct a UDP client and query a STUN server for the corresponding public endpoint to be used with that client.
 		/// </summary>
 		/// <param name="callback">A handler that will be invoked when the operation is complete.</param>
 		/// <param name="state">Application-defined state information to attach to the asynchronous operation.</param>
 		/// <returns></returns>
-		public IAsyncResult BeginGetEndPoint(AsyncCallback callback = null, object state = null)
+		public IAsyncResult BeginGetClient(AsyncCallback callback = null, object state = null)
 		{
 			var ar = new AsyncResult(callback, state);
 			Task.Factory.StartNew(GetEndPoint, ar);
@@ -102,76 +86,100 @@ namespace Floe.Net
 		/// <summary>
 		/// Complete an operation to get the user's public IP address and port number.
 		/// </summary>
-		/// <param name="ar">The IAsyncResult returned from BeginGetEndPoint.</param>
-		/// <returns>Returns the user's public IP address and port.</returns>
-		public StunInfo EndGetEndPoint(IAsyncResult ar)
+		/// <param name="ar">The IAsyncResult object provided by BeginGetClient.</param>
+		/// <param name="publicEndPoint">Returns the public endpoint that peers may connect to.</param>
+		/// <returns>Returns the UDP client associated with the public endpoint.</returns>
+		public UdpClient EndGetClient(IAsyncResult asyncResult, out IPEndPoint publicEndPoint)
 		{
-			var result = ar as AsyncResult;
-			if (result == null)
+			var ar = asyncResult as AsyncResult;
+			if (ar == null)
 			{
 				throw new InvalidOperationException("IAsyncResult is not from this operation.");
 			}
 			ar.AsyncWaitHandle.WaitOne();
-			if (result.Exception != null)
+			if (ar.Exception != null)
 			{
-				throw result.Exception;
+				throw ar.Exception;
 			}
-			return result.Info;
+			publicEndPoint = ar.PublicEndPoint;
+			return ar.Client;
 		}
 
 		private void GetEndPoint(object obj)
 		{
 			var ar = (AsyncResult)obj;
-			var client = new UdpClient(0);
-			var bytes = new byte[HeaderLength]
-			{
-				 0x00, 0x01, // Message Type
-				 0x0, 0x0, // Message Length
-				 0x21, 0x12, 0xa4, 0x42, // Magic Cookie
-				 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, // Transaction ID
-			};
-
-			var idBytes = new byte[12];
-			var rand = new Random();
-			rand.NextBytes(idBytes);
-			Array.Copy(idBytes, 0, bytes, 8, 12);
 
 			try
 			{
-				int tries = Tries;
-				while (--tries >= 0)
+				Loop(ar);
+			}
+			catch (Exception ex)
+			{
+				ar.Exception = ex;
+				ar.Client.Close();
+			}
+			finally
+			{
+				ar.Event.Set();
+				if (ar.Callback != null)
 				{
-					bool isAnyValid = false;
-					foreach (string server in _stunServers)
+					ar.Callback(ar);
+				}
+			}
+		}
+
+		private void Loop(AsyncResult ar)
+		{
+			ar.Client = new UdpClient(0);
+			var bytes = new byte[HeaderLength];
+			bytes[1] = 0x01; // MessageType = Request
+			Array.Copy(StunCookie, 0, bytes, 4, 4); // Magic Cookie
+			var rand = new Random();
+
+			int tries = MaxTries;
+			while (--tries >= 0)
+			{
+				var idBytes = new byte[12];
+				rand.NextBytes(idBytes);
+				Array.Copy(idBytes, 0, bytes, 8, 12); // Transaction ID
+
+				bool isAnyValid = false;
+				foreach (string server in _stunServers)
+				{
+					try
 					{
-						try
-						{
-							var parts = server.Split(':');
-							int port = StunPort;
-							if (parts.Length > 1 && !int.TryParse(parts[1], out port))
-							{
-								continue;
-							}
-							var remote = Dns.GetHostEntry(parts[0]);
-							client.Send(bytes, HeaderLength, new IPEndPoint(remote.AddressList[0], port));
-							isAnyValid = true;
-						}
-						catch (SocketException)
+						var parts = server.Split(':');
+						int port = StunPort;
+						if (parts.Length > 1 && !int.TryParse(parts[1], out port))
 						{
 							continue;
 						}
+						var remote = Dns.GetHostEntry(parts[0]);
+						ar.Client.Send(bytes, HeaderLength, new IPEndPoint(remote.AddressList[0], port));
+						isAnyValid = true;
 					}
-					if (!isAnyValid)
+					catch (SocketException)
 					{
-						throw new StunException("None of the provided STUN servers could be located.");
+						continue;
 					}
+				}
+				if (!isAnyValid)
+				{
+					throw new StunException("None of the provided STUN servers could be located.");
+				}
 
-					var arr = client.BeginReceive(null, null);
-					if (arr.AsyncWaitHandle.WaitOne(StunTimeout))
+				var startTime = DateTime.Now;
+				var arr = ar.Client.BeginReceive(null, null);
+				while (true)
+				{
+					if (arr.AsyncWaitHandle.WaitOne(StunTimeout - (int)(DateTime.Now - startTime).TotalMilliseconds))
 					{
 						var dummy = new IPEndPoint(new IPAddress(0), 0);
-						var response = client.EndReceive(arr, ref dummy);
-						if (response.Length > HeaderLength && response.Skip(8).Take(12).SequenceEqual(idBytes))
+						var response = ar.Client.EndReceive(arr, ref dummy);
+						if (response.Length > HeaderLength &&
+							response[0] == 0x01 && response[1] == 0x01 && // MessageType = Response
+							response.Skip(4).Take(4).SequenceEqual(StunCookie) && // Magic Cookie
+							response.Skip(8).Take(12).SequenceEqual(idBytes)) // Transaction ID
 						{
 							int idx = HeaderLength;
 							while (idx + 24 < response.Length)
@@ -182,7 +190,7 @@ namespace Floe.Net
 								{
 									int port = (ushort)response[idx + 6] << 8 | (ushort)response[idx + 7];
 									var address = new IPAddress(response.Skip(idx + 8).Take(attrLength - 4).ToArray());
-									ar.Info = new StunInfo(((IPEndPoint)client.Client.LocalEndPoint).Port, new IPEndPoint(address, port));
+									ar.PublicEndPoint = new IPEndPoint(address, port);
 									return;
 								}
 								idx += 32 + attrLength;
@@ -191,23 +199,11 @@ namespace Floe.Net
 					}
 					else
 					{
-						throw new StunException("No STUN response was received.");
+						break;
 					}
 				}
 			}
-			catch (Exception ex)
-			{
-				ar.Exception = ex;
-			}
-			finally
-			{
-				client.Close();
-				ar.Event.Set();
-				if (ar.Callback != null)
-				{
-					ar.Callback(ar);
-				}
-			}
+			throw new StunException("No valid STUN response was received.");
 		}
 	}
 }
