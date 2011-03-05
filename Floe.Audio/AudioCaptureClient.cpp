@@ -17,6 +17,7 @@ namespace Floe
 			m_packetSize = packetSize;
 			m_buffer = new BYTE[packetSize];
 			m_converter = gcnew AudioConverter(System::Math::Max(this->BufferSizeInBytes, minBufferSize), this->Format, conversions);
+			m_eventArgs = gcnew WritePacketEventArgs();
 		}
 
 		void AudioCaptureClient::OnCapture(int count, IntPtr buffer)
@@ -38,6 +39,12 @@ namespace Floe
 					m_used = 0;
 				}
 			}
+		}
+
+		void AudioCaptureClient::OnWritePacket(IntPtr buffer)
+		{
+			m_eventArgs->Buffer = buffer;
+			this->WritePacket(this, m_eventArgs);
 		}
 
 		void AudioCaptureClient::Loop()

@@ -35,7 +35,7 @@ namespace Floe.Net
 		/// </summary>
 		public Exception Exception { get; private set; }
 
-		internal ErrorEventArgs(Exception ex)
+		public ErrorEventArgs(Exception ex)
 		{
 			this.Exception = ex;
 		}

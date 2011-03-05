@@ -29,6 +29,7 @@ namespace Floe
 			m_converter = gcnew AudioConverter(System::Math::Max(minBufferSize, m_packetSize), conversions[0], waveConversions);
 			m_buffer = new BYTE[this->BufferSizeInBytes + m_converter->DestBufferSize];
 			m_packet = new BYTE[packetSize];
+			m_eventArgs = gcnew ReadPacketEventArgs();
 		}
 
 		int AudioRenderClient::OnRender(int count, IntPtr buffer)
@@ -63,6 +64,14 @@ namespace Floe
 			{
 				return 0;
 			}
+		}
+
+		bool AudioRenderClient::OnReadPacket(IntPtr buffer)
+		{
+			m_eventArgs->Buffer = buffer;
+			m_eventArgs->HasData = false;
+			this->ReadPacket(this, m_eventArgs);
+			return m_eventArgs->HasData;
 		}
 
 		void AudioRenderClient::Loop()

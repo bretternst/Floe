@@ -9,7 +9,27 @@ namespace Floe
 	{
 		using System::IntPtr;
 
-		public ref class AudioCaptureClient abstract : AudioClient
+		public ref class WritePacketEventArgs : System::EventArgs
+		{
+		private:
+			IntPtr m_buffer;
+
+		public:
+			property IntPtr Buffer
+			{
+				IntPtr get()
+				{
+					return m_buffer;
+				}
+			internal:
+				void set(IntPtr buffer)
+				{
+					m_buffer = buffer;
+				}
+			}
+		};
+
+		public ref class AudioCaptureClient : AudioClient
 		{
 		private:
 			IAudioCaptureClient *m_iacc;
@@ -17,9 +37,12 @@ namespace Floe
 			int m_packetSize;
 			BYTE *m_buffer;
 			int m_used;
+			WritePacketEventArgs ^m_eventArgs;
 
 		public:
 			AudioCaptureClient(AudioDevice^ device, int packetSize, int minBufferSize, ...array<WaveFormat^> ^conversions);
+
+			event System::EventHandler<WritePacketEventArgs^> ^WritePacket;
 
 			property int PacketSize
 			{
@@ -30,9 +53,9 @@ namespace Floe
 			}
 
 		protected:
-			virtual void Loop() override;
-			virtual void OnCapture(int count, IntPtr buffer);
-			virtual void OnWritePacket(IntPtr buffer) abstract;
+			virtual void __clrcall Loop() override;
+			virtual void __clrcall OnCapture(int count, IntPtr buffer);
+			virtual void __clrcall OnWritePacket(IntPtr buffer);
 
 		private:
 			void CaptureBuffer();
