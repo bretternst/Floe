@@ -6,7 +6,7 @@
 			 xmlns:local="clr-namespace:Floe.UI"
 			 xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
              mc:Ignorable="d"
-             d:DesignHeight="279" d:DesignWidth="384">
+             d:DesignHeight="300" d:DesignWidth="384">
 	<UserControl.Resources>
 		<ToolTip x:Key="ttScheme">Modifies the random seed used to generate nickname colors.</ToolTip>
 		<Style x:Key="ColorButton" TargetType="Button">
@@ -109,7 +109,7 @@
 		</ControlTemplate>
 	</UserControl.Resources>
 	<Canvas>
-		<Border BorderThickness="3,2,3,2" Canvas.Left="16" Canvas.Top="4" Height="202" Width="360"
+		<Border BorderThickness="3,2,3,2" Canvas.Left="16" Canvas.Top="4" Height="226" Width="360"
 				Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=OneWay}" BorderBrush="#FF6F6F6F">
 			<ScrollViewer HorizontalScrollBarVisibility="Disabled">
 				<WrapPanel TextBlock.FontFamily="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=OneWay}"
@@ -157,19 +157,19 @@
 				</WrapPanel>
 			</ScrollViewer>
 		</Border>
-		<Button Canvas.Left="12" Canvas.Top="212" Height="23" Width="118"
+		<Button Canvas.Left="12" Canvas.Top="236" Height="23" Width="118"
 				Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background, Mode=TwoWay}"
 				Template="{StaticResource ColorButton2}" Content="Background"/>
-		<Button Canvas.Left="134" Canvas.Top="212"
+		<Button Canvas.Left="134" Canvas.Top="236"
 				Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=TwoWay}"
 				Height="23" Width="118" Template="{StaticResource ColorButton2}"
 				Content="Input Box"/>
-		<Button Canvas.Left="12" Canvas.Top="244" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground, Mode=TwoWay}" Height="23" Width="118" Template="{StaticResource ColorButton2}"
+		<Button Canvas.Left="12" Canvas.Top="265" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground, Mode=TwoWay}" Height="23" Width="118" Template="{StaticResource ColorButton2}"
 				Content="UI Background"/>
-		<Button Canvas.Left="134" Canvas.Top="244" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=TwoWay}" Height="23" Width="118" Template="{StaticResource ColorButton2}"
+		<Button Canvas.Left="134" Canvas.Top="265" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=TwoWay}" Height="23" Width="118" Template="{StaticResource ColorButton2}"
 				Content="UI Foreground"/>
-		<CheckBox Canvas.Left="257" Canvas.Top="219" Content="Colorize Nicknames" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}" Name="chkColorizeNicknames" />
-		<Slider ToolTip="{StaticResource ttScheme}" Canvas.Left="315" Canvas.Top="244" Height="23" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}" IsSnapToTickEnabled="True" LargeChange="1" Name="sldNicknameColorScheme" SmallChange="1" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=TwoWay}" Width="69" />
-		<Label ToolTip="{StaticResource ttScheme}" Canvas.Left="257" Canvas.Top="239" Content="Scheme" Height="28" Name="label1" />
+		<CheckBox Canvas.Left="257" Canvas.Top="236" Content="Colorize Nicknames" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.ColorizeNicknames, Mode=TwoWay}" Name="chkColorizeNicknames" />
+		<Slider ToolTip="{StaticResource ttScheme}" Canvas.Left="315" Canvas.Top="265" Height="23" IsEnabled="{Binding ElementName=chkColorizeNicknames, Path=IsChecked}" IsSnapToTickEnabled="True" LargeChange="1" Name="sldNicknameColorScheme" SmallChange="1" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=TwoWay}" Width="69" />
+		<Label ToolTip="{StaticResource ttScheme}" Canvas.Left="257" Canvas.Top="260" Content="Scheme" Height="28" Name="label1" />
 	</Canvas>
 </UserControl>

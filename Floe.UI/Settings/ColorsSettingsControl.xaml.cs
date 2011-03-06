@@ -20,7 +20,7 @@ namespace Floe.UI.Settings
 			if (button != null)
 			{
 				var color = ((SolidColorBrush)button.Foreground).Color;
-				Interop.ColorPickerHelper.PickColor(Window.GetWindow(this), ref color);
+				Interop.ColorPicker.PickColor(Window.GetWindow(this), ref color);
 				button.Foreground = new SolidColorBrush(color);
 			}
 		}

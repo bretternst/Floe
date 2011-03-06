@@ -115,7 +115,7 @@
     </Compile>
     <Compile Include="FileControl\FileControl_Properties.cs" />
     <Compile Include="HsvColor.cs" />
-    <Compile Include="Interop\ColorPickerHelper.cs" />
+    <Compile Include="Interop\ColorPicker.cs" />
     <Compile Include="Interop\FolderBrowser.cs" />
     <Compile Include="Interop\NotifyIcon.cs" />
     <Compile Include="Interop\WindowConstants.cs" />
@@ -128,6 +128,9 @@
     </Compile>
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\VoiceSettingsControl.xaml.cs">
+      <DependentUpon>VoiceSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\NetworkSettingsControl.xaml.cs">
       <DependentUpon>NetworkSettingsControl.xaml</DependentUpon>
@@ -186,6 +189,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\ColorsSettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\VoiceSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -256,9 +263,17 @@
       <Project>{75037294-D6D4-42B0-AF4B-FE2F438D0670}</Project>
       <Name>Floe.Configuration</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Floe.Interop\Floe.Interop.vcxproj">
+      <Project>{3CEFFCEB-C836-47CC-8B8A-EC5655E1B5B7}</Project>
+      <Name>Floe.Interop</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Floe.Net\Floe.Net.csproj">
       <Project>{1D4AD463-4355-4DA6-B8E6-0E8BB75B50D9}</Project>
       <Name>Floe.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Floe.Voice\Floe.Voice.csproj">
+      <Project>{BDD20714-E82B-45C9-A310-BE57BA986F44}</Project>
+      <Name>Floe.Voice</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

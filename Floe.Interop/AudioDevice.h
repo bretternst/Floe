@@ -4,7 +4,7 @@
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		public ref class AudioDevice
 		{
@@ -13,6 +13,7 @@ namespace Floe
 
 		public:
 			IAudioClient *Activate();
+			IAudioMeterInformation *ActivateMeter();
 
 			static property AudioDevice^ DefaultRenderDevice
 			{

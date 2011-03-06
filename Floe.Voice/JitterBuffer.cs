@@ -30,6 +30,7 @@ namespace Floe.Voice
 				this.Insert(newPacket);
 			}
 
+			// buffer must be at least half full to play
 			if (_numPackets < _buffer.Length / 2)
 			{
 				return null;
@@ -61,33 +62,12 @@ namespace Floe.Voice
 			// packet is past the end of buffer, drop packets
 			while (idx >= _buffer.Length)
 			{
-				Console.WriteLine("dropped " + Math.Min(idx - _buffer.Length + 1, _buffer.Length));
 				this.RemoveFirst(Math.Min(idx - _buffer.Length + 1, _buffer.Length));
 				idx = packet.SequenceNumber - _baseSeq;
 			}
 
 			_buffer[idx] = packet;
 			_numPackets++;
-		}
-
-		private void PackBuffer()
-		{
-			int i = 0;
-			while (_buffer[i] == null)
-			{
-				i++;
-			}
-			if (i > 0)
-			{
-				for (int j = 0; j < i; j++)
-				{
-					if (_buffer[j] != null)
-					{
-						_buffer[j].Dispose();
-					}
-				}
-				this.RemoveFirst(i - 1);
-			}
 		}
 
 		private void RemoveFirst(int num)

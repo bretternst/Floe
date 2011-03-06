@@ -7,7 +7,7 @@
 			 xmlns:local="clr-namespace:Floe.UI"
 			 xmlns:config="clr-namespace:Floe.Configuration;assembly=Floe.Configuration"
              mc:Ignorable="d"
-             d:DesignHeight="235" d:DesignWidth="384">
+             d:DesignHeight="300" d:DesignWidth="384">
 	<UserControl.Resources>
 		<ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="tabStripPositionValues">
 			<ObjectDataProvider.MethodParameters>

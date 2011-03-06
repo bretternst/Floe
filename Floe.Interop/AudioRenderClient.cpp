@@ -3,7 +3,7 @@
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		using namespace System::Threading;
 		const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);

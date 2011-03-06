@@ -3,7 +3,7 @@
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		AudioClient::AudioClient(AudioDevice^ device)
 		{
@@ -38,7 +38,10 @@ namespace Floe
 		void AudioClient::Stop()
 		{
 			m_cancelEvent->Set();
-			m_task->Wait();
+			if(m_task != nullptr)
+			{
+				m_task->Wait();
+			}
 		}
 
 		AudioClient::~AudioClient()

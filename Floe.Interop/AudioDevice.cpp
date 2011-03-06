@@ -3,11 +3,12 @@
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 		const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 		const IID IID_IAudioClient = __uuidof(IAudioClient);
+		const IID IID_IAudioMeterInformation = __uuidof(IAudioMeterInformation);
 
 		AudioDevice::AudioDevice(IMMDevice *immd)
 		{
@@ -19,6 +20,13 @@ namespace Floe
 			IAudioClient *iac;
 			ThrowOnFailure(m_immd->Activate(IID_IAudioClient, CLSCTX_ALL, 0, (void**)&iac));
 			return iac;
+		}
+
+		IAudioMeterInformation *AudioDevice::ActivateMeter()
+		{
+			IAudioMeterInformation *iami;
+			ThrowOnFailure(m_immd->Activate(IID_IAudioMeterInformation, CLSCTX_ALL, 0, (void**)&iami));
+			return iami;
 		}
 
 		AudioDevice^ AudioDevice::GetDefaultDevice(EDataFlow role)

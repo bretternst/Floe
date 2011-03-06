@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-using Floe.Audio;
+using Floe.Interop;
 
 namespace Floe.Voice
 {
@@ -9,9 +9,13 @@ namespace Floe.Voice
 	{
 		private AudioRenderClient _client;
 		private JitterBuffer _buffer;
+		private VoiceCodec _codec;
+		private VoiceQuality _quality;
 
-		public VoicePeer()
+		public VoicePeer(VoiceCodec codec, VoiceQuality quality)
 		{
+			_codec = codec;
+			_quality = quality;
 			_buffer = new JitterBuffer();
 			this.InitAudio();
 		}
@@ -25,10 +29,10 @@ namespace Floe.Voice
 		{
 			if (_client != null)
 			{
-				_client.ReadPacket -= client_ReadPacket;				
+				_client.ReadPacket -= client_ReadPacket;
 			}
 			_client = new AudioRenderClient(AudioDevice.DefaultRenderDevice, VoiceSession.PacketSize, VoiceSession.PacketSize * 4,
-				new WaveFormatGsm610(VoiceSession.SampleRate), new WaveFormatPcm(VoiceSession.SampleRate, 16, 1));
+				VoiceSession.GetConversions(_codec, _quality, true));
 			_client.ReadPacket += client_ReadPacket;
 			_client.Start();
 		}

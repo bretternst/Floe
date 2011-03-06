@@ -146,6 +146,11 @@ namespace Floe.Net
 				bool isAnyValid = false;
 				foreach (string server in _stunServers)
 				{
+					if (string.IsNullOrEmpty(server))
+					{
+						continue;
+					}
+
 					try
 					{
 						var parts = server.Split(':');
@@ -172,7 +177,7 @@ namespace Floe.Net
 				var arr = ar.Client.BeginReceive(null, null);
 				while (true)
 				{
-					if (arr.AsyncWaitHandle.WaitOne(StunTimeout - (int)(DateTime.Now - startTime).TotalMilliseconds))
+					if (arr.AsyncWaitHandle.WaitOne(Math.Max(1, StunTimeout - (int)(DateTime.Now - startTime).TotalMilliseconds)))
 					{
 						var dummy = new IPEndPoint(new IPAddress(0), 0);
 						var response = ar.Client.EndReceive(arr, ref dummy);

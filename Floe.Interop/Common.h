@@ -7,7 +7,7 @@ using System::Exception;
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		public ref class AudioException : Exception
 		{

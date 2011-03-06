@@ -54,34 +54,6 @@ namespace Floe.Net
 		public IPEndPoint LocalEndPoint { get { return (IPEndPoint)_client.Client.LocalEndPoint; } }
 
 		/// <summary>
-		/// Add a new peer. Packets will be delivered to and accepted from this peer.
-		/// </summary>
-		/// <param name="endpoint">The public endpoint of the peer to add.</param>
-		public void AddPeer(IPEndPoint endpoint)
-		{
-			if (!_peers.Contains(endpoint))
-			{
-				_peers.Add(endpoint);
-				this.OnPeerAdded(endpoint);
-			}
-		}
-
-		/// <summary>
-		/// Remove a peer. Packets will no longer be delivered to or accepted from this peer.
-		/// </summary>
-		/// <param name="endpoint">The public endpoint of the peer to add.</param>
-		/// <returns>Returns true if the peer was removed, or false if the peer had not been added.</returns>
-		public bool RemovePeer(IPEndPoint endpoint)
-		{
-			if (_peers.Remove(endpoint))
-			{
-				this.OnPeerRemoved(endpoint);
-				return true;
-			}
-			return false;
-		}
-
-		/// <summary>
 		/// Begin an RTP session. If an existing session is open, it will be closed.
 		/// </summary>
 		public virtual void Open()
@@ -166,6 +138,28 @@ namespace Floe.Net
 		}
 
 		/// <summary>
+		/// Add a new peer. Packets will be delivered to and accepted from this peer.
+		/// </summary>
+		/// <param name="endpoint">The public endpoint of the peer to add.</param>
+		protected void AddPeer(IPEndPoint endpoint)
+		{
+			if (!_peers.Contains(endpoint))
+			{
+				_peers.Add(endpoint);
+			}
+		}
+
+		/// <summary>
+		/// Remove a peer. Packets will no longer be delivered to or accepted from this peer.
+		/// </summary>
+		/// <param name="endpoint">The public endpoint of the peer to add.</param>
+		/// <returns>Returns true if the peer was removed, or false if the peer had not been added.</returns>
+		protected bool RemovePeer(IPEndPoint endpoint)
+		{
+			return _peers.Remove(endpoint);
+		}
+
+		/// <summary>
 		/// When overridden in a dervied class, this method provides handling for a received packet.
 		/// This method is called from a worker thread.
 		/// </summary>
@@ -176,18 +170,6 @@ namespace Floe.Net
 		/// <param name="source">The packet's source stream identifier.</param>
 		/// <param name="payload">The packet's payload.</param>
 		protected abstract void OnReceived(IPEndPoint peer, short payloadType, int seqNumber, int timeStamp, byte[] payload);
-
-		/// <summary>
-		/// When overridden in a derived class, this method provides handling for an added peer.
-		/// </summary>
-		/// <param name="peer">The newly added peer.</param>
-		protected virtual void OnPeerAdded(IPEndPoint peer) {}
-
-		/// <summary>
-		/// When overridden in a derived class, this method provides handling for a removed peer.
-		/// </summary>
-		/// <param name="peer">The removed peer.</param>
-		protected virtual void OnPeerRemoved(IPEndPoint peer) {}
 
 		/// <summary>
 		/// When overridden in a dervied class, this method handles errors that occur during asynchronous operations.

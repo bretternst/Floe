@@ -12,3 +12,4 @@
 #include <mmdeviceapi.h>
 #include <Audioclient.h>
 #include <audiopolicy.h>
+#include <endpointvolume.h>

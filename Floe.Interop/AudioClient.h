@@ -5,7 +5,7 @@
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		using namespace System::Threading;
 		using namespace System::Threading::Tasks;

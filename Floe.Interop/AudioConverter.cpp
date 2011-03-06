@@ -3,7 +3,7 @@
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		AudioConverter::AudioConverter(int maxSrcSize, WaveFormat ^srcFormat, ...array<WaveFormat^> ^dstFormats)
 		{
@@ -22,7 +22,7 @@ namespace Floe
 				ThrowOnFailure(acmStreamOpen(&m_streams[i], 0, i == 0 ? srcFormat->Data : dstFormats[i-1]->Data, dstFormats[i]->Data, 0, 0, 0, 0));
 				m_headers[i] = new ACMSTREAMHEADER();
 				m_headers[i]->cbStruct = sizeof(ACMSTREAMHEADER);
-				m_headers[i]->cbSrcLength = m_headers[i]->dwSrcUser = srcSize = i == 0 ? maxSrcSize : m_headers[i-1]->cbDstLength;
+				m_headers[i]->cbSrcLength = m_headers[i]->dwSrcUser = srcSize = i == 0 ? maxSrcSize * 2 : m_headers[i-1]->cbDstLength;
 				m_headers[i]->pbSrc = (LPBYTE)malloc(srcSize);
 				ThrowOnFailure(acmStreamSize(m_streams[i], srcSize, (LPDWORD)&dstSize, ACM_STREAMSIZEF_SOURCE));
 				m_headers[i]->cbDstLength = m_headers[i]->dwDstUser = dstSize;

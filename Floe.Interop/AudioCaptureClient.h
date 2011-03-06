@@ -5,7 +5,7 @@
 
 namespace Floe
 {
-	namespace Audio
+	namespace Interop
 	{
 		using System::IntPtr;
 

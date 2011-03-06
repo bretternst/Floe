@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d" 
-             d:DesignHeight="279" d:DesignWidth="384">
+             d:DesignHeight="300" d:DesignWidth="384">
 	<UserControl.Resources>
 		<ToolTip x:Key="ttOnConnect">Specifies a sequence of commands (one per line) to execute on successful connection. Can be used to authenticate or join channels.</ToolTip>
 		<Style TargetType="{x:Type Label}">
@@ -13,7 +13,7 @@
 		</Style>
 	</UserControl.Resources>
 	<Canvas>
-		<ListBox Canvas.Left="12" Canvas.Top="41" Height="226" Name="lstServers" Width="138" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+		<ListBox Canvas.Left="12" Canvas.Top="41" Height="247" Name="lstServers" Width="138" ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers}" DisplayMemberPath="Name" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
 		<Button Canvas.Left="12" Canvas.Top="12" Content="New" Height="23" Name="btnNew" Width="58" Click="btnNew_Click" />
 		<Button Canvas.Left="88" Canvas.Top="12" Content="Delete" Height="23" Name="btnDelete" Width="62" Click="btnDelete_Click">
 			<Button.Style>
@@ -67,7 +67,7 @@
 				</Binding.ValidationRules>
 			</Binding>
 		</TextBox>
-		<TextBox ToolTip="{StaticResource ttOnConnect}" Canvas.Left="165" Canvas.Top="159" Height="108" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
+		<TextBox ToolTip="{StaticResource ttOnConnect}" Canvas.Left="165" Canvas.Top="159" Height="129" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
 		<Label Canvas.Left="301" Canvas.Top="100" Content="Password" Height="18" Name="label5" />
 	</Canvas>
 </UserControl>

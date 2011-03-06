@@ -6,8 +6,8 @@ using namespace System::Runtime::CompilerServices;
 using namespace System::Runtime::InteropServices;
 using namespace System::Security::Permissions;
 
-[assembly:AssemblyTitleAttribute("Floe.Audio")];
-[assembly:AssemblyDescriptionAttribute("Floe Audio Library")];
+[assembly:AssemblyTitleAttribute("Floe.Interop")];
+[assembly:AssemblyDescriptionAttribute("Floe Interop Library")];
 [assembly:AssemblyConfigurationAttribute("")];
 [assembly:AssemblyCompanyAttribute("")];
 [assembly:AssemblyProductAttribute("Floe")];

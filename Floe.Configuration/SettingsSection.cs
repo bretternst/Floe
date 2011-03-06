@@ -77,5 +77,12 @@ namespace Floe.Configuration
 			get { return (NetworkElement)this["network"]; }
 			set { this["network"] = value; }
 		}
+
+		[ConfigurationProperty("voice")]
+		public VoiceElement Voice
+		{
+			get { return (VoiceElement)this["voice"]; }
+			set { this["voice"] = value; }
+		}
 	}
 }

@@ -21,7 +21,7 @@ namespace Floe.UI.Interop
 		public IntPtr lpTemplateName;
 	}
 
-	public static class ColorPickerHelper
+	public static class ColorPicker
 	{
 		[DllImport("comdlg32.dll")]
 		private static extern bool ChooseColor(ref CHOOSECOLOR pChooseColor);

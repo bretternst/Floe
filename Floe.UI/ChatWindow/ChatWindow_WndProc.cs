@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using Floe.Interop;
 using Floe.UI.Interop;
 
 namespace Floe.UI
@@ -33,12 +34,18 @@ namespace Floe.UI
 			var hwndSrc = PresentationSource.FromVisual(this) as HwndSource;
 			hwndSrc.AddHook(new HwndSourceHook(WndProc));
 			_hWnd = hwndSrc.Handle;
+			RawInput.Initialize(this);
 		}
 
 		private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
 		{
 			switch (msg)
 			{
+				case WindowConstants.WM_INPUT:
+					{
+						RawInput.HandleInput(lParam);
+					}
+					break;
 				case WindowConstants.WM_NCHITTEST:
 					{
 						var x = (short)(lParam.ToInt32() & 0xFFFF);

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
-             d:DesignHeight="279" d:DesignWidth="384" x:Name="TextSettings">
+             d:DesignHeight="300" d:DesignWidth="384" x:Name="TextSettings">
 	<UserControl.Resources>
 		<ToolTip x:Key="ttUseTabularView">Separate the timestamps and nicknames into a column on the left, and align all text.</ToolTip>
 		<ToolTip x:Key="ttAutoSizeColumn">When a new line contains a nickname too large to fit in the left column, expand the column.</ToolTip>
@@ -65,7 +65,7 @@
 		<CheckBox ToolTip="{StaticResource ttAutoSizeColumn}" Canvas.Left="37" Canvas.Top="176" IsEnabled="{Binding ElementName=chkUseTabularView, Path=IsChecked}" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn}" Content="Auto Size Column" Height="16" Name="checkBox2" />
 		<CheckBox ToolTip="{StaticResource ttAttentionOnOwnNick}" Canvas.Left="18" Canvas.Top="207" Content="Attention On Own Nickname" Height="16" Name="checkBox1"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionOnOwnNickname}"/>
-		<TextBox ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="149" Height="118" Name="textBox1" Width="170" AcceptsReturn="True"
+		<TextBox ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="149" Height="139" Name="textBox1" Width="170" AcceptsReturn="True"
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionPatterns}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 		<Label ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="127" Content="Attention RegEx Patterns" Height="28" Name="label2" />
 	</Canvas>

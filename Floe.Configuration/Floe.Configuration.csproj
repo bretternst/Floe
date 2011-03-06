@@ -60,7 +60,14 @@
     <Compile Include="SoundsElement.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="UserElement.cs" />
+    <Compile Include="VoiceElement.cs" />
     <Compile Include="WindowsElement.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Floe.Voice\Floe.Voice.csproj">
+      <Project>{BDD20714-E82B-45C9-A310-BE57BA986F44}</Project>
+      <Name>Floe.Voice</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

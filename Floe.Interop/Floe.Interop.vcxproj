@@ -45,6 +45,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Floe.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -55,6 +61,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Ole32.lib;Msacm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <KeyFile>..\Floe.snk</KeyFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -70,25 +77,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioCaptureClient.h" />
+    <ClInclude Include="AudioMeter.h" />
     <ClInclude Include="AudioConverter.h" />
     <ClInclude Include="AudioDevice.h" />
     <ClInclude Include="AudioRenderClient.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="InputButton.h" />
+    <ClInclude Include="RawInput.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="WaveFormat.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="AudioCaptureClient.cpp" />
+    <ClCompile Include="AudioMeter.cpp" />
     <ClCompile Include="AudioClient.cpp" />
     <ClCompile Include="AudioConverter.cpp" />
     <ClCompile Include="AudioDevice.cpp" />
+    <ClCompile Include="RawInput.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
