@@ -22,20 +22,16 @@
 		<Label Canvas.Left="3" Canvas.Top="63" Content="Transmit Quality" Height="28" Name="label5" ToolTip="{StaticResource ttQuality}" />
 		<CheckBox Name="chkPushToTalk" Content="Push To Talk" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.PushToTalk}" Canvas.Left="12" Canvas.Top="12" ToolTip="Hold down a key or mouse button to talk." />
 		<Button Click="btnTalkKey_Click"  IsEnabled="{Binding ElementName=chkPushToTalk, Path=IsChecked}" Canvas.Left="8" Canvas.Top="34" Height="23" Name="btnTalkKey" Content="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.TalkKey, Mode=OneTime}" Width="120" />
-		<CheckBox Canvas.Left="238" Canvas.Top="12" Content="Use STUN server" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.UseStun}" ToolTip="Use a STUN server to discover the external port on which peers may connect to you." />
-		<TextBox Canvas.Left="238" Canvas.Top="34" Height="23" Name="textBox1" Width="120" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.StunServer}" />
-		<Label Canvas.Left="182" Canvas.Top="34" Content="Primary" Height="28" Name="label1" ToolTip="{StaticResource ttQuality}" />
-		<TextBox Canvas.Left="238" Canvas.Top="63" Height="23" Name="textBox2" Width="120" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.AltStunServer}"/>
-		<Label Canvas.Left="174" Canvas.Top="63" Content="Alternate" Height="28" Name="label2" ToolTip="{StaticResource ttQuality}" />
 		<ComboBox Canvas.Left="8" Canvas.Top="85" Height="23" Name="comboBox1" Width="120" ItemsSource="{Binding Source={StaticResource voiceQualityValues}}"
 				  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.Quality, Mode=TwoWay}" ToolTip="{StaticResource ttQuality}"/>
+		<ToggleButton Checked="btnLoopback_Checked" Unchecked="btnLoopback_Unchecked"  Canvas.Left="8" Canvas.Top="116" Content="Loopback Test" Height="23" Name="btnLoopback" Width="100" />
 		<ProgressBar Canvas.Left="8" Canvas.Top="272" Height="16" Name="prgMicLevel" Width="364" Minimum="0" Maximum="1" />
 		<Label Canvas.Left="3" Canvas.Top="247" Content="Microphone Level" Height="28" Name="label3" />
-		<Slider Name="sldCaptureLevel" Canvas.Left="216" Canvas.Top="189" Height="23" Minimum="0" Maximum="1" Width="156" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.CaptureVolume}" />
-		<Label Canvas.Left="128" Canvas.Top="184" Content="Capture Level" Height="28" Name="label4" />
-		<Slider Canvas.Left="216" Canvas.Top="155" Height="23" Maximum="1" Minimum="0" Name="slider1" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.PlaybackVolume}" Width="156" />
-		<Label Canvas.Left="124" Canvas.Top="150" Content="Playback Level" Height="28" Name="label6"/>
-		<Slider Canvas.Left="216" Canvas.Top="223" Height="23" Maximum="1" Minimum="0" Name="slider2" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.TalkLevel}" Width="156" />
-		<Label Canvas.Left="149" Canvas.Top="218" Content="Talk Level" Height="28" Name="label7" />
+		<Slider ValueChanged="sldLevel_ValueChanged"  Name="sldCaptureLevel" Canvas.Left="8" Canvas.Top="176" Height="23" Minimum="0" Maximum="1" Width="156" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.CaptureVolume}" />
+		<Label Canvas.Left="12" Canvas.Top="155" Content="Capture Level" Height="28" Name="label4" />
+		<Slider ValueChanged="sldLevel_ValueChanged"  Name="sldRenderLevel" Canvas.Left="190" Canvas.Top="176" Height="23" Maximum="1" Minimum="0" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.PlaybackVolume}" Width="156" />
+		<Label Canvas.Left="190" Canvas.Top="155" Content="Playback Level" Height="28" Name="label6"/>
+		<Slider Canvas.Left="8" Canvas.Top="227" Height="23" Maximum="1" Minimum="0" Name="slider2" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.TalkLevel}" Width="364" />
+		<Label Canvas.Left="10" Canvas.Top="205" Content="Transmit Activation Level" Height="28" Name="label7" />
 	</Canvas>
 </UserControl>

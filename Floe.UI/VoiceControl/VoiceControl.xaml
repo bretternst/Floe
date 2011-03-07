@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="Floe.UI.VoiceControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+			 mc:Ignorable="d" 
+             d:DesignHeight="70" d:DesignWidth="493" Name="ctlVoice">
+	<UserControl.Resources>
+		<CollectionViewSource Source="{Binding ElementName=ctlVoice, Path=Peers}" x:Key="lstPeersSource">
+			<CollectionViewSource.SortDescriptions>
+				<scm:SortDescription PropertyName="Nickname"/>
+			</CollectionViewSource.SortDescriptions>
+		</CollectionViewSource>
+	</UserControl.Resources>
+	<DockPanel>
+		<Button x:Name="btnStopVoice" Padding="3,1,3,1" Content="Disconnect" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnStopVoice_Click"/>
+		<StackPanel Orientation="Horizontal"/>
+	</DockPanel>
+</UserControl>

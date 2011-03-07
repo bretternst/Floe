@@ -14,6 +14,7 @@ namespace Floe
 		{
 		private:
 			IAudioClient *m_iac;
+			ISimpleAudioVolume *m_isav;
 			WaveFormat ^m_format;
 			Task ^m_task;
 			ManualResetEvent ^m_cancelEvent;
@@ -24,6 +25,34 @@ namespace Floe
 			AudioClient(AudioDevice^ device);
 			void Start();
 			void Stop();
+
+			property float Volume
+			{
+				float get()
+				{
+					float vol;
+					m_isav->GetMasterVolume(&vol);
+					return vol;
+				}
+				void set(float vol)
+				{
+					m_isav->SetMasterVolume(vol, 0);
+				}
+			}
+
+			property bool IsMuted
+			{
+				bool get()
+				{
+					BOOL mute;
+					m_isav->GetMute(&mute);
+					return mute != FALSE;
+				}
+				void set(bool mute)
+				{
+					m_isav->SetMute(mute ? TRUE : FALSE, 0);
+				}
+			}
 
 		protected:
 			property IAudioClient *Client

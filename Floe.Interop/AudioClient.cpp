@@ -5,9 +5,12 @@ namespace Floe
 {
 	namespace Interop
 	{
+		const IID IID_ISimpleAudioVolume = __uuidof(ISimpleAudioVolume);
+
 		AudioClient::AudioClient(AudioDevice^ device)
 		{
 			m_iac = device->Activate();
+			ISimpleAudioVolume *isav;
 
 			WAVEFORMATEX* fmt;
 			ThrowOnFailure(m_iac->GetMixFormat(&fmt));
@@ -26,6 +29,8 @@ namespace Floe
 			int bufferSize;
 			ThrowOnFailure(m_iac->GetBufferSize((UINT32*)&bufferSize));
 			m_bufferSize = bufferSize;
+			ThrowOnFailure(m_iac->GetService(IID_ISimpleAudioVolume, (void**)&isav));
+			m_isav = isav;
 		}
 
 		void AudioClient::Start()
@@ -37,19 +42,26 @@ namespace Floe
 
 		void AudioClient::Stop()
 		{
-			m_cancelEvent->Set();
 			if(m_task != nullptr)
 			{
+				m_cancelEvent->Set();
 				m_task->Wait();
+				m_task = nullptr;
 			}
 		}
 
 		AudioClient::~AudioClient()
 		{
+			this->Stop();
 			if(m_iac != 0)
 			{
 				m_iac->Release();
 				m_iac = 0;
+			}
+			if(m_isav != 0)
+			{
+				m_isav->Release();
+				m_isav = 0;
 			}
 			if(m_cancelEvent != nullptr)
 			{

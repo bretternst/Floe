@@ -36,6 +36,7 @@ namespace Floe.UI
 		public readonly static RoutedUICommand JoinCommand = new RoutedUICommand("Join", "Join", typeof(ChatWindow));
 		public readonly static RoutedUICommand ChannelPanelCommand = new RoutedUICommand("Channel Pane", "ChannelPane", typeof(ChatControl));
 		public readonly static RoutedUICommand ListCommand = new RoutedUICommand("List", "List", typeof(ChatControl));
+		public readonly static RoutedUICommand VoiceChatCommand = new RoutedUICommand("Voice Chat", "VoiceChat", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -238,6 +239,18 @@ namespace Floe.UI
 			{
 				App.ChatWindow.DccSend(this.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
 			}
+		}
+
+		private void ExecuteVoiceChat(object sender, ExecutedRoutedEventArgs e)
+		{
+			StartVoiceSession();
+		}
+
+		private void CanExecuteVoiceChat(object sender, CanExecuteRoutedEventArgs e)
+		{
+			// TODO: Chagne back
+//			e.CanExecute = this.IsChannel && this.IsConnected && !_isInVoiceSession;
+			e.CanExecute = true;
 		}
 
 		private void Execute(string text, bool literal)

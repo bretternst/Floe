@@ -54,6 +54,11 @@ namespace Floe.Net
 		public IPEndPoint LocalEndPoint { get { return (IPEndPoint)_client.Client.LocalEndPoint; } }
 
 		/// <summary>
+		/// Gets the size of the packet payload.
+		/// </summary>
+		public int PayloadSize { get { return _payload.Length; } }
+
+		/// <summary>
 		/// Begin an RTP session. If an existing session is open, it will be closed.
 		/// </summary>
 		public virtual void Open()

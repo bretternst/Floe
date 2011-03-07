@@ -65,6 +65,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Application\App_Ignore.cs" />
+    <Compile Include="Application\App_Interface.cs" />
     <Compile Include="Application\App_Logging.cs" />
     <Compile Include="Application\App_Patterns.cs" />
     <Compile Include="Application\App_Resources.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
     <Compile Include="ChatControl\ChatControl_Slap.cs" />
+    <Compile Include="ChatControl\ChatControl_Voice.cs" />
     <Compile Include="ChatControl\NotifyState.cs" />
     <Compile Include="ChatWindow\ChatPage.cs" />
     <Compile Include="ChatWindow\ChatTabItem.cs" />
@@ -160,6 +162,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="VoiceControl\VoiceControl.xaml.cs">
+      <DependentUpon>VoiceControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VoiceControl\VoiceControl_Events.cs" />
     <Page Include="ChannelWindow\ChannelWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -231,6 +237,10 @@
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="VoiceControl\VoiceControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

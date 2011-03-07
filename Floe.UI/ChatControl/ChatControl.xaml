@@ -12,6 +12,7 @@
 		<KeyBinding Command="local:ChatControl.ClearCommand" Gesture="Alt+C"/>
 		<KeyBinding Command="local:ChatControl.SearchCommand" Gesture="Ctrl+F"/>
 		<KeyBinding Command="local:ChatControl.ChannelPanelCommand" Gesture="Alt+J"/>
+		<KeyBinding Command="local:ChatControl.VoiceChatCommand" Gesture="Alt+V"/>
 	</UserControl.InputBindings>
 	<UserControl.CommandBindings>
 		<CommandBinding Command="local:ChatControl.WhoisCommand" Executed="ExecuteWhois" CanExecute="CanExecuteConnectedCommand"/>
@@ -37,6 +38,7 @@
 		<CommandBinding Command="local:ChatControl.ChannelPanelCommand" Executed="ExecuteChannelPanel"/>
 		<CommandBinding Command="local:ChatControl.ListCommand" Executed="ExecuteList"/>
 		<CommandBinding Command="local:ChatControl.JoinCommand" Executed="ExecuteJoin"/>
+		<CommandBinding Command="local:ChatControl.VoiceChatCommand" Executed="ExecuteVoiceChat" CanExecute="CanExecuteVoiceChat"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<Style TargetType="ListBoxItem">
@@ -103,6 +105,8 @@
 			<Separator/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlChannel, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ChannelPanelCommand" InputGestureText="Alt+J"/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
+			<Separator/>
+			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.VoiceChatCommand" InputGestureText="Alt+V"/>
 		</ContextMenu>
 		<Style TargetType="MenuItem" x:Key="colorMenuItem">
 			<Setter Property="Template">
@@ -139,6 +143,7 @@
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Top" Background="{Binding ElementName=chatControl, Path=UIBackground, Mode=OneWay}">
 			<StackPanel Orientation="Vertical">
+				<DockPanel x:Name="pnlVoice" Margin="0,5,10,5" Visibility="Collapsed"/>
 				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlDccChat" Margin="0,5,10,5" SnapsToDevicePixels="True">
 					<Label Style="{StaticResource uiLabelStyle}" x:Name="lblDccChat" FontWeight="Bold"/>
 					<Button x:Name="btnAccept" Padding="3,1,3,1" Content="Accept" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnAccept_Click"/>
@@ -291,6 +296,13 @@
 						<EventSetter Event="MouseDoubleClick" Handler="lstNicknames_MouseDoubleClick"/>
 					</Style>
 				</ListBox.ItemContainerStyle>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Grid>
+							<TextBlock Text="{Binding NameWithLevel}"/>
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
 			</ListBox>
 			<GridSplitter Grid.Column="1" Name="splitter" IsEnabled="false" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent"/>
 		</Grid>

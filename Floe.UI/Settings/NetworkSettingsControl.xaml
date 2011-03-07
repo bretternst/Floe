@@ -10,10 +10,10 @@
              d:DesignHeight="300" d:DesignWidth="384">
 	<Canvas>
 		<CheckBox Canvas.Left="12" Canvas.Top="12" Content="Use SOCKS5 Proxy" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.UseSocks5Proxy}" Name="chkUseSocks5Proxy" ToolTip="Use a SOCKS5 proxy server to make outgoing connections." />
-		<TextBox Canvas.Left="12" Canvas.Top="64" Height="23" Name="txtProxyHostname" Width="159" ToolTip="The hostname or IP address of your proxy server."
+		<TextBox Canvas.Left="11" Canvas.Top="54" Height="23" Name="txtProxyHostname" Width="159" ToolTip="The hostname or IP address of your proxy server."
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.ProxyHostname, Mode=TwoWay}"
 				 IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"/>
-		<TextBox Canvas.Left="194" Canvas.Top="64" Height="23" Name="textBox1" ToolTip="The port that your proxy listens on." Width="54"
+		<TextBox Canvas.Left="193" Canvas.Top="54" Height="23" Name="textBox1" ToolTip="The port that your proxy listens on." Width="54"
 				 IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}">
 			<Binding Mode="TwoWay" Path="Current.Network.ProxyPort" Source="{x:Static local:App.Settings}">
 				<Binding.ValidationRules>
@@ -21,13 +21,20 @@
 				</Binding.ValidationRules>
 			</Binding>
 		</TextBox>
-		<TextBlock Canvas.Left="11" Canvas.Top="44" Height="23" Name="textBlock1" Text="Proxy Server:" Width="116" />
-		<Label Canvas.Left="177" Canvas.Top="64" Content=":" Height="23" Name="label3" Width="19" />
-		<TextBox Canvas.Left="11" Canvas.Top="114" Height="23" Name="txtUsername" Width="116" IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"
+		<TextBlock Canvas.Left="10" Canvas.Top="34" Height="23" Name="textBlock1" Text="Proxy Server:" Width="116" />
+		<Label Canvas.Left="176" Canvas.Top="54" Content=":" Height="23" Name="label3" Width="19" />
+		<TextBox Canvas.Left="10" Canvas.Top="104" Height="23" Name="txtUsername" Width="116" IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.ProxyUsername}"/>
-		<TextBox Canvas.Left="132" Canvas.Top="114" Height="23" Name="txtPassword" Width="116" IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"
+		<TextBox Canvas.Left="131" Canvas.Top="104" Height="23" Name="txtPassword" Width="116" IsEnabled="{Binding ElementName=chkUseSocks5Proxy, Path=IsChecked}"
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Network.ProxyPassword}"/>
-		<TextBlock Canvas.Left="12" Canvas.Top="94" Height="23" Name="textBlock2" Text="Username" Width="116" />
-		<TextBlock Canvas.Left="132" Canvas.Top="94" Height="23" Name="textBlock3" Text="Password" Width="116" />
+		<TextBlock Canvas.Left="11" Canvas.Top="84" Height="23" Name="textBlock2" Text="Username" Width="116" />
+		<TextBlock Canvas.Left="131" Canvas.Top="84" Height="23" Name="textBlock3" Text="Password" Width="116" />
+		<CheckBox Canvas.Left="12" Canvas.Top="143" Content="Use STUN server" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.UseStun}" ToolTip="Use a STUN server to discover the external port on which peers may connect to you. This helps features like voice chat work properly behind a NAT firewall." />
+		<TextBox Canvas.Left="66" Canvas.Top="165" Height="23" Name="textBox2" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.StunServer}" Width="120" />
+		<Label Canvas.Left="10" Canvas.Top="165" Content="Primary" Height="28" Name="label1" />
+		<TextBox Canvas.Left="66" Canvas.Top="194" Height="23" Name="textBox3" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.AltStunServer}" Width="120" />
+		<Label Canvas.Left="2" Canvas.Top="194" Content="Alternate" Height="28" Name="label2" />
+		<CheckBox Canvas.Left="10" Canvas.Top="240" Content="Enable UPnP (forwarding)" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.EnableUpnp}" Name="checkBox3" ToolTip="Attempt to automatically forward ports if there is a UPnP-enabled gateway on the local network." />
+		<CheckBox Canvas.Left="10" Canvas.Top="262" Content="Discover external IP" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.FindExternalAddress}" Name="checkBox2" ToolTip="Automatically discover external IP address by querying the IRC server on connect. You will need to reconnect for the change to take effect." />
 	</Canvas>
 </UserControl>

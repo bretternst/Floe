@@ -103,7 +103,7 @@ namespace Floe.UI
 
 		private string GetNickWithoutLevel(string nick)
 		{
-			return (nick.Length > 1 && (nick[0] == '@' || nick[0] == '+')) ? nick.Substring(1) : nick;
+			return (nick.Length > 1 && (nick[0] == '@' || nick[0] == '+' || nick[0] == '%')) ? nick.Substring(1) : nick;
 		}
 
 		private bool IsPresent(string nick)
@@ -217,10 +217,18 @@ namespace Floe.UI
 		Op = 4
 	}
 
-	public class NicknameItem : ListBoxItem, IComparable<NicknameItem>, IComparable<string>
+	public class NicknameItem : DependencyObject, IComparable<NicknameItem>, IComparable<string>
 	{
+		public static DependencyProperty IsVoiceChatProperty = DependencyProperty.Register("IsVoiceChat", typeof(bool), typeof(NicknameItem));
+		public bool IsVoiceChat
+		{
+			get { return (bool)this.GetValue(IsVoiceChatProperty); }
+			set { this.SetValue(IsVoiceChatProperty, value); }
+		}
+
 		public ChannelLevel Level { get; private set; }
 		public string Nickname { get; private set; }
+		public string NameWithLevel { get { return this.ToString(); } }
 
 		private ChannelLevel HighestLevel
 		{
@@ -249,7 +257,6 @@ namespace Floe.UI
 		{
 			this.Level = level;
 			this.Nickname = nickname;
-			this.Content = this.ToString();
 		}
 
 		public int CompareTo(NicknameItem other)

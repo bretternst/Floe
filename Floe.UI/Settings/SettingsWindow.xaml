@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:local="clr-namespace:Floe.UI"
         Title="Settings" Height="374" Width="551" WindowStyle="SingleBorderWindow" ShowInTaskbar="False" ResizeMode="NoResize"
-		WindowStartupLocation="CenterOwner" GotKeyboardFocus="SettingsWindow_GotKeyboardFocus">
+		WindowStartupLocation="CenterOwner">
 	<Window.Resources>
 		<Style x:Key="styleBigListBox" TargetType="ListBox">
 			<Setter Property="ItemContainerStyle">

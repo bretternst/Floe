@@ -335,6 +335,7 @@ namespace Floe.UI
 					_logFile.Dispose();
 				}
 			}
+			this.StopVoiceSession();
 		}
 	}
 }

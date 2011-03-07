@@ -10,7 +10,6 @@ namespace Floe
 		{
 		private:
 			IAudioMeterInformation *m_iami;
-			IAudioClient *m_iac;
 
 		public:
 			AudioMeter(AudioDevice ^device);

@@ -3,40 +3,59 @@ using System.Collections.Concurrent;
 
 namespace Floe.Voice
 {
+	class VoicePacketPool
+	{
+		private ConcurrentStack<VoicePacket> _pool = new ConcurrentStack<VoicePacket>();
+
+		public VoicePacketPool()
+		{
+			_pool = new ConcurrentStack<VoicePacket>();
+		}
+
+		public VoicePacket Create(int seqNumber, int timeStamp, byte[] payload)
+		{
+			VoicePacket packet;
+			if (!_pool.TryPop(out packet))
+			{
+				packet = new VoicePacket(this);
+			}
+			packet.Init(seqNumber, timeStamp, payload);
+			return packet;
+		}
+
+		public void Recycle(VoicePacket packet)
+		{
+			_pool.Push(packet);
+		}
+	}
+
 	class VoicePacket : IDisposable
 	{
-		private static ConcurrentStack<VoicePacket> _pool = new ConcurrentStack<VoicePacket>();
+		private VoicePacketPool _pool;
 
 		public int SequenceNumber { get; private set; }
 		public int TimeStamp { get; private set; }
 		public byte[] Data { get; private set; }
 
-		public static VoicePacket Create(int seqNumber, int timeStamp, byte[] payload)
+		internal VoicePacket(VoicePacketPool pool)
 		{
-			VoicePacket packet;
-			if (!_pool.TryPop(out packet))
+			_pool = pool;
+		}
+
+		internal void Init(int seqNumber, int timeStamp, byte[] payload)
+		{
+			this.SequenceNumber = seqNumber;
+			this.TimeStamp = timeStamp;
+			if (this.Data == null || this.Data.Length != payload.Length)
 			{
-				packet = new VoicePacket();
+				this.Data = new byte[payload.Length];
 			}
-			packet.SequenceNumber = seqNumber;
-			packet.TimeStamp = timeStamp;
-			Array.Copy(payload, packet.Data, payload.Length);
-			return packet;
-		}
-
-		public static void Free()
-		{
-			_pool.Clear();
-		}
-
-		private VoicePacket()
-		{
-			this.Data = new byte[VoiceSession.PacketSize];
+			Array.Copy(payload, this.Data, payload.Length);
 		}
 
 		public void Dispose()
 		{
-			_pool.Push(this);
+			_pool.Recycle(this);
 		}
 	}
 }
