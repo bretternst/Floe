@@ -38,6 +38,8 @@
 				<File Id="Floe.exe" Name="Floe.exe" DiskId="1" Source="Floe.exe"/>
 				<File Id="Floe.Net.dll" Name="Floe.Net.dll" DiskId="1" Source="Floe.Net.dll"/>
 				<File Id="Floe.Configuration.dll" Name="Floe.Configuration.dll" DiskId="1" Source="Floe.Configuration.dll"/>
+				<File Id="Floe.Interop.dll" Name="Floe.Interop.dll" DiskId="1" Source="Floe.Interop.dll"/>
+				<File Id="Floe.Voice.dll" Name="Floe.Voice.dll" DiskId="1" Source="Floe.Voice.dll"/>
 			</Component>
 		</DirectoryRef>
 

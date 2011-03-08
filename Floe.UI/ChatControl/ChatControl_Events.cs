@@ -138,7 +138,7 @@ namespace Floe.UI
 			{
 				this.Write("Kick", string.Format("{0} has been kicked by {1} ({2})",
 					e.KickeeNickname, e.Kicker.Nickname, e.Text));
-				this.RemoveNick(e.KickeeNickname);
+				_nickList.Remove(e.KickeeNickname);
 			}
 		}
 
@@ -319,7 +319,7 @@ namespace Floe.UI
 					this.Write("Join", string.Format("{0} ({1}@{2}) has joined channel {3}",
 						e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
 				}
-				this.AddNick(ChannelLevel.Normal, e.Who.Nickname);
+				_nickList.Add(e.Who.Nickname);
 			}
 		}
 
@@ -334,7 +334,7 @@ namespace Floe.UI
 					this.Write("Part", string.Format("{0} ({1}@{2}) has left channel {3}",
 						e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
 				}
-				this.RemoveNick(e.Who.Nickname);
+				_nickList.Remove(e.Who.Nickname);
 			}
 		}
 
@@ -342,7 +342,7 @@ namespace Floe.UI
 		{
 			bool isIgnored = App.IsIgnoreMatch(e.Message.From, IgnoreActions.NickChange);
 
-			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			if (this.IsChannel && _nickList.Contains(e.OldNickname))
 			{
 				if (!isIgnored)
 				{
@@ -350,9 +350,9 @@ namespace Floe.UI
 				}
 			}
 
-			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			if (this.IsChannel)
 			{
-				this.ChangeNick(e.OldNickname, e.NewNickname);
+				_nickList.ChangeNick(e.OldNickname, e.NewNickname);
 			}
 		}
 
@@ -364,9 +364,9 @@ namespace Floe.UI
 			}
 			this.SetTitle();
 
-			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			if (this.IsChannel)
 			{
-				this.ChangeNick(e.OldNickname, e.NewNickname);
+				_nickList.ChangeNick(e.OldNickname, e.NewNickname);
 			}
 		}
 
@@ -393,13 +393,13 @@ namespace Floe.UI
 		{
 			bool isIgnored = App.IsIgnoreMatch(e.Who, IgnoreActions.Quit);
 
-			if (this.IsChannel && this.IsPresent(e.Who.Nickname))
+			if (this.IsChannel && _nickList.Contains(e.Who.Nickname))
 			{
 				if (!isIgnored)
 				{
 					this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Text));
 				}
-				this.RemoveNick(e.Who.Nickname);
+				_nickList.Remove(e.Who.Nickname);
 			}
 		}
 
@@ -426,7 +426,7 @@ namespace Floe.UI
 				this.SetTitle();
 				foreach (var mode in e.Modes)
 				{
-					this.ProcessMode(mode);
+					_nickList.ProcessMode(mode);
 				}
 			}
 		}

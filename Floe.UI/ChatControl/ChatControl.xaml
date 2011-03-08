@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:local="clr-namespace:Floe.UI"
+			xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="699" x:Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
 			 FontFamily="Segoe UI" FontSize="12">
@@ -139,6 +140,11 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
+		<CollectionViewSource x:Key="nickListSource" Source="{Binding ElementName=chatControl, Path=Nicknames}">
+			<CollectionViewSource.SortDescriptions>
+				<scm:SortDescription/>
+			</CollectionViewSource.SortDescriptions>
+		</CollectionViewSource>
 	</UserControl.Resources>
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Top" Background="{Binding ElementName=chatControl, Path=UIBackground, Mode=OneWay}">
@@ -282,7 +288,7 @@
 					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
 					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
 					 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"
-					 ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Nicknames}">
+					 ItemsSource="{Binding Source={StaticResource nickListSource}}">
 				<ListBox.Background>
 					<MultiBinding Converter="{StaticResource opacityConverter}">
 						<Binding Source="{StaticResource editBG}"/>
@@ -299,7 +305,7 @@
 				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<Grid>
-							<TextBlock Text="{Binding NameWithLevel}"/>
+							<TextBlock Text="{Binding NickWithLevel}"/>
 						</Grid>
 					</DataTemplate>
 				</ListBox.ItemTemplate>

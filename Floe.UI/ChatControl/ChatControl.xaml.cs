@@ -35,7 +35,7 @@ namespace Floe.UI
 			(type == ChatPageType.DccChat ? "dcc-chat" : string.Format("{0}.{1}", session.NetworkName, target.Name).ToLowerInvariant()))
 		{
 			_history = new LinkedList<string>();
-			this.Nicknames = new ObservableCollection<NicknameItem>();
+			_nickList = new NicknameList();
 
 			InitializeComponent();
 
@@ -89,10 +89,7 @@ namespace Floe.UI
 								var to = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
 								if (this.Target.Equals(to))
 								{
-									foreach (var nick in e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '))
-									{
-										this.AddNick(nick);
-									}
+									_nickList.AddRange(e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '));
 								}
 							}
 							e.Handled = true;

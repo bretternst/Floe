@@ -112,14 +112,24 @@ namespace Floe.UI
 
 		private void CanExecuteIsOp(object sender, CanExecuteRoutedEventArgs e)
 		{
-			var cn = this.GetNick(this.Session.Nickname);
-			e.CanExecute = cn != null && (cn.Level & ChannelLevel.Op) > 0;
+			if (!this.IsChannel || !_nickList.Contains(this.Session.Nickname))
+			{
+				e.CanExecute = false;
+				return;
+			}
+			var nick = _nickList[this.Session.Nickname];
+			e.CanExecute = nick != null && (nick.Level & ChannelLevel.Op) > 0;
 		}
 
 		private void CanExecuteIsHalfOp(object sender, CanExecuteRoutedEventArgs e)
 		{
-			var cn = this.GetNick(this.Session.Nickname);
-			e.CanExecute = cn != null && (cn.Level & (ChannelLevel.Op | ChannelLevel.HalfOp)) > 0;
+			if (!this.IsChannel || !_nickList.Contains(this.Session.Nickname))
+			{
+				e.CanExecute = false;
+				return;
+			}
+			var nick = _nickList[this.Session.Nickname];
+			e.CanExecute = nick != null && (nick.Level & (ChannelLevel.Op | ChannelLevel.HalfOp)) > 0;
 		}
 
 		private void ExecuteOp(object sender, ExecutedRoutedEventArgs e)

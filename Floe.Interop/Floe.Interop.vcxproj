@@ -50,6 +50,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\Floe.snk</AssemblyOriginatorKeyFile>
+    <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    </CustomBuildAfterTargets>
+    <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    </CustomBuildAfterTargets>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</GenerateManifest>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</EmbedManifest>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</EmbedManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -63,6 +70,14 @@
       <AdditionalDependencies>Ole32.lib;Msacm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <KeyFile>..\Floe.snk</KeyFile>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -72,9 +87,17 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;Msacm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <KeyFile>..\Floe.snk</KeyFile>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework" />
