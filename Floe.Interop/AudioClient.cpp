@@ -45,7 +45,13 @@ namespace Floe
 			if(m_task != nullptr)
 			{
 				m_cancelEvent->Set();
-				m_task->Wait();
+				try
+				{
+					m_task->Wait();
+				}
+				catch(System::AggregateException^)
+				{
+				}
 				m_task = nullptr;
 			}
 		}

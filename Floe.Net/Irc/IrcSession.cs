@@ -93,6 +93,12 @@ namespace Floe.Net
 		public char[] UserModes { get; private set; }
 
 		/// <summary>
+		/// Gets the internal IP address of the computer running the session. This is the private IP address that is used behind
+		/// a NAT firewall.
+		/// </summary>
+		public IPAddress InternalAddress { get; private set; }
+
+		/// <summary>
 		/// Gets the external IP address of the computer running the session. The IRC server is queried to retrieve the address or hostname.
 		/// If a hostname is returned, the IP address is retrieved via DNS. If no external address can be found, the local IP address
 		/// is provided.
@@ -1055,7 +1061,10 @@ namespace Floe.Net
 
 		private void _conn_Connected(object sender, EventArgs e)
 		{
-			this.ExternalAddress = _conn.ExternalAddress;
+			this.InternalAddress = this.ExternalAddress =
+				Dns.GetHostEntry(string.Empty).AddressList
+				.Where((ip) => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).FirstOrDefault();
+
 			if (!string.IsNullOrEmpty(_password))
 			{
 				_conn.QueueMessage(new IrcMessage("PASS", _password));

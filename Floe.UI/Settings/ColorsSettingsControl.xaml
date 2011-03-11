@@ -154,6 +154,7 @@
 					<Button Content="Color 13" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color13, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 					<Button Content="Color 14" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color14, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 					<Button Content="Color 15" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color15, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
+					<Button Content="Transmit" Height="23" Width="100" Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Transmit, Mode=TwoWay}" Style="{StaticResource ColorButton}" />
 				</WrapPanel>
 			</ScrollViewer>
 		</Border>

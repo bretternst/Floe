@@ -11,13 +11,25 @@ using Floe.Net;
 namespace Floe.Voice
 {
 	/// <summary>
+	/// Defines a method signature for a handler that determines whether audio should be encoded and transmitted.
+	/// </summary>
+	/// <param name="peak">The peak audio level for the current buffer.</param>
+	/// <returns>Returns true if transmission should occur, false otherwise.</returns>
+	public delegate bool TransmitPredicate(float peak);
+
+	/// <summary>
+	/// Defines a method signature for a handler that determines whether to process audio received from a given endpoint.
+	/// </summary>
+	/// <param name="endpoint">The endpoint from which a packet was received.</param>
+	/// <returns>Returns true if the packet should be processed, false otherwise.</returns>
+	public delegate bool ReceivePredicate(IPEndPoint endpoint);
+
+	/// <summary>
 	/// Manages a voice session connecting to one or more peers. Recorded audio is encoded and sent to all peers, and received audio is played.
 	/// This class uses GSM 6.10 to compress the audio stream.
 	/// </summary>
 	public sealed class VoiceSession : RtpClient, IDisposable
 	{
-		private const int PayloadType = 3;
-
 		private VoiceCodec _codec;
 		private VoiceQuality _quality;
 		private SynchronizationContext _syncContext;
@@ -29,22 +41,31 @@ namespace Floe.Voice
 		private float _renderVolume = 1f;
 		private int _timeIncrement;
 		private VoicePacketPool _pool;
+		private TransmitPredicate _transmitPredicate;
+		private ReceivePredicate _receivePredicate;
 
 		/// <summary>
 		/// Construct a new voice session.
 		/// </summary>
+		/// <param name="codec">The transmit codec.</param>
+		/// <param name="quality">The transmit quality.</param>
 		/// <param name="client">An optional already-bound UDP client to use. If this is null, then a new client will be constructed.</param>
-		public VoiceSession(VoiceCodec codec, VoiceQuality quality, UdpClient client = null)
-			: base(PayloadType, GetPacketSize(codec), client)
+		/// <param name="transmitCallback">An optional callback to determine whether to transmit each packet. An application may
+		/// use logic such as PTT (push-to-talk) or an automatic peak level-based approach. By default, all packets are transmitted.</param>
+		public VoiceSession(VoiceCodec codec, VoiceQuality quality, UdpClient client = null,
+			TransmitPredicate transmitPredicate = null, ReceivePredicate receivePredicate = null)
+			: base(GetPayloadType(codec), GetPacketSize(codec), client)
 		{
 			_codec = codec;
 			_quality = quality;
-			this.InitAudio();
 			_packet = new byte[this.PayloadSize];
 			_syncContext = SynchronizationContext.Current;
 			_peers = new Dictionary<IPEndPoint, VoicePeer>();
 			_timeIncrement = GetSamplesPerPacket(VoiceCodec.Gsm610);
 			_pool = new VoicePacketPool();
+			_transmitPredicate = transmitPredicate;
+			_receivePredicate = receivePredicate;
+			this.InitAudio();
 		}
 
 		/// <summary>
@@ -55,10 +76,13 @@ namespace Floe.Voice
 			get { return _renderVolume; }
 			set
 			{
-				_renderVolume = value;
-				foreach (var peer in _peers.Values)
+				if (_renderVolume != value)
 				{
-					peer.Volume = value;
+					_renderVolume = value;
+					foreach (var peer in _peers.Values)
+					{
+						peer.Volume = value;
+					}
 				}
 			}
 		}
@@ -119,24 +143,12 @@ namespace Floe.Voice
 			}
 		}
 
-		/// <summary>
-		/// Sets a peer's mute status.
-		/// </summary>
-		/// <param name="endpoint">The peer's public endpoint.</param>
-		/// <param name="isMuted">True to mute the peer, false to un-mute.</param>
-		public void SetPeerMute(IPEndPoint endpoint, bool isMuted)
+		protected override void OnReceived(IPEndPoint endpoint, short payloadType, int seqNumber, int timeStamp, byte[] payload)
 		{
-			if (_peers.ContainsKey(endpoint))
+			if (_receivePredicate == null || _receivePredicate(endpoint))
 			{
-				_peers[endpoint].IsMuted = isMuted;
+				_peers[endpoint].Enqueue(seqNumber, timeStamp, payload);
 			}
-		}
-
-		protected override void OnReceived(IPEndPoint peer, short payloadType, int seqNumber, int timeStamp, byte[] payload)
-		{
-			_peers[peer].Enqueue(seqNumber, timeStamp, payload);
-			//Console.WriteLine(string.Format("peer={0} type={1} seq={2} time={3} payload={4}",
-			//    peer.ToString(), payloadType, seqNumber, timeStamp, payload.Length));
 		}
 
 		protected override void OnError(Exception ex)
@@ -156,10 +168,9 @@ namespace Floe.Voice
 			if (_capture != null)
 			{
 				_capture.WritePacket -= capture_WritePacket;
+				_capture.Dispose();
 			}
-			_capture = new AudioCaptureClient(AudioDevice.DefaultCaptureDevice, this.PayloadSize,
-				GetBufferSize(_codec, _quality, false),
-				VoiceSession.GetConversions(_codec, _quality, false));
+			_capture = new VoiceCaptureClient(AudioDevice.DefaultCaptureDevice, _codec, _quality, _transmitPredicate);
 			_capture.WritePacket += capture_WritePacket;
 		}
 
@@ -202,6 +213,17 @@ namespace Floe.Voice
 		~VoiceSession()
 		{
 			this.Dispose();
+		}
+
+		internal static byte GetPayloadType(VoiceCodec codec)
+		{
+			switch (codec)
+			{
+				case VoiceCodec.Gsm610:
+					return 3;
+				default:
+					throw new ArgumentException("Unsupported codec.");
+			}
 		}
 
 		internal static int GetPacketSize(VoiceCodec codec)

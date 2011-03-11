@@ -38,9 +38,9 @@ namespace Floe.UI
 			var item = this[oldNick];
 			if (item != null)
 			{
-				item.Nickname = newNick;
-				this.ChangeItemKey(item, newNick);
 				var idx = this.IndexOf(item);
+				this.ChangeItemKey(item, newNick);
+				item.Nickname = newNick;
 				this.RefreshItem(idx);
 			}
 		}

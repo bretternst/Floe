@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Configuration;
 
 using Floe.Voice;
+using Floe.Interop;
 
 namespace Floe.Configuration
 {
@@ -19,14 +20,14 @@ namespace Floe.Configuration
 		public bool PushToTalk
 		{
 			get { return (bool)this["pushToTalk"]; }
-			set { this["pushToTalk"] = value; this.OnPropertyChanged("PushToTalk"); }
+			set { this["pushToTalk"] = value; }
 		}
 
-		[ConfigurationProperty("talkKey", DefaultValue="MouseButton4")]
-		public string TalkKey
+		[ConfigurationProperty("talkKey", DefaultValue=InputButton.MouseButton4)]
+		public InputButton TalkKey
 		{
-			get { return (string)this["talkKey"]; }
-			set { this["talkKey"] = value; this.OnPropertyChanged("TalkKey"); }
+			get { return (InputButton)this["talkKey"]; }
+			set { this["talkKey"] = value; }
 		}
 
 		[ConfigurationProperty("useStun", DefaultValue = true)]
@@ -68,7 +69,7 @@ namespace Floe.Configuration
 		public float TalkLevel
 		{
 			get { return (float)this["talkLevel"]; }
-			set { this["talkLevel"] = value; OnPropertyChanged("TalkLevel"); }
+			set { this["talkLevel"] = value; }
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

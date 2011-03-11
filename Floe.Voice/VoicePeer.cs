@@ -23,7 +23,6 @@ namespace Floe.Voice
 		}
 
 		public float Volume { get { return _client.Volume; } set { _client.Volume = value; } }
-		public bool IsMuted { get { return _client.IsMuted; } set { _client.IsMuted = value; } }
 
 		public void Enqueue(int seqNumber, int timeStamp, byte[] payload)
 		{

@@ -37,52 +37,28 @@ namespace Floe.UI
 		public readonly static RoutedUICommand ChannelPanelCommand = new RoutedUICommand("Channel Pane", "ChannelPane", typeof(ChatControl));
 		public readonly static RoutedUICommand ListCommand = new RoutedUICommand("List", "List", typeof(ChatControl));
 		public readonly static RoutedUICommand VoiceChatCommand = new RoutedUICommand("Voice Chat", "VoiceChat", typeof(ChatControl));
+		public readonly static RoutedUICommand MuteCommand = new RoutedUICommand("Mute", "Mute", typeof(ChatControl));
+
+		private void CanExecuteVoiceCommand(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = false;
+			var item = lstNicknames.SelectedItem as NicknameItem;
+
+			if (item != null && VoiceControl.GetIsVoiceChat(item) &&
+				!this.Session.IsSelf(item.Nickname))
+			{
+				e.CanExecute = true;
+			}
+		}
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = this.IsConnected;
 		}
 
-		private void ExecuteWhois(object sender, ExecutedRoutedEventArgs e)
+		private void CanExecuteChannelCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
-			var s = e.Parameter as string;
-			if (!string.IsNullOrEmpty(s))
-			{
-				this.Session.WhoIs(s);
-			}
-		}
-
-		private void ExecuteOpenLink(object sender, ExecutedRoutedEventArgs e)
-		{
-			var s = e.Parameter as string;
-			if (!string.IsNullOrEmpty(s))
-			{
-				App.BrowseTo(s);
-			}
-		}
-
-		private void ExecuteCopyLink(object sender, ExecutedRoutedEventArgs e)
-		{
-			var s = e.Parameter as string;
-			if (!string.IsNullOrEmpty(s))
-			{
-				Clipboard.SetText(s);
-			}
-		}
-
-		private void ExecuteQuit(object sender, RoutedEventArgs e)
-		{
-			try
-			{
-				this.Session.AutoReconnect = false;
-				this.Session.Quit("Leaving");
-			}
-			catch { }
-		}
-
-		private void ExecuteClear(object sender, RoutedEventArgs e)
-		{
-			boxOutput.Clear();
+			e.CanExecute = this.IsConnected && this.IsChannel;
 		}
 
 		private void Insert(string s)
@@ -130,6 +106,48 @@ namespace Floe.UI
 			}
 			var nick = _nickList[this.Session.Nickname];
 			e.CanExecute = nick != null && (nick.Level & (ChannelLevel.Op | ChannelLevel.HalfOp)) > 0;
+		}
+
+		private void ExecuteWhois(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				this.Session.WhoIs(s);
+			}
+		}
+
+		private void ExecuteOpenLink(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				App.BrowseTo(s);
+			}
+		}
+
+		private void ExecuteCopyLink(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				Clipboard.SetText(s);
+			}
+		}
+
+		private void ExecuteQuit(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				this.Session.AutoReconnect = false;
+				this.Session.Quit("Leaving");
+			}
+			catch { }
+		}
+
+		private void ExecuteClear(object sender, RoutedEventArgs e)
+		{
+			boxOutput.Clear();
 		}
 
 		private void ExecuteOp(object sender, ExecutedRoutedEventArgs e)
@@ -251,16 +269,52 @@ namespace Floe.UI
 			}
 		}
 
-		private void ExecuteVoiceChat(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteSearch(object sender, ExecutedRoutedEventArgs e)
 		{
-			StartVoiceSession();
+			this.ToggleSearch();
 		}
 
-		private void CanExecuteVoiceChat(object sender, CanExecuteRoutedEventArgs e)
+		private void ExecuteChannelPanel(object sender, ExecutedRoutedEventArgs e)
 		{
-			// TODO: Chagne back
-//			e.CanExecute = this.IsChannel && this.IsConnected && !_isInVoiceSession;
-			e.CanExecute = true;
+			this.ToggleChannelPanel();
+		}
+
+		private void ExecuteSearchPrevious(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.DoSearch(SearchDirection.Previous);
+		}
+
+		private void ExecuteSearchNext(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.DoSearch(SearchDirection.Next);
+		}
+
+		private void ExecuteList(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.Session.List();
+		}
+
+		private void ExecuteJoin(object sender, ExecutedRoutedEventArgs e)
+		{
+			string channel = e.Parameter as string;
+			if (!string.IsNullOrEmpty(channel))
+			{
+				this.Session.Join(channel);
+			}
+		}
+
+		private void ExecuteVoiceChat(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ToggleVoiceChatPanel();
+		}
+
+		private void ExecuteMute(object sender, ExecutedRoutedEventArgs e)
+		{
+			var nick = e.Parameter as string;
+			if (_voiceControl != null)
+			{
+				_voiceControl.ToggleMute(nick);
+			}
 		}
 
 		private void Execute(string text, bool literal)
@@ -776,40 +830,6 @@ namespace Floe.UI
 			return parts.ToArray();
 		}
 
-		private void ExecuteSearch(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.ToggleSearch();
-		}
-
-		private void ExecuteChannelPanel(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.ToggleChannelPanel();
-		}
-
-		private void ExecuteSearchPrevious(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.DoSearch(SearchDirection.Previous);
-		}
-
-		private void ExecuteSearchNext(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.DoSearch(SearchDirection.Next);
-		}
-
-		private void ExecuteList(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.Session.List();
-		}
-
-		private void ExecuteJoin(object sender, ExecutedRoutedEventArgs e)
-		{
-			string channel = e.Parameter as string;
-			if (!string.IsNullOrEmpty(channel))
-			{
-				this.Session.Join(channel);
-			}
-		}
-
 		private void ToggleSearch()
 		{
 			if (pnlSearch.Visibility == Visibility.Visible)
@@ -825,6 +845,23 @@ namespace Floe.UI
 			}
 		}
 
+		private void ToggleVoiceChatPanel()
+		{
+			if (_voiceControl == null)
+			{
+				_voiceControl = new VoiceControl(this.Session, this.Target, _nickList);
+				pnlVoice.Children.Add(_voiceControl);
+			}
+			if (pnlVoice.Visibility == Visibility.Visible)
+			{
+				pnlVoice.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				pnlVoice.Visibility = Visibility.Visible;
+			}
+		}
+		
 		private void ToggleChannelPanel()
 		{
 			if (pnlChannel.Visibility == Visibility.Visible)

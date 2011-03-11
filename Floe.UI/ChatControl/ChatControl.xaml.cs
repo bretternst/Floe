@@ -29,6 +29,7 @@ namespace Floe.UI
 		private LinkedListNode<string> _historyNode;
 		private LogFileHandle _logFile;
 		private ChatLine _markerLine;
+		private VoiceControl _voiceControl;
 
 		public ChatControl(ChatPageType type, IrcSession session, IrcTarget target)
 			: base(type, session, target, type == ChatPageType.Server ? "server" : 
@@ -332,7 +333,15 @@ namespace Floe.UI
 					_logFile.Dispose();
 				}
 			}
-			this.StopVoiceSession();
+			if (_voiceControl != null)
+			{
+				_voiceControl.Dispose();
+			}
+		}
+
+		private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+		{
+
 		}
 	}
 }

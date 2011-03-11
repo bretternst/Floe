@@ -308,6 +308,13 @@ namespace Floe.Configuration
 			get { return (string)this["color15"]; }
 			set { this["color15"] = value; OnPropertyChanged("Palette"); }
 		}
+
+		[ConfigurationProperty("transmit", DefaultValue = "#00FF00")]
+		public string Transmit
+		{
+			get { return (string)this["transmit"]; }
+			set { this["transmit"] = value; OnPropertyChanged("Transmit"); }
+		}
 		
 		public ChatPalette Palette
 		{

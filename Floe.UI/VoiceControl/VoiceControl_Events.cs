@@ -6,57 +6,17 @@ using System.Windows.Controls;
 
 using Floe.Net;
 using Floe.Voice;
+using Floe.Interop;
 
 namespace Floe.UI
 {
-	public class VoiceControlEventArgs : RoutedEventArgs
-	{
-		public string Name { get; private set; }
-
-		public VoiceControlEventArgs(string name, RoutedEvent evt)
-			: base(evt)
-		{
-			this.Name = name;
-		}
-	}
-
 	public partial class VoiceControl : UserControl, IDisposable
 	{
-		public static readonly RoutedEvent CloseEvent = EventManager.RegisterRoutedEvent("Close",
-			RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(VoiceControl));
-		public event RoutedEventHandler Close
-		{
-			add { this.AddHandler(CloseEvent, value); }
-			remove { this.RemoveHandler(CloseEvent, value); }
-		}
-
-		public static readonly RoutedEvent PeerAddedEvent = EventManager.RegisterRoutedEvent("PeerAdded",
-			RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(VoiceControl));
-		public event RoutedEventHandler PeerAdded
-		{
-			add { this.AddHandler(PeerAddedEvent, value); }
-			remove { this.RemoveHandler(PeerAddedEvent, value); }
-		}
-
-		public static readonly RoutedEvent PeerRemovedEvent = EventManager.RegisterRoutedEvent("PeerRemoved",
-			RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(VoiceControl));
-		public event RoutedEventHandler PeerRemoved
-		{
-			add { this.AddHandler(PeerRemovedEvent, value); }
-			remove { this.RemoveHandler(PeerRemovedEvent, value); }
-		}
-
 		private void voice_Error(object sender, ErrorEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine(e.Exception.ToString());
-			MessageBox.Show("An error occurred and voice chat must close: " + e.Exception.Message);
-			this.RaiseEvent(new RoutedEventArgs(CloseEvent));
-		}
-
-		private void btnStopVoice_Click(object sender, RoutedEventArgs e)
-		{
-			_session.SendCtcp(_target, new CtcpCommand("VCHAT", "STOP"), false);
-			this.RaiseEvent(new RoutedEventArgs(CloseEvent));
+			MessageBox.Show("An error occurred and voice chat must stop: " + e.Exception.Message);
+			this.IsChatting = false;
 		}
 
 		private void session_CtcpCommandReceived(object sender, CtcpEventArgs e)
@@ -66,11 +26,16 @@ namespace Floe.UI
 			IPAddress pubAddress, prvAddress;
 			int pubPort, prvPort;
 
+			if (!this.IsChatting)
+			{
+				return;
+			}
+
 			if (string.Compare(e.Command.Command, "VCHAT", StringComparison.OrdinalIgnoreCase) == 0)
 			{
 				if (e.Command.Arguments.Length == 7 &&
 				string.Compare(e.Command.Arguments[0], "START", StringComparison.OrdinalIgnoreCase) == 0 &&
-				e.To.Equals(_target) &&
+				(!e.To.IsChannel || e.To.Equals(_target)) &&
 				Enum.TryParse(e.Command.Arguments[1], out codec) &&
 				Enum.TryParse(e.Command.Arguments[2], out quality) &&
 				IPAddress.TryParse(e.Command.Arguments[3], out pubAddress) &&
@@ -94,29 +59,96 @@ namespace Floe.UI
 							App.Settings.Current.Voice.Quality.ToString(),
 							_publicEndPoint.Address.ToString(),
 							_publicEndPoint.Port.ToString(),
-							_voice.LocalEndPoint.Address.ToString(),
+							_session.InternalAddress.ToString(),
 							_voice.LocalEndPoint.Port.ToString()), true);
 					}
 				}
 				else if (e.Command.Arguments.Length == 1 &&
-					string.Compare(e.Command.Arguments[0], "STOP", StringComparison.OrdinalIgnoreCase) == 0 &&
-					_peers.ContainsKey(e.From.Nickname))
+					string.Compare(e.Command.Arguments[0], "STOP", StringComparison.OrdinalIgnoreCase) == 0)
 				{
 					this.RemovePeer(e.From.Nickname);
 				}
 			}
 		}
 
+		private void RawInput_ButtonDown(object sender, RawInputEventArgs e)
+		{
+			if (e.Button == App.Settings.Current.Voice.TalkKey)
+			{
+				_isTalkKeyDown = true;
+			}
+		}
+
+		private void RawInput_ButtonUp(object sender, RawInputEventArgs e)
+		{
+			if (e.Button == App.Settings.Current.Voice.TalkKey)
+			{
+				_isTalkKeyDown = false;
+			}
+		}
+
+		private bool TransmitPredicate(float peak)
+		{
+			bool isTransmitting = false;
+
+			if (App.Settings.Current.Voice.PushToTalk)
+			{
+				isTransmitting = _isTalkKeyDown;
+			}
+			else if (peak >= App.Settings.Current.Voice.TalkLevel)
+			{
+				isTransmitting = true;
+				_lastTransmit = DateTime.Now.Ticks;
+			}
+			else if (DateTime.Now.Ticks - _lastTransmit < TrailTime)
+			{
+				isTransmitting = true;
+			}
+			if (isTransmitting != _isTransmitting)
+			{
+				_isTransmitting = isTransmitting;
+				this.Dispatcher.BeginInvoke((Action)(() => SetIsTalking(_self, (this.IsTransmitting = _isTransmitting))));
+			}
+
+			var ticks = DateTime.Now.Ticks;
+			foreach (var peer in _peers.Values)
+			{
+				if (peer.IsTalking && ticks - peer.LastTransmit > TrailTime)
+				{
+					peer.IsTalking = false;
+					this.Dispatcher.BeginInvoke((Action<NicknameItem>)((o) => SetIsTalking((NicknameItem)o, false)), peer.User);
+				}
+			}
+
+			return isTransmitting;
+		}
+
+		private bool ReceivePredicate(IPEndPoint endpoint)
+		{
+			var peer = _peers[endpoint];
+			peer.LastTransmit = DateTime.Now.Ticks;
+			if (!peer.IsTalking)
+			{
+				peer.IsTalking = true;
+				this.Dispatcher.BeginInvoke((Action<NicknameItem>)((o) => SetIsTalking((NicknameItem)o, true)), peer.User);
+			}
+			return !peer.IsMuted;
+		}
+
 		private void SubscribeEvents()
 		{
 			_voice.Error += voice_Error;
 			_session.CtcpCommandReceived += session_CtcpCommandReceived;
+			RawInput.ButtonDown += RawInput_ButtonDown;
+			RawInput.ButtonUp += RawInput_ButtonUp;
 		}
 
 		private void UnsubscribeEvents()
 		{
 			_voice.Error -= voice_Error;
 			_session.CtcpCommandReceived -= session_CtcpCommandReceived;
+			RawInput.ButtonDown -= RawInput_ButtonDown;
+			RawInput.ButtonUp -= RawInput_ButtonUp;
 		}
 	}
 }

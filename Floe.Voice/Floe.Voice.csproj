@@ -49,6 +49,7 @@
     <Compile Include="Enums.cs" />
     <Compile Include="JitterBuffer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VoiceCaptureClient.cs" />
     <Compile Include="VoiceLoopback.cs" />
     <Compile Include="VoicePacket.cs" />
     <Compile Include="VoicePeer.cs" />

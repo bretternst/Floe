@@ -5,16 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 			 mc:Ignorable="d" 
+			 xmlns:local="clr-namespace:Floe.UI"
              d:DesignHeight="70" d:DesignWidth="493" Name="ctlVoice">
+	<UserControl.InputBindings>
+		<KeyBinding Command="local:VoiceControl.StartVoiceCommand" Gesture="Shift+F11"/>
+		<KeyBinding Command="local:VoiceControl.StopVoiceCommand" Gesture="Shift+F12"/>
+	</UserControl.InputBindings>
+	<UserControl.CommandBindings>
+		<CommandBinding Command="local:VoiceControl.StartVoiceCommand" Executed="ExecuteStartVoice" CanExecute="CanExecuteStartVoice"/>
+		<CommandBinding Command="local:VoiceControl.StopVoiceCommand" Executed="ExecuteStopVoice" CanExecute="CanExecuteStopVoice"/>
+	</UserControl.CommandBindings>
 	<UserControl.Resources>
-		<CollectionViewSource Source="{Binding ElementName=ctlVoice, Path=Peers}" x:Key="lstPeersSource">
-			<CollectionViewSource.SortDescriptions>
-				<scm:SortDescription PropertyName="Nickname"/>
-			</CollectionViewSource.SortDescriptions>
-		</CollectionViewSource>
+		<local:VisibilityConverter x:Key="hiddenConverter" TrueValue="Visible" FalseValue="Hidden"/>
 	</UserControl.Resources>
 	<DockPanel>
-		<Button x:Name="btnStopVoice" Padding="3,1,3,1" Content="Disconnect" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnStopVoice_Click"/>
-		<StackPanel Orientation="Horizontal"/>
+		<Button x:Name="btnStartVoice" Command="local:VoiceControl.StartVoiceCommand" Content="Start Voice Chat"
+				Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0"/>
+		<Button x:Name="btnStopVoice" Command="local:VoiceControl.StopVoiceCommand" Content="Stop Voice Chat"
+				Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0"/>
+		<StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+			<Path Visibility="{Binding (local:VoiceControl.IsTransmitting), Converter={StaticResource hiddenConverter}}" Margin="0,0,5,0" Data="{StaticResource voiceIndicatorGeometry}" StrokeThickness="2" Stroke="{StaticResource winFG}"/>
+		</StackPanel>
 	</DockPanel>
 </UserControl>

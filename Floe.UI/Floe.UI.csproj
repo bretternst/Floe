@@ -96,7 +96,6 @@
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
     <Compile Include="ChatControl\ChatControl_Slap.cs" />
-    <Compile Include="ChatControl\ChatControl_Voice.cs" />
     <Compile Include="ChatControl\NicknameItem.cs" />
     <Compile Include="ChatControl\NicknameList.cs" />
     <Compile Include="ChatControl\NotifyState.cs" />
@@ -167,7 +166,10 @@
     <Compile Include="VoiceControl\VoiceControl.xaml.cs">
       <DependentUpon>VoiceControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VoiceControl\VoiceControl_Commands.cs" />
     <Compile Include="VoiceControl\VoiceControl_Events.cs" />
+    <Compile Include="VoiceControl\VoiceControl_Properties.cs" />
+    <Compile Include="VoiceControl\VoicePeer.cs" />
     <Page Include="ChannelWindow\ChannelWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -12,7 +12,10 @@ namespace test
 	{
 		static void Main(string[] args)
 		{
-
+			foreach (var ip in Dns.GetHostEntry("").AddressList)
+			{
+				Console.WriteLine(ip.ToString());
+			}
 		}
 	}
 }

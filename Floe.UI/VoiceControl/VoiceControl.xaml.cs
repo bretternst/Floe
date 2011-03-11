@@ -14,91 +14,78 @@ namespace Floe.UI
 {
 	public partial class VoiceControl : UserControl, IDisposable
 	{
+		private const long TrailTime = 10000000;
+		private static bool _isAnyVoiceChatActive;
+
 		private IrcSession _session;
 		private IrcTarget _target;
+		private NicknameList _nickList;
 		private VoiceSession _voice;
 		private IPEndPoint _publicEndPoint;
-		private Dictionary<string, IPEndPoint> _peers;
+		private Dictionary<IPEndPoint, VoicePeer> _peers;
+		private NicknameItem _self;
+		private bool _isTalkKeyDown;
+		private bool _isTransmitting;
+		private long _lastTransmit;
 
-		public VoiceControl(IrcSession session, IrcTarget target)
+		public VoiceControl(IrcSession session, IrcTarget target, NicknameList nickList)
 		{
 			_session = session;
 			_target = target;
-			_peers = new Dictionary<string, IPEndPoint>();
+			_nickList = nickList;
+			_peers = new Dictionary<IPEndPoint, VoicePeer>();
 			InitializeComponent();
-
-			if (App.Settings.Current.Voice.UseStun)
+			this.DataContext = this;
+			if (nickList.Contains(_session.Nickname))
 			{
-				var stun = new StunUdpClient(App.Settings.Current.Voice.StunServer, App.Settings.Current.Voice.AltStunServer);
-				stun.BeginGetClient((ar) =>
-					{
-						UdpClient client = null;
-						try
-						{
-							client = stun.EndGetClient(ar, out _publicEndPoint);
-						}
-						catch (StunException ex)
-						{
-							System.Diagnostics.Debug.WriteLine("STUN error: " + ex.Message);
-						}
-						this.Dispatcher.BeginInvoke((Action)(() => this.Start(client)));
-					});
-			}
-			else
-			{
-				this.Start();
+				_self = nickList[_session.Nickname];
 			}
 		}
 
-		private void Start(UdpClient client = null)
+		public void ToggleMute(string nick)
 		{
-			_voice = new VoiceSession(VoiceCodec.Gsm610,
-				App.Settings.Current.Voice.Quality, client);
-			if (client == null)
+			var endpoint = this.FindEndPoint(nick);
+			if (endpoint != null)
 			{
-				_publicEndPoint = new IPEndPoint(_session.ExternalAddress, _voice.LocalEndPoint.Port);
+				var peer = _peers[endpoint];
+				peer.IsMuted = !peer.IsMuted;
+				SetIsMuted(_peers[endpoint].User, peer.IsMuted);
 			}
-			this.SubscribeEvents();
-			_session.SendCtcp(_target, new CtcpCommand("VCHAT", "START",
-				VoiceCodec.Gsm610.ToString(),
-				App.Settings.Current.Voice.Quality.ToString(),
-				_publicEndPoint.Address.ToString(),
-				_publicEndPoint.Port.ToString(),
-				_voice.LocalEndPoint.Address.ToString(),
-				_voice.LocalEndPoint.Port.ToString()), false);
 		}
 
-		private void AddPeer(string name, VoiceCodec codec, VoiceQuality quality, IPEndPoint endpoint)
+		private void AddPeer(string nick, VoiceCodec codec, VoiceQuality quality, IPEndPoint endpoint)
 		{
-			if (!_peers.ContainsKey(name))
+			if (_nickList.Contains(nick) && !_peers.ContainsKey(endpoint))
 			{
+				_peers.Add(endpoint, new VoicePeer() { User = _nickList[nick] });
 				_voice.AddPeer(codec, quality, endpoint);
-				this.RaiseEvent(new VoiceControlEventArgs(name, PeerAddedEvent));
+				SetIsVoiceChat(_nickList[nick], true);
 			}
 		}
 
-		private void RemovePeer(string name)
+		private void RemovePeer(string nick)
 		{
-			if (_peers.ContainsKey(name))
+			var endpoint = this.FindEndPoint(nick);
+			if (endpoint != null)
 			{
-				_voice.RemovePeer(_peers[name]);
-				_peers.Remove(name);
-				this.RaiseEvent(new VoiceControlEventArgs(name, PeerRemovedEvent));
+				SetIsVoiceChat(_peers[endpoint].User, false);
+				_peers.Remove(endpoint);
+				_voice.RemovePeer(endpoint);
 			}
 		}
 
-		private void ChangePeerName(string oldName, string newName)
+		private IPEndPoint FindEndPoint(string nick)
 		{
-			if(_peers.ContainsKey(oldName))
-			{
-				_peers.Add(newName, _peers[oldName]);
-				_peers.Remove(oldName);
-			}
+			var item = _nickList[nick];
+			return _peers.Where((kvp) => kvp.Value.User == item).Select((kvp) => kvp.Key).FirstOrDefault();
 		}
 
 		public void Dispose()
 		{
-			this.UnsubscribeEvents();
+			if (this.IsChatting)
+			{
+				StopVoiceCommand.Execute(null, this);
+			}
 		}
 	}
 }

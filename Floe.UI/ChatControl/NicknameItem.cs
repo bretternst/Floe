@@ -60,13 +60,6 @@ namespace Floe.UI
 			this.Level = level;
 		}
 
-		public static DependencyProperty IsVoiceChatProperty = DependencyProperty.Register("IsVoiceChat", typeof(bool), typeof(NicknameItem));
-		public bool IsVoiceChat
-		{
-			get { return (bool)this.GetValue(IsVoiceChatProperty); }
-			set { this.SetValue(IsVoiceChatProperty, value); }
-		}
-
 		public string Nickname { get; set; }
 		public ChannelLevel Level { get; set; }
 		public string NickWithLevel { get { return this.ToString(); } }

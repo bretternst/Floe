@@ -15,53 +15,10 @@
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose" CanExecute="CanExecuteClose"/>
 	</Window.CommandBindings>
 	<Window.Resources>
-		<local:BrushAlphaConverter x:Key="opacityConverter"/>
-		<SolidColorBrush x:Key="winBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
-		<SolidColorBrush x:Key="winFG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
-		<SolidColorBrush x:Key="winFGx0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0"/>
-		<SolidColorBrush x:Key="winFGx40" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.4"/>
-		<SolidColorBrush x:Key="winFGx80" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}" Opacity="0.8"/>
-
-		<Style x:Key="uiButtonStyle" TargetType="Button">
-			<Setter Property="Background" Value="Transparent"/>
-			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
-			<Setter Property="BorderBrush" Value="Transparent"/>
-			<Setter Property="VerticalAlignment" Value="Center"/>
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="Button">
-						<Border Background="{TemplateBinding Background}" BorderThickness="1"
-								BorderBrush="{TemplateBinding BorderBrush}"
-								Padding="{TemplateBinding Padding}">
-							<ContentPresenter VerticalAlignment="Center"/>
-						</Border>
-						<ControlTemplate.Triggers>
-							<MultiTrigger>
-								<MultiTrigger.Conditions>
-									<Condition Property="IsMouseOver" Value="True"/>
-									<Condition Property="IsEnabled" Value="True"/>
-								</MultiTrigger.Conditions>
-								<Setter Property="BorderBrush" Value="{StaticResource winFG}"/>
-								<Setter Property="Background" Value="{StaticResource winFGx40}"/>
-							</MultiTrigger>
-							<Trigger Property="IsEnabled" Value="False">
-								<Setter Property="Opacity" Value="0.4"/>
-							</Trigger>
-							<Trigger Property="IsPressed" Value="True">
-								<Setter Property="Background" Value="{StaticResource winFGx80}"/>
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-
 		<Geometry x:Key="minimizeButtonGeometry">M0,8 L8,8</Geometry>
 		<Geometry x:Key="maximizeButtonGeometry">M0,0 L8,0 L8,8 L0,8 L0,0 M0,1 L8,1</Geometry>
-		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
 		<Geometry x:Key="settingsButtonGeometry">M3,4 L6,8 L10,0</Geometry>
 		<Geometry x:Key="reattachButtonGeometry">M3,0 L3,6 M0,4 L3,6 M6,4 L3,6</Geometry>
-
 		<local:BrushSaturationConverter x:Key="modifySaturation"/>
 	</Window.Resources>
 	<Window.Style>
@@ -157,16 +114,8 @@
 						VerticalAlignment="Top"
 						HorizontalAlignment="Center"/>
 				</Button>
-				<Button x:Name="btnClose" VerticalAlignment="Top" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Command="local:ChatWindow.CloseCommand">
-					<Path Margin="2" SnapsToDevicePixels="True"
-						Data="{StaticResource closeButtonGeometry}"
-						Stroke="{StaticResource winFG}"
-						StrokeThickness="2"
-						StrokeStartLineCap="Round"
-						StrokeEndLineCap="Round"
-						Stretch="Uniform"
-						VerticalAlignment="Top"
-						HorizontalAlignment="Center"/>
+				<Button x:Name="btnClose" VerticalAlignment="Top" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0" Command="local:ChatWindow.CloseCommand">
+					<Path Style="{StaticResource uiCloseButtonPathStyle}"/>
 				</Button>
 			</StackPanel>
 		</Grid>

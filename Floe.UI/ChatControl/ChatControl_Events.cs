@@ -540,6 +540,10 @@ namespace Floe.UI
 		protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
 		{
 			_hasDeactivated = false;
+			if (e.NewFocus == txtInput)
+			{
+				lstNicknames.SelectedItem = null;
+			}
 		}
 
 		private void boxOutput_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -656,7 +660,7 @@ namespace Floe.UI
 
 			if((Keyboard.Modifiers & ModifierKeys.Alt) == 0 &&
 				(Keyboard.Modifiers & ModifierKeys.Control) == 0 &&
-				!(FocusManager.GetFocusedElement(this) is NicknameItem))
+				!(FocusManager.GetFocusedElement(this) is ListBoxItem))
 			{
 				e.Handled = true;
 

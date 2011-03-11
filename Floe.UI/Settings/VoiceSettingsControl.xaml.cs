@@ -57,7 +57,7 @@ namespace Floe.UI.Settings
 
 		private void RawInput_ButtonDown(object sender, RawInputEventArgs e)
 		{
-			btnTalkKey.Content = App.Settings.Current.Voice.TalkKey = e.Button.ToString();
+			btnTalkKey.Content = App.Settings.Current.Voice.TalkKey = e.Button;
 			RawInput.ButtonDown -= RawInput_ButtonDown;
 			e.Handled = true;
 		}

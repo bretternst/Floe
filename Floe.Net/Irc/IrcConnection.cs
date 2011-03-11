@@ -32,8 +32,6 @@ namespace Floe.Net
 		public event EventHandler<IrcEventArgs> MessageReceived;
 		public event EventHandler<IrcEventArgs> MessageSent;
 
-		public IPAddress ExternalAddress { get { return ((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address; } }
-
 		public IrcConnection()
 		{
 			_syncContext = SynchronizationContext.Current;

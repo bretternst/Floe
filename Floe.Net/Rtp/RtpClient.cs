@@ -90,6 +90,11 @@ namespace Floe.Net
 		/// <param name="payload">The packet's payload.</param>
 		public virtual void Send(int timeStamp, byte[] payload)
 		{
+			if (_peers.Count < 1)
+			{
+				return;
+			}
+
 			if (_sendHandles == null || _sendHandles.Length != _peers.Count)
 			{
 				_sendHandles = new WaitHandle[_peers.Count];
