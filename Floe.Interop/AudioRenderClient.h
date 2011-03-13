@@ -13,7 +13,7 @@ namespace Floe
 		{
 		private:
 			IntPtr m_buffer;
-			bool m_hasData;
+			int m_length;
 
 		public:
 			property IntPtr Buffer
@@ -29,15 +29,15 @@ namespace Floe
 				}
 			}
 
-			property bool HasData
+			property int Length
 			{
-				bool get()
+				int get()
 				{
-					return m_hasData;
+					return m_length;
 				}
-				void set(bool hasData)
+				void set(int length)
 				{
-					m_hasData = hasData;
+					m_length = length;
 				}
 			}
 		};
@@ -69,7 +69,7 @@ namespace Floe
 		protected:
 			virtual void __clrcall Loop() override;
 			virtual int __clrcall OnRender(int count, IntPtr buffer);
-			virtual bool __clrcall OnReadPacket(IntPtr buffer);
+			virtual int __clrcall OnReadPacket(IntPtr buffer);
 
 		private:
 			void RenderBuffer(int count);

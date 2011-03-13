@@ -5,7 +5,7 @@ using System.Windows.Input;
 using System.Threading;
 using Floe.Interop;
 
-using Floe.Voice;
+using Floe.Audio;
 
 namespace Floe.UI.Settings
 {

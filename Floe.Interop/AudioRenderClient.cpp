@@ -35,11 +35,12 @@ namespace Floe
 		int AudioRenderClient::OnRender(int count, IntPtr buffer)
 		{
 			count *= this->FrameSize;
+			int packetLength = 0;
 
-			while(m_used < count && this->OnReadPacket((IntPtr)m_packet))
+			while(m_used < count && (packetLength = this->OnReadPacket((IntPtr)m_packet)) > 0)
 			{
 				IntPtr dst;
-				int total = m_converter->Convert((IntPtr)(void*)m_packet, m_packetSize, dst);
+				int total = m_converter->Convert((IntPtr)(void*)m_packet, packetLength, dst);
 				memcpy((void*)(m_buffer + m_used), (void*)dst, total);
 				m_used += total;
 			}
@@ -66,12 +67,12 @@ namespace Floe
 			}
 		}
 
-		bool AudioRenderClient::OnReadPacket(IntPtr buffer)
+		int AudioRenderClient::OnReadPacket(IntPtr buffer)
 		{
 			m_eventArgs->Buffer = buffer;
-			m_eventArgs->HasData = false;
+			m_eventArgs->Length = 0;
 			this->ReadPacket(this, m_eventArgs);
-			return m_eventArgs->HasData;
+			return m_eventArgs->Length;
 		}
 
 		void AudioRenderClient::Loop()

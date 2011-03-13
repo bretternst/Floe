@@ -5,7 +5,7 @@ using System.Text;
 
 using Floe.Interop;
 
-namespace Floe.Voice
+namespace Floe.Audio
 {
 	public class VoiceCaptureClient : AudioCaptureClient
 	{

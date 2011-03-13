@@ -8,8 +8,8 @@
     <ProjectGuid>{BDD20714-E82B-45C9-A310-BE57BA986F44}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Floe.Voice</RootNamespace>
-    <AssemblyName>Floe.Voice</AssemblyName>
+    <RootNamespace>Floe.Audio</RootNamespace>
+    <AssemblyName>Floe.Audio</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -47,6 +47,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="FilePlayer.cs" />
     <Compile Include="JitterBuffer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VoiceCaptureClient.cs" />

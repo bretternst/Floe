@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 using Floe.Interop;
 
-namespace Floe.Voice
+namespace Floe.Audio
 {
 	/// <summary>
 	/// Allows users to test their microphone by hearing themselves speak. This class encodes the audio
@@ -57,16 +57,16 @@ namespace Floe.Voice
 				_stream = stream;
 			}
 
-			protected override bool OnReadPacket(IntPtr buffer)
+			protected override int OnReadPacket(IntPtr buffer)
 			{
 				byte[] packet;
 				if (_stream.TryDequeue(out packet))
 				{
 					Marshal.Copy(packet, 0, buffer, packet.Length);
 					_pool.Push(packet);
-					return true;
+					return packet.Length;
 				}
-				return false;
+				return 0;
 			}
 		}
 

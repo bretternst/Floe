@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 using Floe.Interop;
 
-namespace Floe.Voice
+namespace Floe.Audio
 {
 	class VoicePeer : IDisposable
 	{
@@ -49,7 +49,7 @@ namespace Floe.Voice
 			if (packet != null)
 			{
 				Marshal.Copy(packet.Data, 0, e.Buffer, packet.Data.Length);
-				e.HasData = true;
+				e.Length = packet.Data.Length;
 				packet.Dispose();
 			}
 		}

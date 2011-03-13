@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 using Floe.Net;
-using Floe.Voice;
+using Floe.Audio;
 
 namespace Floe.UI
 {

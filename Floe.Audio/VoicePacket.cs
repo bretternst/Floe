@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Floe.Voice
+namespace Floe.Audio
 {
 	class VoicePacketPool
 	{

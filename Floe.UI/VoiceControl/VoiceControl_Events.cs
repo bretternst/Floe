@@ -3,9 +3,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows;
 using System.Windows.Controls;
+using System.Collections.Specialized;
 
 using Floe.Net;
-using Floe.Voice;
+using Floe.Audio;
 using Floe.Interop;
 
 namespace Floe.UI
@@ -87,6 +88,15 @@ namespace Floe.UI
 			}
 		}
 
+		private void nickList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.Action == NotifyCollectionChangedAction.Remove &&
+				e.OldItems.Count > 0)
+			{
+				this.RemovePeer(((NicknameItem)e.OldItems[0]).Nickname);
+			}
+		}
+
 		private bool TransmitPredicate(float peak)
 		{
 			bool isTransmitting = false;
@@ -139,6 +149,7 @@ namespace Floe.UI
 		{
 			_voice.Error += voice_Error;
 			_session.CtcpCommandReceived += session_CtcpCommandReceived;
+			_nickList.CollectionChanged += nickList_CollectionChanged;
 			RawInput.ButtonDown += RawInput_ButtonDown;
 			RawInput.ButtonUp += RawInput_ButtonUp;
 		}
@@ -147,6 +158,7 @@ namespace Floe.UI
 		{
 			_voice.Error -= voice_Error;
 			_session.CtcpCommandReceived -= session_CtcpCommandReceived;
+			_nickList.CollectionChanged -= nickList_CollectionChanged;
 			RawInput.ButtonDown -= RawInput_ButtonDown;
 			RawInput.ButtonUp -= RawInput_ButtonUp;
 		}

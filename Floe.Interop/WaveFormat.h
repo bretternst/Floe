@@ -5,6 +5,7 @@ namespace Floe
 	namespace Interop
 	{
 		using System::IntPtr;
+		using System::Byte;
 
 		public ref class WaveFormat
 		{
@@ -20,6 +21,12 @@ namespace Floe
 			WaveFormat(IntPtr format)
 			{
 				this->Init((WAVEFORMATEX*)(void*)format);
+			}
+
+			WaveFormat(array<Byte>^ format)
+			{
+				pin_ptr<Byte> ptr = &format[0];
+				this->Init((WAVEFORMATEX*)ptr);
 			}
 
 			property WAVEFORMATEX *Data
@@ -164,19 +171,20 @@ namespace Floe
 
 		public ref class WaveFormatMp3 : WaveFormat
 		{
-			WaveFormatMp3(short channels, int sampleRate, int bytesPerSec, int blockSize)
+		public:
+			WaveFormatMp3(short channels, int sampleRate, int bitRate)
 			{
 				MPEGLAYER3WAVEFORMAT format;
 				format.wfx.wFormatTag = WAVE_FORMAT_MPEGLAYER3;
 				format.wfx.nChannels = channels;
 				format.wfx.nSamplesPerSec = sampleRate;
-				format.wfx.nAvgBytesPerSec = bytesPerSec;
+				format.wfx.nAvgBytesPerSec = bitRate * 8 * sampleRate * channels;
 				format.wfx.nBlockAlign = 1;
 				format.wfx.wBitsPerSample = 0;
 				format.wfx.cbSize = MPEGLAYER3_WFX_EXTRA_BYTES;
 				format.wID = MPEGLAYER3_ID_MPEG;
 				format.fdwFlags = MPEGLAYER3_FLAG_PADDING_OFF;
-				format.nBlockSize = blockSize;
+				format.nBlockSize = (144 * bitRate) / sampleRate;
 				format.nFramesPerBlock = 1;
 				format.nCodecDelay = 0;
 
@@ -188,6 +196,14 @@ namespace Floe
 				int get()
 				{
 					return ((MPEGLAYER3WAVEFORMAT*)this->Data)->nFramesPerBlock;
+				}
+			}
+
+			property int BlockSize
+			{
+				int get()
+				{
+					return ((MPEGLAYER3WAVEFORMAT*)this->Data)->nBlockSize;
 				}
 			}
 		};

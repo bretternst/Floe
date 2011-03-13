@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Linq;
 
 using Floe.Net;
-using Floe.Voice;
+using Floe.Audio;
 
 namespace Floe.UI
 {

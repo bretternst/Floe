@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Floe.Voice")]
+[assembly: AssemblyTitle("Floe.Audio")]
 [assembly: AssemblyDescription("Floe Voice Library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]

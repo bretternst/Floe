@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Floe.Voice
+namespace Floe.Audio
 {
 	/// <summary>
 	/// Specifies a codec to use for transmitting voice. Currently, only GSM 6.10 is supported.

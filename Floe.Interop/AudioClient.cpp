@@ -45,6 +45,14 @@ namespace Floe
 			if(m_task != nullptr)
 			{
 				m_cancelEvent->Set();
+			}
+		}
+
+		AudioClient::~AudioClient()
+		{
+			this->Stop();
+			if(m_task != nullptr)
+			{
 				try
 				{
 					m_task->Wait();
@@ -52,13 +60,8 @@ namespace Floe
 				catch(System::AggregateException^)
 				{
 				}
-				m_task = nullptr;
 			}
-		}
-
-		AudioClient::~AudioClient()
-		{
-			this->Stop();
+			m_task = nullptr;
 			if(m_iac != 0)
 			{
 				m_iac->Release();

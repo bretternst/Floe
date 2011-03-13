@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Configuration;
 
-using Floe.Voice;
+using Floe.Audio;
 using Floe.Interop;
 
 namespace Floe.Configuration

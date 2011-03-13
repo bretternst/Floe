@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 
 using Floe.Interop;
-using Floe.Voice;
+using Floe.Audio;
 using Floe.Net;
 
 namespace test
@@ -12,10 +12,8 @@ namespace test
 	{
 		static void Main(string[] args)
 		{
-			foreach (var ip in Dns.GetHostEntry("").AddressList)
-			{
-				Console.WriteLine(ip.ToString());
-			}
+			FilePlayer.PlayAsync("c:\\test.mp3", (o) => Environment.Exit(0));
+			Console.ReadLine();
 		}
 	}
 }

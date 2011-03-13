@@ -6,7 +6,7 @@
 			 xmlns:sys="clr-namespace:System;assembly=mscorlib"
 			 xmlns:local="clr-namespace:Floe.UI"
 			 xmlns:config="clr-namespace:Floe.Configuration;assembly=Floe.Configuration"
-			 xmlns:voice="clr-namespace:Floe.Voice;assembly=Floe.Voice"
+			 xmlns:voice="clr-namespace:Floe.Audio;assembly=Floe.Audio"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="384">
 	<UserControl.Resources>

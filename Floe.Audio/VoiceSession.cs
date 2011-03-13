@@ -8,7 +8,7 @@ using System.Threading;
 using Floe.Interop;
 using Floe.Net;
 
-namespace Floe.Voice
+namespace Floe.Audio
 {
 	/// <summary>
 	/// Defines a method signature for a handler that determines whether audio should be encoded and transmitted.
