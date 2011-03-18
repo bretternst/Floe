@@ -77,6 +77,8 @@ namespace Floe
 
 		void AudioRenderClient::Loop()
 		{
+			DWORD taskIndex = 0;
+			HANDLE taskHandle = AvSetMmThreadCharacteristics(TEXT("Audio"), &taskIndex);
 			array<WaitHandle^>^ handles = { this->CancelHandle, this->BufferHandle };
 			this->RenderBuffer(this->BufferSizeInFrames);
 			ThrowOnFailure(this->Client->Start());
@@ -99,6 +101,10 @@ namespace Floe
 			finally
 			{
 				ThrowOnFailure(this->Client->Stop());
+				if(taskHandle != 0)
+				{
+					AvRevertMmThreadCharacteristics(taskHandle);
+				}
 			}
 		}
 
@@ -113,6 +119,7 @@ namespace Floe
 
 		AudioRenderClient::~AudioRenderClient()
 		{
+			this->Stop();
 			if(m_iarc != 0)
 			{
 				m_iarc->Release();

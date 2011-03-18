@@ -22,7 +22,7 @@ namespace Floe
 			int m_bufferSize;
 
 		public:
-			AudioClient(AudioDevice^ device);
+			AudioClient(AudioDevice ^device);
 			void Start();
 			void Stop();
 

@@ -15,8 +15,6 @@ namespace Floe.Audio
 		private const int WavBufferSamples = 800;
 		private static readonly byte[] WavFileSignature = { 0x52, 0x49, 0x46, 0x46 }; // RIFF
 		private static readonly byte[] Mp3FileSignature = { 0x49, 0x44, 0x33 }; // ID3
-		private static readonly int[] Mp3BitRates = { 0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0 };
-		private static readonly int[] Mp3SampleRates = { 44100, 48000, 32000, 0 };
 
 		private FileStream _stream;
 		private WaveFormat _format;
@@ -65,30 +63,12 @@ namespace Floe.Audio
 				throw new FileFormatException(string.Format("Unsupported ID3 flags ({0})", bytes[5]));
 			}
 
-			var id3 = new byte[(bytes[6] << 21) | (bytes[7] << 14) | (bytes[8] << 7) | bytes[9]];
-			_stream.Read(id3, 0, id3.Length);
+			_stream.Seek((bytes[6] << 21) | (bytes[7] << 14) | (bytes[8] << 7) | bytes[9], SeekOrigin.Current);
 
-			_stream.Read(bytes, 0, 4);
-			if (bytes[0] != 0xff || (bytes[1] & 0xfe) != 0xfa) // MPEG-1 layer 3
-			{
-				throw new FileFormatException("Only MPEG-1 Layer 3 is supported.");
-			}
-			bool isProtected = (bytes[1] & 0x01) > 0;
-			int bitRate = Mp3BitRates[bytes[2] >> 4];
-			if (bitRate == 0)
-			{
-				throw new FileFormatException("Unsupported bit rate.");
-			}
-			int sampleRate = Mp3SampleRates[(bytes[2] & 0xc) >> 2];
-			if (sampleRate == 0)
-			{
-				throw new FileFormatException("Unsupportd sample rate.");
-			}
-			bool isPadded = (bytes[2] & 0x2) > 0;
-			int mode = bytes[3] >> 6;
-			_format = new WaveFormatMp3((short)(mode == 2 ? 1 : 2), sampleRate, bitRate * 1000);
+			int channels, bitRate, sampleRate;
+			int size = ReadFrameHeader(_stream, out channels, out sampleRate, out bitRate);
+			_format = new WaveFormatMp3((short)channels, sampleRate, bitRate * 1000);
 			_buffer = new byte[((WaveFormatMp3)_format).BlockSize + 1];
-			_stream.Seek(-4, SeekOrigin.Current);
 			_render = new AudioRenderClient(AudioDevice.DefaultRenderDevice, _buffer.Length, _buffer.Length, _format);
 			_render.ReadPacket += ReadPacketMp3;
 		}
@@ -157,22 +137,16 @@ namespace Floe.Audio
 
 		private void ReadPacketMp3(object sender, ReadPacketEventArgs e)
 		{
-			int bitRate = 0, sampleRate = 0;
-			if (_stream.Read(_buffer, 0, 4) < 4 ||
-				_buffer[0] != 0xff || (_buffer[1] & 0xfe) != 0xfa ||
-				(bitRate = Mp3BitRates[_buffer[2] >> 4]) == 0 ||
-				(sampleRate = Mp3SampleRates[(_buffer[2] & 0xc) >> 2]) == 0)
+			if ((e.Length = ReadFrameHeader(_stream)) == 0)
 			{
 				var handler = this.Done;
 				if (handler != null)
 				{
 					handler(this, EventArgs.Empty);
 				}
+				return;
 			}
-			bool isProtected = (_buffer[1] & 0x01) > 0;
-			bool isPadded = (_buffer[2] & 0x2) > 0;
-			e.Length = 144 * bitRate * 1000 / sampleRate + (isPadded ? 1 : 0);
-			_stream.Read(_buffer, 4, e.Length - 4 + (isProtected ? 16 : 0));
+			_stream.Read(_buffer, 0, e.Length);
 			Marshal.Copy(_buffer, 0, e.Buffer, e.Length);
 		}
 
@@ -190,13 +164,126 @@ namespace Floe.Audio
 			player.Start();
 		}
 
-		private static void ReverseBytes(byte[] bytes, int start, int end)
+		private static readonly short[, ,] MpegBitRates = new short[2, 3, 16]
 		{
-			while (start < end)
 			{
-				byte tmp = bytes[start];
-				bytes[start++] = bytes[end];
-				bytes[end--] = tmp;
+				{ 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 0 },
+				{ 0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384, 0 },
+				{ 0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0 }
+			},
+			{
+				{ 0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256, 0 },
+				{ 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0 },
+				{ 0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0 }
+			}
+		};
+
+		private static readonly int[,] MpegSampleRates = new int[3, 4]
+		{
+			{
+				44100, 48000, 32000, 0
+			},
+			{
+				22050, 24000, 16000, 0
+			},
+			{
+				11025, 12000, 8000, 0
+			}
+		};
+
+		private static int ReadFrameHeader(Stream stream)
+		{
+			int channels, sampleRate, bitRate;
+			return ReadFrameHeader(stream, out channels, out sampleRate, out bitRate);
+		}
+
+		private static int ReadFrameHeader(Stream stream, out int channels, out int sampleRate, out int bitRate)
+		{
+			channels = 0;
+			sampleRate = 0;
+			bitRate = 0;
+
+			int b;
+			while (true)
+			{
+				if ((b = stream.ReadByte()) == -1)
+				{
+					return 0;
+				}
+				else if (b != 0xff)
+				{
+					continue;
+				}
+
+				if ((b = stream.ReadByte()) == -1)
+				{
+					return 0;
+				}
+				if ((b & 0xe0) != 0xe0)
+				{
+					continue;
+				}
+
+				int version = (b & 0x18) >> 3;
+				if (version == 1)
+				{
+					continue;
+				}
+				switch (version)
+				{
+					case 0:
+						version = 2;
+						break;
+					case 2:
+						version = 1;
+						break;
+					case 3:
+						version = 0;
+						break;
+				}
+				int layer = (b & 0x6) >> 1;
+				if (layer == 0)
+				{
+					continue;
+				}
+				switch (layer)
+				{
+					case 1:
+						layer = 2;
+						break;
+					case 2:
+						layer = 1;
+						break;
+					case 3:
+						layer = 0;
+						break;
+				}
+
+				if ((b = stream.ReadByte()) == -1)
+				{
+					return 0;
+				}
+				bitRate = MpegBitRates[version > 0 ? 1 : 0, layer, (b >> 4)];
+				if (bitRate == 0)
+				{
+					continue;
+				}
+
+				sampleRate = MpegSampleRates[version, (b & 0xc) >> 2];
+				if (sampleRate == 0)
+				{
+					continue;
+				}
+				int padding = (b & 0x2) > 0 ? 1 : 0;
+
+				if ((b = stream.ReadByte()) == -1)
+				{
+					return 0;
+				}
+				channels = ((b & 0xc0) >> 6) == 3 ? 1 : 2;
+
+				stream.Seek(-4, SeekOrigin.Current);
+				return 144 * bitRate * 1000 / sampleRate + padding;
 			}
 		}
 	}

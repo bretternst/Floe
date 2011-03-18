@@ -67,7 +67,10 @@
 				</Binding.ValidationRules>
 			</Binding>
 		</TextBox>
-		<TextBox ToolTip="{StaticResource ttOnConnect}" Canvas.Left="165" Canvas.Top="159" Height="129" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
+		<TextBox ToolTip="{StaticResource ttOnConnect}" Canvas.Left="165" Canvas.Top="159" Height="98" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
 		<Label Canvas.Left="301" Canvas.Top="100" Content="Password" Height="18" Name="label5" />
+		<TextBlock Canvas.Left="165" Canvas.Top="260" Height="40" Name="label6" Width="207" TextWrapping="Wrap">
+			Tip: Use "/delay N" to delay N seconds between commands.
+		</TextBlock>
 	</Canvas>
 </UserControl>

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Floe.Net;
+using System.Threading;
 
 namespace Floe.UI
 {
@@ -30,6 +31,7 @@ namespace Floe.UI
 		private LogFileHandle _logFile;
 		private ChatLine _markerLine;
 		private VoiceControl _voiceControl;
+		private Timer _delayTimer;
 
 		public ChatControl(ChatPageType type, IrcSession session, IrcTarget target)
 			: base(type, session, target, type == ChatPageType.Server ? "server" : 
@@ -339,9 +341,33 @@ namespace Floe.UI
 			}
 		}
 
-		private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+		private void DoPerform(int startIndex)
 		{
-
+			var commands = this.Perform.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0).Select((s) => s.Trim()).ToArray();
+			for (int i = startIndex; i < commands.Length; i++)
+			{
+				if (commands[i].StartsWith("/DELAY", StringComparison.InvariantCultureIgnoreCase))
+				{
+					int time;
+					var parts = commands[i].Split(' ');
+					if (parts.Length < 2 || !int.TryParse(parts[1], out time))
+					{
+						time = 1;
+					}
+					_delayTimer = new Timer((o) =>
+					{
+						this.Dispatcher.BeginInvoke((Action)(() =>
+						{
+							this.DoPerform(i + 1);
+						}));
+					}, null, time * 1000, Timeout.Infinite);
+					return;
+				}
+				else
+				{
+					this.Execute(commands[i], false);
+				}
+			}
 		}
 	}
 }

@@ -67,7 +67,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Ole32.lib;Msacm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;Msacm32.lib;Avrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <KeyFile>..\Floe.snk</KeyFile>
     </Link>
     <CustomBuildStep>

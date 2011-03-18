@@ -39,10 +39,7 @@ namespace Floe.UI
 						App.DoEvent("connect");
 						if (this.Perform != null)
 						{
-							foreach (var cmd in this.Perform.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0))
-							{
-								this.Execute(cmd, false);
-							}
+							DoPerform(0);
 						}
 						break;
 				}
@@ -524,10 +521,14 @@ namespace Floe.UI
 
 		private void lstNicknames_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
-			var nickItem = e.Source as NicknameItem;
-			if (nickItem != null)
+			var listItem = e.Source as ListBoxItem;
+			if(listItem != null)
 			{
-				ChatWindow.ChatCommand.Execute(nickItem.Nickname, this);
+				var nickItem = listItem.Content as NicknameItem;
+				if(nickItem != null)
+				{
+					ChatWindow.ChatCommand.Execute(nickItem.Nickname, this);
+				}
 			}
 		}
 

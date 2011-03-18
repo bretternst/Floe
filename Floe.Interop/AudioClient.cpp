@@ -50,7 +50,6 @@ namespace Floe
 
 		AudioClient::~AudioClient()
 		{
-			this->Stop();
 			if(m_task != nullptr)
 			{
 				try
@@ -60,8 +59,8 @@ namespace Floe
 				catch(System::AggregateException^)
 				{
 				}
+				m_task = nullptr;
 			}
-			m_task = nullptr;
 			if(m_iac != 0)
 			{
 				m_iac->Release();

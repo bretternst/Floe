@@ -66,7 +66,7 @@ namespace Floe.UI.Settings
 			if (parent != null)
 			{
 				var textBox = (TextBox)parent;
-				if (!textBox.IsKeyboardFocusWithin)
+				if (!textBox.IsKeyboardFocusWithin && !textBox.AcceptsReturn)
 				{
 					textBox.Focus();
 					e.Handled = true;
@@ -77,7 +77,7 @@ namespace Floe.UI.Settings
 		private void SelectAllText(object sender, RoutedEventArgs e)
 		{
 			var textBox = e.OriginalSource as TextBox;
-			if (textBox != null)
+			if (textBox != null && !textBox.AcceptsReturn)
 			{
 				textBox.SelectAll();
 			}

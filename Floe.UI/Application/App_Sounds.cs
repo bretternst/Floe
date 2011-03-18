@@ -2,11 +2,14 @@
 using System.Media;
 using System.Windows;
 
+using Floe.Audio;
+using Floe.Interop;
+
 namespace Floe.UI
 {
 	public partial class App : Application
 	{
-		private static SoundPlayer _player = new SoundPlayer();
+		private static FilePlayer _player;
 
 		public static void DoEvent(string eventName)
 		{
@@ -15,14 +18,20 @@ namespace Floe.UI
 				string path = App.Settings.Current.Sounds.GetPathByName(eventName);
 				if (!string.IsNullOrEmpty(path))
 				{
-					_player.SoundLocation = path;
+					if (_player != null)
+					{
+						_player.Dispose();
+					}
 					try
 					{
-						_player.Play();
+						_player = new FilePlayer(path);
+						_player.Start();
 					}
 					catch (Exception ex)
 					{
-						System.Diagnostics.Debug.WriteLine("Unable to play sound: " + ex.Message);
+						_player = null;
+						System.Diagnostics.Debug.WriteLine(
+							string.Format("Unable to play audio file {0}: {1}", path, ex.Message));
 					}
 				}
 			}

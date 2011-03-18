@@ -49,8 +49,10 @@ namespace Floe
 
 		void AudioCaptureClient::Loop()
 		{
-			array<WaitHandle^>^ handles = { this->CancelHandle, this->BufferHandle };
+			DWORD taskIndex = 0;
+			HANDLE taskHandle = AvSetMmThreadCharacteristics(TEXT("Audio"), &taskIndex);
 
+			array<WaitHandle^>^ handles = { this->CancelHandle, this->BufferHandle };
 			ThrowOnFailure(this->Client->Start());
 
 			try
@@ -70,6 +72,10 @@ namespace Floe
 			finally
 			{
 				ThrowOnFailure(this->Client->Stop());
+				if(taskHandle != 0)
+				{
+					AvRevertMmThreadCharacteristics(taskHandle);
+				}
 			}
 		}
 
@@ -84,6 +90,7 @@ namespace Floe
 
 		AudioCaptureClient::~AudioCaptureClient()
 		{
+			this->Stop();
 			if(m_iacc != 0)
 			{
 				m_iacc->Release();

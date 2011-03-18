@@ -13,3 +13,4 @@
 #include <Audioclient.h>
 #include <audiopolicy.h>
 #include <endpointvolume.h>
+#include <avrt.h>
