@@ -97,18 +97,13 @@ namespace Floe.UI
 			}
 		}
 
-		private bool TransmitPredicate(float peak)
+		private bool TransmitPredicate()
 		{
 			bool isTransmitting = false;
 
 			if (App.Settings.Current.Voice.PushToTalk)
 			{
 				isTransmitting = _isTalkKeyDown;
-			}
-			else if (peak >= App.Settings.Current.Voice.TalkLevel)
-			{
-				isTransmitting = true;
-				_lastTransmit = DateTime.Now.Ticks;
 			}
 			else if (DateTime.Now.Ticks - _lastTransmit < TrailTime)
 			{

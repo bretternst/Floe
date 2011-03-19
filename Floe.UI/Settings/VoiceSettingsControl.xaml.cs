@@ -11,8 +11,7 @@ namespace Floe.UI.Settings
 {
 	public partial class VoiceSettingsControl : UserControl
 	{
-		private AudioCaptureClient _capture;
-		private AudioMeter _meter;
+		private WaveInMeter _meter;
 		private Timer _timer;
 		private VoiceLoopback _loopback;
 
@@ -20,8 +19,6 @@ namespace Floe.UI.Settings
 		{
 			InitializeComponent();
 			this.Unloaded += new RoutedEventHandler(VoiceSettingsControl_Unloaded);
-			_capture = new AudioCaptureClient(AudioDevice.DefaultCaptureDevice, 1000, 0, new WaveFormatPcm(44100, 16, 1));
-			_meter = new AudioMeter(AudioDevice.DefaultCaptureDevice);
 		}
 
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
@@ -32,18 +29,18 @@ namespace Floe.UI.Settings
 			{
 				if ((Visibility)e.NewValue == Visibility.Visible)
 				{
-					_capture.Start();
-					_timer = new Timer((o) =>
-					{
-						this.Dispatcher.BeginInvoke((Action)(() => prgMicLevel.Value = _meter.Peak));
-					}, null, 25, 25);
+					_meter = new WaveInMeter(2500);
+					_meter.LevelUpdated += (sender, eLevel) =>
+						{
+							this.Dispatcher.BeginInvoke((Action)(() => prgMicLevel.Value = eLevel.Level));
+						};
 				}
 				else
 				{
-					if (_timer != null)
+					if (_meter != null)
 					{
-						_timer.Dispose();
-						_capture.Stop();
+						_meter.Dispose();
+						_meter = null;
 					}
 				}
 			}
@@ -77,10 +74,9 @@ namespace Floe.UI.Settings
 
 		private void VoiceSettingsControl_Unloaded(object sender, RoutedEventArgs e)
 		{
-			_capture.Dispose();
-			if (_timer != null)
+			if (_meter != null)
 			{
-				_timer.Dispose();
+				_meter.Dispose();
 			}
 			if (_loopback != null)
 			{
@@ -100,7 +96,6 @@ namespace Floe.UI.Settings
 		private void SetVolume()
 		{
 			_loopback.RenderVolume = (float)sldRenderLevel.Value;
-			_loopback.CaptureVolume = (float)sldCaptureLevel.Value;
 		}
 	}
 }

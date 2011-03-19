@@ -58,13 +58,6 @@ namespace Floe.Configuration
 			set { this["playbackVolume"] = value; OnPropertyChanged("PlaybackVolume"); }
 		}
 
-		[ConfigurationProperty("captureVolume", DefaultValue = 1f)]
-		public float CaptureVolume
-		{
-			get { return (float)this["captureVolume"]; }
-			set { this["captureVolume"] = value; OnPropertyChanged("CaptureVolume"); }
-		}
-
 		[ConfigurationProperty("talkLevel", DefaultValue = 0.2f)]
 		public float TalkLevel
 		{

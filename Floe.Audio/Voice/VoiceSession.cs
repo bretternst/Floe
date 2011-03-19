@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Threading;
 
 using Floe.Interop;
 using Floe.Net;
@@ -11,37 +9,15 @@ using Floe.Net;
 namespace Floe.Audio
 {
 	/// <summary>
-	/// Defines a method signature for a handler that determines whether audio should be encoded and transmitted.
-	/// </summary>
-	/// <param name="peak">The peak audio level for the current buffer.</param>
-	/// <returns>Returns true if transmission should occur, false otherwise.</returns>
-	public delegate bool TransmitPredicate(float peak);
-
-	/// <summary>
-	/// Defines a method signature for a handler that determines whether to process audio received from a given endpoint.
-	/// </summary>
-	/// <param name="endpoint">The endpoint from which a packet was received.</param>
-	/// <returns>Returns true if the packet should be processed, false otherwise.</returns>
-	public delegate bool ReceivePredicate(IPEndPoint endpoint);
-
-	/// <summary>
 	/// Manages a voice session connecting to one or more peers. Recorded audio is encoded and sent to all peers, and received audio is played.
 	/// This class uses GSM 6.10 to compress the audio stream.
 	/// </summary>
 	public sealed class VoiceSession : RtpClient, IDisposable
 	{
-		private VoiceCodec _codec;
-		private VoiceQuality _quality;
-		private SynchronizationContext _syncContext;
-		private AudioCaptureClient _capture;
-		private int _timeStamp;
-		private byte[] _packet;
+		private VoiceIn _voiceIn;
 		private Dictionary<IPEndPoint, VoicePeer> _peers;
-		private bool _isDisposed = false;
 		private float _renderVolume = 1f;
-		private int _timeIncrement;
 		private VoicePacketPool _pool;
-		private TransmitPredicate _transmitPredicate;
 		private ReceivePredicate _receivePredicate;
 
 		/// <summary>
@@ -54,18 +30,12 @@ namespace Floe.Audio
 		/// use logic such as PTT (push-to-talk) or an automatic peak level-based approach. By default, all packets are transmitted.</param>
 		public VoiceSession(VoiceCodec codec, VoiceQuality quality, UdpClient client = null,
 			TransmitPredicate transmitPredicate = null, ReceivePredicate receivePredicate = null)
-			: base(GetPayloadType(codec), GetPacketSize(codec), client)
+			: base((byte)GetPayloadType(codec), GetBufferSize(codec), client)
 		{
-			_codec = codec;
-			_quality = quality;
-			_packet = new byte[this.PayloadSize];
-			_syncContext = SynchronizationContext.Current;
 			_peers = new Dictionary<IPEndPoint, VoicePeer>();
-			_timeIncrement = GetSamplesPerPacket(VoiceCodec.Gsm610);
 			_pool = new VoicePacketPool();
-			_transmitPredicate = transmitPredicate;
 			_receivePredicate = receivePredicate;
-			this.InitAudio();
+			_voiceIn = new VoiceIn(codec, quality, this, transmitPredicate);
 		}
 
 		/// <summary>
@@ -87,14 +57,6 @@ namespace Floe.Audio
 			}
 		}
 
-		/// <summary>
-		/// Gets or sets the volume at which audio is recorded and sent to peers. This is a value between 0 and 1.
-		/// </summary>
-		public float CaptureVolume { get { return _capture.Volume; } set { _capture.Volume = value; } }
-
-		/// <summary>
-		/// Fires whenever an error occurs that shuts down the voice session.
-		/// </summary>
 		public event EventHandler<ErrorEventArgs> Error;
 
 		/// <summary>
@@ -103,7 +65,7 @@ namespace Floe.Audio
 		public override void Open()
 		{
 			base.Open();
-			_capture.Start();
+			_voiceIn.Start();
 		}
 
 		/// <summary>
@@ -112,7 +74,7 @@ namespace Floe.Audio
 		public override void Close()
 		{
 			base.Close();
-			_capture.Stop();
+			_voiceIn.Close();
 		}
 
 		/// <summary>
@@ -153,43 +115,10 @@ namespace Floe.Audio
 
 		protected override void OnError(Exception ex)
 		{
-			this.RaiseEvent(this.Error, new ErrorEventArgs(ex));
-		}
-
-		private void capture_WritePacket(object sender, WritePacketEventArgs e)
-		{
-			Marshal.Copy(e.Buffer, _packet, 0, this.PayloadSize);
-			this.Send(_timeStamp, _packet);
-			_timeStamp += _timeIncrement;
-		}
-
-		private void InitAudio()
-		{
-			if (_capture != null)
+			var handler = this.Error;
+			if (handler != null)
 			{
-				_capture.WritePacket -= capture_WritePacket;
-				_capture.Dispose();
-			}
-			_capture = new VoiceCaptureClient(AudioDevice.DefaultCaptureDevice, _codec, _quality, _transmitPredicate);
-			_capture.WritePacket += capture_WritePacket;
-		}
-
-		private void RaiseEvent<T>(EventHandler<T> evt, T e) where T : EventArgs
-		{
-			var action = new Action(() =>
-			{
-				if (evt != null)
-				{
-					evt(this, e);
-				}
-			});
-			if (_syncContext != null)
-			{
-				_syncContext.Post((o) => action(), null);
-			}
-			else
-			{
-				action();
+				handler(this, new ErrorEventArgs(ex));
 			}
 		}
 
@@ -198,15 +127,11 @@ namespace Floe.Audio
 		/// </summary>
 		public override void Dispose()
 		{
-			if (!_isDisposed)
+			base.Dispose();
+			_voiceIn.Dispose();
+			foreach (var peer in _peers.Values)
 			{
-				base.Dispose();
-				_capture.Dispose();
-				foreach (var peer in _peers.Values)
-				{
-					peer.Dispose();
-				}
-				_isDisposed = true;
+				peer.Dispose();
 			}
 		}
 
@@ -215,7 +140,7 @@ namespace Floe.Audio
 			this.Dispose();
 		}
 
-		internal static byte GetPayloadType(VoiceCodec codec)
+		internal static int GetPayloadType(VoiceCodec codec)
 		{
 			switch (codec)
 			{
@@ -226,23 +151,12 @@ namespace Floe.Audio
 			}
 		}
 
-		internal static int GetPacketSize(VoiceCodec codec)
+		internal static int GetBufferSize(VoiceCodec codec)
 		{
 			switch (codec)
 			{
 				case VoiceCodec.Gsm610:
-					return 65;
-				default:
-					throw new ArgumentException("Unsupported codec.");
-			}
-		}
-
-		internal static int GetSamplesPerPacket(VoiceCodec codec)
-		{
-			switch (codec)
-			{
-				case VoiceCodec.Gsm610:
-					return 320;
+					return 130;
 				default:
 					throw new ArgumentException("Unsupported codec.");
 			}
@@ -271,20 +185,23 @@ namespace Floe.Audio
 			}
 		}
 
-		internal static int GetBufferSize(VoiceCodec codec, VoiceQuality quality, bool isRender)
-		{
-			return isRender ? GetPacketSize(codec) * 2 : GetSamplesPerPacket(codec) * 2 * (44100 / GetSampleRate(codec, quality));
-		}
-
-		internal static WaveFormat[] GetConversions(VoiceCodec codec, VoiceQuality quality, bool isRender)
+		internal static WaveFormat GetFormat(VoiceCodec codec, VoiceQuality quality)
 		{
 			switch (codec)
 			{
 				case VoiceCodec.Gsm610:
-					int sampleRate = GetSampleRate(codec, quality);
-					return isRender ?
-						new WaveFormat[] { new WaveFormatGsm610(sampleRate), new WaveFormatPcm(sampleRate, 16, 1) } :
-						new WaveFormat[] { new WaveFormatPcm(sampleRate, 16, 1), new WaveFormatGsm610(sampleRate) };
+					return new WaveFormatGsm610(GetSampleRate(codec, quality));
+				default:
+					throw new ArgumentException("Unsupported codec.");
+			}
+		}
+
+		internal static int GetSamplesPerPacket(VoiceCodec codec)
+		{
+			switch (codec)
+			{
+				case VoiceCodec.Gsm610:
+					return 640;
 				default:
 					throw new ArgumentException("Unsupported codec.");
 			}

@@ -21,6 +21,7 @@ namespace Floe.UI
 		private IrcTarget _target;
 		private NicknameList _nickList;
 		private VoiceSession _voice;
+		private WaveInMeter _meter;
 		private IPEndPoint _publicEndPoint;
 		private Dictionary<IPEndPoint, VoicePeer> _peers;
 		private NicknameItem _self;

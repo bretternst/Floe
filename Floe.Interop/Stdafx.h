@@ -9,8 +9,4 @@
 #include <MMSystem.h>
 #include <MMReg.h>
 #include <MSAcm.h>
-#include <mmdeviceapi.h>
-#include <Audioclient.h>
-#include <audiopolicy.h>
-#include <endpointvolume.h>
 #include <avrt.h>

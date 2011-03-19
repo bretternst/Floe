@@ -67,7 +67,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Ole32.lib;Msacm32.lib;Avrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;Msacm32.lib;Avrt.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <KeyFile>..\Floe.snk</KeyFile>
     </Link>
     <CustomBuildStep>
@@ -87,7 +87,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Ole32.lib;Msacm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;Msacm32.lib;Avrt.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <KeyFile>..\Floe.snk</KeyFile>
     </Link>
     <CustomBuildStep>
@@ -106,11 +106,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AudioCaptureClient.h" />
-    <ClInclude Include="AudioMeter.h" />
     <ClInclude Include="AudioConverter.h" />
-    <ClInclude Include="AudioDevice.h" />
-    <ClInclude Include="AudioRenderClient.h" />
+    <ClInclude Include="WaveIn.h" />
+    <ClInclude Include="WaveOut.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="InputButton.h" />
     <ClInclude Include="RawInput.h" />
@@ -119,11 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
-    <ClCompile Include="AudioCaptureClient.cpp" />
-    <ClCompile Include="AudioMeter.cpp" />
-    <ClCompile Include="AudioClient.cpp" />
     <ClCompile Include="AudioConverter.cpp" />
-    <ClCompile Include="AudioDevice.cpp" />
     <ClCompile Include="RawInput.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -131,8 +125,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AudioRenderClient.cpp" />
-    <None Include="AudioClient.h" />
+    <ClCompile Include="WaveIn.cpp" />
+    <ClCompile Include="WaveOut.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

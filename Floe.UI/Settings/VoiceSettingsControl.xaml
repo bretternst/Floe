@@ -17,6 +17,7 @@
 		</ObjectDataProvider>
 		<local:DoubleToPercentConverter x:Key="doubleToPercentConverter"/>
 		<ToolTip x:Key="ttQuality" Content="Set the audio transmit quality. Use a lower quality if your upstream bandwidth is limited. Low quality uses approximately 1.3KB/s, medium uses about 2KB/s, high uses about 4KB/s, and ultra uses about 8KB/s."/>
+		<Geometry x:Key="volumeGeometry">M0,1 L1,1 L1,0</Geometry>
 	</UserControl.Resources>
 	<Canvas>
 		<Label Canvas.Left="3" Canvas.Top="63" Content="Transmit Quality" Height="28" Name="label5" ToolTip="{StaticResource ttQuality}" />
@@ -27,10 +28,9 @@
 		<ToggleButton Checked="btnLoopback_Checked" Unchecked="btnLoopback_Unchecked"  Canvas.Left="8" Canvas.Top="116" Content="Loopback Test" Height="23" Name="btnLoopback" Width="100" />
 		<ProgressBar Canvas.Left="8" Canvas.Top="272" Height="16" Name="prgMicLevel" Width="364" Minimum="0" Maximum="1" />
 		<Label Canvas.Left="3" Canvas.Top="247" Content="Microphone Level" Height="28" Name="label3" />
-		<Slider ValueChanged="sldLevel_ValueChanged"  Name="sldCaptureLevel" Canvas.Left="8" Canvas.Top="176" Height="23" Minimum="0" Maximum="1" Width="156" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.CaptureVolume}" />
-		<Label Canvas.Left="12" Canvas.Top="155" Content="Capture Level" Height="28" Name="label4" />
-		<Slider ValueChanged="sldLevel_ValueChanged"  Name="sldRenderLevel" Canvas.Left="190" Canvas.Top="176" Height="23" Maximum="1" Minimum="0" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.PlaybackVolume}" Width="156" />
-		<Label Canvas.Left="190" Canvas.Top="155" Content="Playback Level" Height="28" Name="label6"/>
+		<Path Stretch="Fill" Canvas.Left="8" Canvas.Top="182" Data="{StaticResource volumeGeometry}" Fill="LightGray"  Width="153" Height="23"/>
+		<Slider ValueChanged="sldLevel_ValueChanged"  Name="sldRenderLevel" Canvas.Left="8" Canvas.Top="182" Height="23" Maximum="1" Minimum="0" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.PlaybackVolume}" Width="153" />
+		<Label Canvas.Left="10" Canvas.Top="161" Content="Playback Level" Height="28" Name="label6"/>
 		<Slider Canvas.Left="8" Canvas.Top="227" Height="23" Maximum="1" Minimum="0" Name="slider2" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.TalkLevel}" Width="364" />
 		<Label Canvas.Left="10" Canvas.Top="205" Content="Transmit Activation Level" Height="28" Name="label7" />
 	</Canvas>

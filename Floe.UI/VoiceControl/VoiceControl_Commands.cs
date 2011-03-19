@@ -54,6 +54,7 @@ namespace Floe.UI
 
 		private void ExecuteStopVoice(object sender, ExecutedRoutedEventArgs e)
 		{
+			_meter.Dispose();
 			this.UnsubscribeEvents();
 			if (_peers.Count > 0)
 			{
@@ -73,7 +74,8 @@ namespace Floe.UI
 
 		private void Start(UdpClient client = null)
 		{
-			_voice = new VoiceSession(VoiceCodec.Gsm610, App.Settings.Current.Voice.Quality, client, this.TransmitPredicate, this.ReceivePredicate);
+			_voice = new VoiceSession(VoiceCodec.Gsm610, App.Settings.Current.Voice.Quality,
+				client, this.TransmitPredicate, this.ReceivePredicate);
 			if (client == null)
 			{
 				_publicEndPoint = new IPEndPoint(_session.ExternalAddress, _voice.LocalEndPoint.Port);
@@ -91,6 +93,15 @@ namespace Floe.UI
 				SetIsVoiceChat(_self, true);
 			}
 			_voice.Open();
+
+			_meter = new WaveInMeter(640);
+			_meter.LevelUpdated += (sender2, e2) =>
+			{
+				if (e2.Level >= App.Settings.Current.Voice.TalkLevel)
+				{
+					_lastTransmit = DateTime.Now.Ticks;
+				}
+			};
 		}
 	}
 }

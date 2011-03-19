@@ -9,10 +9,10 @@ namespace Floe
 {
 	namespace Interop
 	{
-		public ref class AudioException : Exception
+		public ref class InteropException : Exception
 		{
 		public:
-			AudioException(String^ message)
+			InteropException(String^ message)
 				: Exception(message)
 			{
 			}
@@ -22,7 +22,15 @@ namespace Floe
 		{
 			if(hr != 0)
 			{
-				throw gcnew AudioException(System::String::Format("Audio error: {0}", hr.ToString("X")));
+				throw gcnew InteropException(System::String::Format("System error: {0}", hr.ToString("X")));
+			}
+		}
+
+		inline void ThrowOnZero(HANDLE handle)
+		{
+			if(handle == 0)
+			{
+				throw gcnew InteropException("A null handle was returned.");
 			}
 		}
 	}

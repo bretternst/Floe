@@ -59,11 +59,10 @@ namespace Floe.Net
 		public int PayloadSize { get { return _payload.Length; } }
 
 		/// <summary>
-		/// Begin an RTP session. If an existing session is open, it will be closed.
+		/// Begin an RTP session.
 		/// </summary>
 		public virtual void Open()
 		{
-			this.Close();
 			_endEvent = new ManualResetEvent(false);
 			_readyEvent = new ManualResetEvent(false);
 			_thread = new Thread(new ThreadStart(ThreadProc));
