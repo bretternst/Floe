@@ -12,7 +12,6 @@ namespace Floe.UI.Settings
 	public partial class VoiceSettingsControl : UserControl
 	{
 		private WaveInMeter _meter;
-		private Timer _timer;
 		private VoiceLoopback _loopback;
 
 		public VoiceSettingsControl()

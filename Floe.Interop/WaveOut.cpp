@@ -45,7 +45,6 @@ namespace Floe
 			array<WaitHandle^> ^handles = { m_stop, bufEvent };
 			int bufIdx = 0;
 			HWAVEOUT wavHandle;
-			HMIXER mixHandle;
 			WAVEHDR hdr[2];
 
 			try
