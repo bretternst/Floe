@@ -12,16 +12,13 @@ namespace test
 	{
 		static void Main(string[] args)
 		{
-			using (var meter = new WaveInMeter(1000))
+			using (var voice = new VoiceSession(VoiceCodec.Gsm610, VoiceQuality.High))
 			{
-				meter.LevelUpdated += new EventHandler<WaveLevelEventArgs>(meter_LevelUpdated);
+				voice.AddPeer(VoiceCodec.Gsm610, VoiceQuality.High,
+					new IPEndPoint(Dns.GetHostEntry("spoon.failurefiles.com").AddressList[0], 57222));
+				voice.Open();
 				Console.ReadLine();
 			}
-		}
-
-		static void meter_LevelUpdated(object sender, WaveLevelEventArgs e)
-		{
-			Console.WriteLine(e.Level);
 		}
 	}
 }

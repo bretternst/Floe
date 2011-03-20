@@ -7,7 +7,7 @@ namespace Floe.Audio
 {
 	class JitterBuffer : Stream
 	{
-		private const int JitterBufferSize = 16;
+		private const int JitterBufferSize = 12;
 
 		private ConcurrentQueue<VoicePacket> _incoming;
 		private VoicePacket[] _buffer;
@@ -40,8 +40,24 @@ namespace Floe.Audio
 					this.Insert(newPacket);
 				}
 
-				if ((!_isBuffering && _numPackets > 0) ||
-					(_isBuffering && _numPackets >= _buffer.Length / 2))
+				if (_isBuffering)
+				{
+					if (_numPackets >= _buffer.Length / 2)
+					{
+						_isBuffering = false;
+					}
+					else
+					{
+						continue;
+					}
+				}
+
+				if (_numPackets <= 1)
+				{
+					_isBuffering = true;
+				}
+
+				if (_numPackets > 0)
 				{
 					break;
 				}
@@ -51,7 +67,7 @@ namespace Floe.Audio
 			for (i = 0; _buffer[i] == null; i++) ;
 			if (i > 0)
 			{
-				this.RemoveFirst(i - 1);
+				this.RemoveFirst(i);
 			}
 
 			var packet = _buffer[0];
