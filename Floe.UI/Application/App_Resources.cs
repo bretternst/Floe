@@ -64,9 +64,9 @@ namespace Floe.UI
 			{
 				App.Settings = new PersistentSettings(App.Product);
 			}
-			catch (Exception ex)
+			catch (System.Configuration.ConfigurationException ex)
 			{
-				System.Windows.MessageBox.Show(string.Format("Unable to load user configuration. You may want to delete the configuration file and try again.",
+				System.Windows.MessageBox.Show(string.Format("Unable to load user configuration. You may want to delete the configuration file and try again. {0}",
 					ex.Message));
 				Environment.Exit(-1);
 			}

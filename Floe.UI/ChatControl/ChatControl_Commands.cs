@@ -732,13 +732,21 @@ namespace Floe.UI
 									this.Write("Error", "File name is required.");
 									break;
 								}
-								if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
+								try
 								{
-									path = args[2];
+									if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
+									{
+										path = args[2];
+									}
+									else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
+									{
+										this.Write("Error", "Could not find file " + args[2]);
+										break;
+									}
 								}
-								else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
+								catch (ArgumentException)
 								{
-									this.Write("Error", "Could not find file " + args[2]);
+									this.Write("Error", string.Format("Invalid pathname: {0}", args[2]));
 									break;
 								}
 								if (dccCmd == "XMIT")

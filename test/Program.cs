@@ -12,13 +12,8 @@ namespace test
 	{
 		static void Main(string[] args)
 		{
-			using (var voice = new VoiceSession(VoiceCodec.Gsm610, VoiceQuality.High))
-			{
-				voice.AddPeer(VoiceCodec.Gsm610, VoiceQuality.High,
-					new IPEndPoint(Dns.GetHostEntry("spoon.failurefiles.com").AddressList[0], 57222));
-				voice.Open();
-				Console.ReadLine();
-			}
+			FilePlayer.PlayAsync("c:\\test.mp3");
+			Console.ReadLine();
 		}
 	}
 }

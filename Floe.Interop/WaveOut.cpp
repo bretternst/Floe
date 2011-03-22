@@ -16,7 +16,10 @@ namespace Floe
 
 		void WaveOut::Start()
 		{
-			m_task = Task::Factory->StartNew(gcnew System::Action(this, &WaveOut::Loop));
+			m_thread = gcnew Thread(gcnew ThreadStart(this, &WaveOut::Loop));
+			m_thread->IsBackground = true;
+			m_thread->Priority = ThreadPriority::Highest;
+			m_thread->Start();
 		}
 
 		void WaveOut::Pause()
@@ -38,8 +41,6 @@ namespace Floe
 		{
 			using namespace System::Runtime::InteropServices;
 
-			DWORD taskIndex = 0;
-			HANDLE taskHandle = AvSetMmThreadCharacteristics(TEXT("Audio"), &taskIndex);
 			array<System::Byte> ^bytes = gcnew array<System::Byte>(m_bufferSize);
 			AutoResetEvent ^bufEvent = gcnew AutoResetEvent(false);
 			array<WaitHandle^> ^handles = { m_stop, bufEvent };
@@ -97,23 +98,16 @@ namespace Floe
 					delete[] (BYTE*)hdr[i].lpData;
 				}
 				ThrowOnFailure(waveOutClose(wavHandle));
-				AvRevertMmThreadCharacteristics(taskHandle);
 			}
 		}
 
 		WaveOut::~WaveOut()
 		{
 			this->Close();
-			if(m_task != nullptr)
+			if(m_thread != nullptr)
 			{
-				try
-				{
-					m_task->Wait();
-				}
-				catch(System::AggregateException^)
-				{
-				}
-				m_task = nullptr;
+				m_thread->Join();
+				m_thread = nullptr;
 			}
 		}
 

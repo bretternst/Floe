@@ -8,14 +8,13 @@ namespace Floe
 	{
 		using namespace System::IO;
 		using namespace System::Threading;
-		using namespace System::Threading::Tasks;
 
 		public ref class WaveIn
 		{
 		private:
 			Stream ^m_stream;
 			WaveFormat ^m_format;
-			Task ^m_task;
+			Thread ^m_thread;
 			AutoResetEvent ^m_stop;
 			int m_bufferSize;
 			HWAVEIN m_wavHandle;

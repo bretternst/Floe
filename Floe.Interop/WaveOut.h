@@ -8,7 +8,6 @@ namespace Floe
 	{
 		using namespace System::IO;
 		using namespace System::Threading;
-		using namespace System::Threading::Tasks;
 		using System::Math;
 
 		public ref class WaveOut
@@ -16,7 +15,7 @@ namespace Floe
 		private:
 			Stream ^m_stream;
 			WaveFormat ^m_format;
-			Task ^m_task;
+			Thread ^m_thread;
 			AutoResetEvent ^m_stop;
 			int m_bufferSize;
 			float m_volume;

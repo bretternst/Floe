@@ -9,4 +9,3 @@
 #include <MMSystem.h>
 #include <MMReg.h>
 #include <MSAcm.h>
-#include <avrt.h>

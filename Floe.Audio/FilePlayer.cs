@@ -7,7 +7,7 @@ namespace Floe.Audio
 {
 	public class FilePlayer : IDisposable
 	{
-		private const int WavBufferSamples = 1500;
+		private const int WavBufferSamples = 3000;
 		private static readonly byte[] WavFileSignature = { 0x52, 0x49, 0x46, 0x46 }; // RIFF
 		private static readonly byte[] Mp3FileSignature = { 0x49, 0x44, 0x33 }; // ID3
 
