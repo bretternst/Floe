@@ -345,10 +345,6 @@ namespace Floe.UI
 				{
 					this.Write("Nick", string.Format("{0} is now known as {1}", e.OldNickname, e.NewNickname));
 				}
-			}
-
-			if (this.IsChannel)
-			{
 				_nickList.ChangeNick(e.OldNickname, e.NewNickname);
 			}
 		}
