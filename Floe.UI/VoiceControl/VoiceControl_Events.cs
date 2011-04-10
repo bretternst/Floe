@@ -23,7 +23,7 @@ namespace Floe.UI
 		private void session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
 			VoiceCodec codec;
-			VoiceQuality quality;
+			int quality;
 			IPAddress pubAddress, prvAddress;
 			int pubPort, prvPort;
 
@@ -38,7 +38,7 @@ namespace Floe.UI
 				string.Compare(e.Command.Arguments[0], "START", StringComparison.OrdinalIgnoreCase) == 0 &&
 				(!e.To.IsChannel || e.To.Equals(_target)) &&
 				Enum.TryParse(e.Command.Arguments[1], out codec) &&
-				Enum.TryParse(e.Command.Arguments[2], out quality) &&
+				int.TryParse(e.Command.Arguments[2], out quality) &&
 				IPAddress.TryParse(e.Command.Arguments[3], out pubAddress) &&
 				int.TryParse(e.Command.Arguments[4], out pubPort) &&
 				IPAddress.TryParse(e.Command.Arguments[5], out prvAddress) &&

@@ -52,6 +52,19 @@ namespace Floe
 			return m_headers[m_count-1]->cbDstLengthUsed;
 		}
 
+		int AudioConverter::Convert(array<Byte>^ srcBuffer, int size, array<Byte>^ dstBuffer)
+		{
+			pin_ptr<Byte> pSrc = &srcBuffer[0];
+			IntPtr pDst;
+			size = this->Convert((IntPtr)pSrc, size, pDst);
+			if(dstBuffer->Length < size)
+			{
+				throw gcnew InteropException("Destination buffer too small.");
+			}
+			Marshal::Copy(pDst, dstBuffer, 0, size);
+			return size;
+		}
+
 		AudioConverter::~AudioConverter()
 		{
 			if(m_headers != 0 && m_streams != 0)

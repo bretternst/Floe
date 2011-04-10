@@ -8,20 +8,17 @@ namespace Floe.Audio
 {
 	public class VoiceIn : Stream
 	{
-		private VoiceCodec _codec;
-		private VoiceQuality _quality;
+		private CodecInfo _codec;
 		private RtpClient _client;
 		private TransmitPredicate _predicate;
-		private int _timeStamp, _timeIncrement;
+		private int _timeStamp;
 		private WaveIn _waveIn;
 
-		public VoiceIn(VoiceCodec codec, VoiceQuality quality, RtpClient client, TransmitPredicate predicate)
+		public VoiceIn(CodecInfo codec, RtpClient client, TransmitPredicate predicate)
 		{
 			_codec = codec;
-			_quality = quality;
 			_client = client;
-			_predicate = predicate;
-			_timeIncrement = VoiceSession.GetSamplesPerPacket(codec);
+			_predicate = predicate;			
 			this.InitAudio();
 		}
 
@@ -42,7 +39,7 @@ namespace Floe.Audio
 			{
 				_waveIn.Close();
 			}
-			_waveIn = new WaveIn(this, VoiceSession.GetFormat(_codec, _quality), VoiceSession.GetBufferSize(_codec));
+			_waveIn = new WaveIn(this, _codec.EncodedFormat, _codec.EncodedBufferSize);
 		}
 
 		public override bool CanRead { get { return true; } }
@@ -61,7 +58,7 @@ namespace Floe.Audio
 			{
 				_client.Send(_timeStamp, buffer);
 			}
-			_timeStamp += _timeIncrement;
+			_timeStamp += _codec.SamplesPerPacket;
 		}
 	}
 }

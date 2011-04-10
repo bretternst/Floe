@@ -10,11 +10,6 @@
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="384">
 	<UserControl.Resources>
-		<ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="voiceQualityValues">
-			<ObjectDataProvider.MethodParameters>
-				<x:Type TypeName="voice:VoiceQuality"/>
-			</ObjectDataProvider.MethodParameters>
-		</ObjectDataProvider>
 		<local:DoubleToPercentConverter x:Key="doubleToPercentConverter"/>
 		<ToolTip x:Key="ttQuality" Content="Set the audio transmit quality. Use a lower quality if your upstream bandwidth is limited. Low quality uses approximately 1.3KB/s, medium uses about 2KB/s, high uses about 4KB/s, and ultra uses about 8KB/s."/>
 		<Geometry x:Key="volumeGeometry">M0,1 L1,1 L1,0</Geometry>
@@ -23,8 +18,31 @@
 		<Label Canvas.Left="3" Canvas.Top="63" Content="Transmit Quality" Height="28" Name="label5" ToolTip="{StaticResource ttQuality}" />
 		<CheckBox Name="chkPushToTalk" Content="Push To Talk" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.PushToTalk}" Canvas.Left="12" Canvas.Top="12" ToolTip="Hold down a key or mouse button to talk." />
 		<Button Click="btnTalkKey_Click"  IsEnabled="{Binding ElementName=chkPushToTalk, Path=IsChecked}" Canvas.Left="8" Canvas.Top="34" Height="23" Name="btnTalkKey" Content="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.TalkKey, Mode=OneTime}" Width="120" />
-		<ComboBox Canvas.Left="8" Canvas.Top="85" Height="23" Name="comboBox1" Width="120" ItemsSource="{Binding Source={StaticResource voiceQualityValues}}"
-				  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.Quality, Mode=TwoWay}" ToolTip="{StaticResource ttQuality}"/>
+		<ComboBox Canvas.Left="8" Canvas.Top="85" Height="23" Name="comboBox1" Width="120"
+				  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.Quality, Mode=TwoWay}" ToolTip="{StaticResource ttQuality}" SelectedValuePath="Tag">
+			<ComboBox.Items>
+				<ComboBoxItem Content="8kHz">
+					<ComboBoxItem.Tag>
+						<sys:Int32>8000</sys:Int32>
+					</ComboBoxItem.Tag>
+				</ComboBoxItem>
+				<ComboBoxItem Content="11kHz">
+					<ComboBoxItem.Tag>
+						<sys:Int32>11200</sys:Int32>
+					</ComboBoxItem.Tag>
+				</ComboBoxItem>
+				<ComboBoxItem Content="22kHz">
+					<ComboBoxItem.Tag>
+						<sys:Int32>21760</sys:Int32>
+					</ComboBoxItem.Tag>
+				</ComboBoxItem>
+				<ComboBoxItem Content="44kHz">
+					<ComboBoxItem.Tag>
+						<sys:Int32>43840</sys:Int32>
+					</ComboBoxItem.Tag>
+				</ComboBoxItem>
+			</ComboBox.Items>
+		</ComboBox>
 		<ToggleButton Checked="btnLoopback_Checked" Unchecked="btnLoopback_Unchecked"  Canvas.Left="8" Canvas.Top="116" Content="Loopback Test" Height="23" Name="btnLoopback" Width="100" />
 		<ProgressBar Canvas.Left="8" Canvas.Top="272" Height="16" Name="prgMicLevel" Width="364" Minimum="0" Maximum="1" />
 		<Label Canvas.Left="3" Canvas.Top="247" Content="Microphone Level" Height="28" Name="label3" />

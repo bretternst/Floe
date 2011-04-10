@@ -8,14 +8,12 @@ namespace Floe.Audio
 	{
 		private WaveOut _waveOut;
 		private JitterBuffer _buffer;
-		private VoiceCodec _codec;
-		private VoiceQuality _quality;
+		private CodecInfo _codec;
 		private VoicePacketPool _pool;
 
-		public VoicePeer(VoiceCodec codec, VoiceQuality quality, VoicePacketPool pool)
+		public VoicePeer(VoiceCodec codec, int quality, VoicePacketPool pool)
 		{
-			_codec = codec;
-			_quality = quality;
+			_codec = new CodecInfo(codec, quality);
 			_buffer = new JitterBuffer();
 			_pool = pool;
 			this.InitAudio();
@@ -30,7 +28,7 @@ namespace Floe.Audio
 
 		private void InitAudio()
 		{
-			_waveOut = new WaveOut(_buffer, VoiceSession.GetFormat(_codec, _quality), VoiceSession.GetBufferSize(_codec));
+			_waveOut = new WaveOut(_buffer, _codec.DecodedFormat, _codec.DecodedBufferSize);
 			_waveOut.Start();
 		}
 

@@ -20,7 +20,7 @@ namespace Floe.UI
 		private IrcSession _session;
 		private IrcTarget _target;
 		private NicknameList _nickList;
-		private VoiceSession _voice;
+		private VoiceClient _voice;
 		private WaveInMeter _meter;
 		private IPEndPoint _publicEndPoint;
 		private Dictionary<IPEndPoint, VoicePeer> _peers;
@@ -54,7 +54,7 @@ namespace Floe.UI
 			}
 		}
 
-		private void AddPeer(string nick, VoiceCodec codec, VoiceQuality quality, IPEndPoint endpoint)
+		private void AddPeer(string nick, VoiceCodec codec, int quality, IPEndPoint endpoint)
 		{
 			if (_nickList.Contains(nick) && !_peers.ContainsKey(endpoint))
 			{

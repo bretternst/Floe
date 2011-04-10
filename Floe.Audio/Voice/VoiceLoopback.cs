@@ -18,20 +18,15 @@ namespace Floe.Audio
 		/// Construct a new voice loopback session.
 		/// </summary>
 		/// <param name="codec">An audio codec to encode and decode with.</param>
-		/// <param name="quality">The codec-specific quality level.</param>
-		public VoiceLoopback(VoiceCodec codec, VoiceQuality quality)
+		/// <param name="quality">The encoding quality (usually the sample rate).</param>
+		public VoiceLoopback(VoiceCodec codec, int quality)
 		{
-			var format = VoiceSession.GetFormat(codec, quality);
+			var info = new CodecInfo(codec, quality);
+			var format = info.EncodedFormat;
 			_stream = new FifoStream();
-			int bufferSize = VoiceSession.GetBufferSize(codec);
-			_waveIn = new WaveIn(_stream, format, bufferSize);
-			_waveOut = new WaveOut(_stream, format, bufferSize);
+			_waveIn = new WaveIn(_stream, format, info.EncodedBufferSize);
+			_waveOut = new WaveOut(_stream, format, info.EncodedBufferSize);
 		}
-
-		/// <summary>
-		/// Gets or sets the capture volume.
-		/// </summary>
-//		public float CaptureVolume { get { return _waveIn.Volume; } set { _waveIn.Volume = value; } }
 
 		/// <summary>
 		/// Gets or sets the render volume.

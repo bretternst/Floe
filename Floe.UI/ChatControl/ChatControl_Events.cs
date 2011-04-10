@@ -133,8 +133,9 @@ namespace Floe.UI
 		{
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
-				this.Write("Kick", string.Format("{0} has been kicked by {1} ({2})",
-					e.KickeeNickname, e.Kicker.Nickname, e.Text));
+				this.Write("Kick",
+					e.Kicker == null ? string.Format("{0} has been kicked ({1}", e.KickeeNickname, e.Text) :
+					string.Format("{0} has been kicked by {1} ({2})", e.KickeeNickname, e.Kicker.Nickname, e.Text));
 				_nickList.Remove(e.KickeeNickname);
 			}
 		}

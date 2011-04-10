@@ -74,7 +74,7 @@ namespace Floe.UI
 
 		private void Start(UdpClient client = null)
 		{
-			_voice = new VoiceSession(VoiceCodec.Gsm610, App.Settings.Current.Voice.Quality,
+			_voice = new VoiceClient(new CodecInfo(VoiceCodec.Gsm610, App.Settings.Current.Voice.Quality),
 				client, this.TransmitPredicate, this.ReceivePredicate);
 			if (client == null)
 			{

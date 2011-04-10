@@ -9,10 +9,10 @@ namespace Floe.Configuration
 {
 	public class VoiceElement : ConfigurationElement, INotifyPropertyChanged
 	{
-		[ConfigurationProperty("quality", DefaultValue=VoiceQuality.High)]
-		public VoiceQuality Quality
+		[ConfigurationProperty("quality", DefaultValue=21760)]
+		public int Quality
 		{
-			get { return (VoiceQuality)this["quality"]; }
+			get { return (int)this["quality"]; }
 			set { this["quality"] = value; }
 		}
 

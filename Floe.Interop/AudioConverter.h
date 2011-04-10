@@ -7,6 +7,7 @@ namespace Floe
 	namespace Interop
 	{
 		using System::IntPtr;
+		using System::Byte;
 		using namespace System::Collections::Generic;
 		using namespace System::Runtime::InteropServices;
 
@@ -20,6 +21,7 @@ namespace Floe
 		public:
 			AudioConverter(int maxSrcSize, WaveFormat ^srcFormat, ...array<WaveFormat^> ^dstFormats);
 			int Convert(IntPtr srcBuffer, int size, [Out] IntPtr &dstBuffer);
+			int Convert(array<Byte>^ srcBuffer, int size, array<Byte>^ dstBuffer);
 
 			property int SourceBufferSize
 			{

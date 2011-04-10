@@ -46,10 +46,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="FifoStream.cs" />
     <Compile Include="Mp3FileStream.cs" />
+    <Compile Include="Voice\CodecInfo.cs" />
     <Compile Include="WaveInMeter.cs" />
     <Compile Include="Voice\Delegates.cs" />
     <Compile Include="Voice\JitterBuffer.cs" />
@@ -57,7 +57,7 @@
     <Compile Include="Voice\VoicePacket.cs" />
     <Compile Include="Voice\VoicePacketPool.cs" />
     <Compile Include="Voice\VoicePeer.cs" />
-    <Compile Include="Voice\VoiceSession.cs" />
+    <Compile Include="Voice\VoiceClient.cs" />
     <Compile Include="WavFileStream.cs" />
     <Compile Include="FilePlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

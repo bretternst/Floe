@@ -92,7 +92,8 @@ namespace Floe.UI
 								var to = new IrcTarget(e.Message.Parameters[e.Message.Parameters.Count - 2]);
 								if (this.Target.Equals(to))
 								{
-									_nickList.AddRange(e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' '));
+									_nickList.AddRange(e.Message.Parameters[e.Message.Parameters.Count - 1].Split(' ').
+										Where((n) => n.Length > 0));
 								}
 							}
 							e.Handled = true;
