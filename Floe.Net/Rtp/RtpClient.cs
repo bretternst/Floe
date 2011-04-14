@@ -16,7 +16,8 @@ namespace Floe.Net
 	public abstract class RtpClient : IDisposable
 	{
 		private const int HeaderSize = 12;
-		private const int KeepAliveInterval = 15000;
+		private const int KeepAliveInterval = 10000;
+		private const int MaxPayloadSize = 1024;
 
 		private UdpClient _client;
 		private HashSet<IPEndPoint> _peers;
@@ -24,28 +25,34 @@ namespace Floe.Net
 		private ManualResetEvent _endEvent, _readyEvent;
 		private Thread _thread;
 		private byte[] _payload;
+		private int _payloadSize;
 		private IAsyncResult[] _sendResults;
 		private WaitHandle[] _sendHandles;
 		private byte[] _sendBuffer;
 		private uint _seqNumber;
-		private byte[] _ssrc;
+		private byte[] _ssrc, _keepalive;
 		private byte _payloadType;
+		private IPEndPoint _keepAliveTarget;
 
 		/// <summary>
 		/// Constructs a new RcpClient using the specified UdpClient for communication.
 		/// </summary>
 		/// <param name="payloadType">An RTP payload type identifier.</param>
 		/// <param name="payloadSize">The size of the payload for both send and receive.</param>
+		/// <param name="keepAliveTarget">An address to send keepalive packets to when no peers are connected.</param>
 		/// <param name="client">An optional already-bound UdpClient to use for communication.</param>
-		public RtpClient(byte payloadType, int payloadSize, UdpClient client = null)
+		public RtpClient(byte payloadType, int payloadSize, IPEndPoint keepAliveTarget, UdpClient client = null)
 		{
 			_payloadType = (byte)(payloadType & 0x7f);
 			_client = client ?? new UdpClient(0);
 			_peers = new HashSet<IPEndPoint>();
-			_payload = new byte[payloadSize];
+			_payload = new byte[MaxPayloadSize];
+			_payloadSize = payloadSize;
 			_ssrc = new byte[4];
 			_seq = new Dictionary<IPEndPoint, int>();
 			new Random().NextBytes(_ssrc);
+			_keepAliveTarget = keepAliveTarget;
+			_keepalive = new byte[] { 0xff, 0xff };
 		}
 
 		/// <summary>
@@ -54,9 +61,9 @@ namespace Floe.Net
 		public IPEndPoint LocalEndPoint { get { return (IPEndPoint)_client.Client.LocalEndPoint; } }
 
 		/// <summary>
-		/// Gets the size of the packet payload.
+		/// Gets the payload size of outgoing packets.
 		/// </summary>
-		public int PayloadSize { get { return _payload.Length; } }
+		public int PayloadSize { get { return _payloadSize; } }
 
 		/// <summary>
 		/// Begin an RTP session.
@@ -113,7 +120,7 @@ namespace Floe.Net
 			_sendBuffer[6] = (byte)(timeStamp >> 8);
 			_sendBuffer[7] = (byte)(timeStamp);
 			Array.Copy(_ssrc, 0, _sendBuffer, 8, 4);
-			Array.Copy(payload, 0, _sendBuffer, 12, _payload.Length);
+			Array.Copy(payload, 0, _sendBuffer, 12, _payloadSize);
 
 			_seqNumber++;
 
@@ -138,6 +145,21 @@ namespace Floe.Net
 			}
 		}
 
+		private void SendKeepAlive(IPEndPoint endpoint)
+		{
+			_client.Client.BeginSendTo(_keepalive, 0, _keepalive.Length, SocketFlags.None, endpoint, (ar) =>
+				{
+					try
+					{
+						_client.Client.EndSendTo(ar);
+					}
+					catch (SocketException ex)
+					{
+						this.OnError(ex);
+					}
+				}, null);
+		}
+
 		/// <summary>
 		/// Dispose and close this object.
 		/// </summary>
@@ -156,6 +178,7 @@ namespace Floe.Net
 			{
 				_peers.Add(endpoint);
 			}
+			this.SendKeepAlive(endpoint);
 		}
 
 		/// <summary>
@@ -178,7 +201,8 @@ namespace Floe.Net
 		/// <param name="timeStamp">The packet's timestamp.</param>
 		/// <param name="source">The packet's source stream identifier.</param>
 		/// <param name="payload">The packet's payload.</param>
-		protected abstract void OnReceived(IPEndPoint peer, short payloadType, int seqNumber, int timeStamp, byte[] payload);
+		/// <param name="count">The size of the payload in bytes.</param>
+		protected abstract void OnReceived(IPEndPoint peer, short payloadType, int seqNumber, int timeStamp, byte[] payload, int count);
 
 		/// <summary>
 		/// When overridden in a dervied class, this method handles errors that occur during asynchronous operations.
@@ -202,12 +226,12 @@ namespace Floe.Net
 		private void Loop()
 		{
 			var handles = new WaitHandle[] { null, _endEvent };
-			var buffer = new byte[HeaderSize + _payload.Length];
+			var buffer = new byte[HeaderSize + MaxPayloadSize];
 
 			while (true)
 			{
 				EndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-				var arr = _client.Client.BeginReceiveFrom(buffer, 0, HeaderSize + _payload.Length, SocketFlags.None, ref sender, null, null);
+				var arr = _client.Client.BeginReceiveFrom(buffer, 0, HeaderSize + MaxPayloadSize, SocketFlags.None, ref sender, null, null);
 				handles[0] = arr.AsyncWaitHandle;
 				_readyEvent.Set();
 				switch (WaitHandle.WaitAny(handles, KeepAliveInterval))
@@ -231,26 +255,33 @@ namespace Floe.Net
 							}
 						}
 						var endpoint = (IPEndPoint)sender;
-						if (count == HeaderSize + _payload.Length && _peers.Contains(endpoint))
+						if (_peers.Contains(endpoint))
 						{
-							this.ReadPacket(endpoint, buffer);
+							this.ReadPacket(endpoint, buffer, count);
 						}
 						break;
 					case 1:
 						return;
 					case WaitHandle.WaitTimeout:
-						foreach(var peer in _peers)
+						if (_peers.Count == 0)
 						{
-							_client.Client.BeginSendTo(buffer, 0, 0, SocketFlags.None, peer, (arw) => _client.Client.EndSendTo(arw), null);
+							this.SendKeepAlive(_keepAliveTarget);
+						}
+						else
+						{
+							foreach (var peer in _peers)
+							{
+								this.SendKeepAlive(peer);
+							}
 						}
 						break;
 				}
 			}
 		}
 
-		private void ReadPacket(IPEndPoint peer, byte[] buffer)
+		private void ReadPacket(IPEndPoint peer, byte[] buffer, int count)
 		{
-			if (buffer[0] != 0x80 || (buffer[1] & 0x80) != 0)
+			if (buffer[0] != 0x80 || (buffer[1] & 0x80) != 0 || count <= HeaderSize)
 			{
 				return;
 			}
@@ -259,7 +290,7 @@ namespace Floe.Net
 			ushort seq = (ushort)((buffer[2] << 8) | buffer[3]);
 			int timeStamp = (int)((buffer[4] << 24) | (buffer[5] << 16) | (buffer[6] << 8) | buffer[7]);
 			int source = (int)((buffer[8] << 24) | (buffer[9] << 16) | (buffer[10] << 8) | buffer[11]);
-			Array.Copy(buffer, 12, _payload, 0, _payload.Length);
+			Array.Copy(buffer, 12, _payload, 0, count - HeaderSize);
 
 			// The RTP protocol only allocates 16 bits for the sequence number, which means it may "wrap around".
 			// Detect that and append an upper 16 bits.
@@ -291,7 +322,7 @@ namespace Floe.Net
 				_seq[peer] = newSeq;
 			}
 
-			this.OnReceived(peer, payloadType, newSeq, timeStamp, _payload);
+			this.OnReceived(peer, payloadType, newSeq, timeStamp, _payload, count - HeaderSize);
 		}
 
 		~RtpClient()

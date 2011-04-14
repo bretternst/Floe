@@ -89,6 +89,10 @@ namespace Floe
 					}
 				}
 			}
+			catch(InteropException ^ex)
+			{
+				this->Error(this, gcnew InteropErrorEventArgs(ex));
+			}
 			finally
 			{
 				ThrowOnFailure(waveOutReset(wavHandle));

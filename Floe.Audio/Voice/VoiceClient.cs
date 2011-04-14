@@ -14,6 +14,9 @@ namespace Floe.Audio
 	/// </summary>
 	public sealed class VoiceClient : RtpClient, IDisposable
 	{
+		private const long DummyIPAddress = 0x03030303;
+		private const int DummyPort = 3333;
+
 		private VoiceIn _voiceIn;
 		private Dictionary<IPEndPoint, VoicePeer> _peers;
 		private float _renderVolume = 1f;
@@ -30,7 +33,7 @@ namespace Floe.Audio
 		/// use logic such as PTT (push-to-talk) or an automatic peak level-based approach. By default, all packets are transmitted.</param>
 		public VoiceClient(CodecInfo codec, UdpClient client = null,
 			TransmitPredicate transmitPredicate = null, ReceivePredicate receivePredicate = null)
-			: base((byte)codec.PayloadType, codec.EncodedBufferSize, client)
+			: base((byte)codec.PayloadType, codec.EncodedBufferSize, new IPEndPoint(new IPAddress(DummyIPAddress), DummyPort), client)
 		{
 			_peers = new Dictionary<IPEndPoint, VoicePeer>();
 			_pool = new VoicePacketPool();
@@ -105,11 +108,11 @@ namespace Floe.Audio
 			}
 		}
 
-		protected override void OnReceived(IPEndPoint endpoint, short payloadType, int seqNumber, int timeStamp, byte[] payload)
+		protected override void OnReceived(IPEndPoint endpoint, short payloadType, int seqNumber, int timeStamp, byte[] payload, int count)
 		{
 			if (_receivePredicate == null || _receivePredicate(endpoint))
 			{
-				_peers[endpoint].Enqueue(seqNumber, timeStamp, payload);
+				_peers[endpoint].Enqueue(seqNumber, timeStamp, payload, count);
 			}
 		}
 

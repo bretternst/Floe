@@ -12,14 +12,14 @@ namespace Floe.Audio
 			_pool = new ConcurrentStack<VoicePacket>();
 		}
 
-		public VoicePacket Create(int seqNumber, int timeStamp, byte[] payload)
+		public VoicePacket Create(int seqNumber, int timeStamp, byte[] payload, int count)
 		{
 			VoicePacket packet;
 			if (!_pool.TryPop(out packet))
 			{
 				packet = new VoicePacket(this);
 			}
-			packet.Init(seqNumber, timeStamp, payload);
+			packet.Init(seqNumber, timeStamp, payload, count);
 			return packet;
 		}
 

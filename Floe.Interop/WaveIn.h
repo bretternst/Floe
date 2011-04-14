@@ -25,6 +25,7 @@ namespace Floe
 			void Pause();
 			void Resume();
 			void Close();
+			event System::EventHandler<InteropErrorEventArgs^> ^Error;
 
 		private:
 			void Loop();

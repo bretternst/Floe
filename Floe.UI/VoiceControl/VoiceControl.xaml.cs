@@ -70,14 +70,24 @@ namespace Floe.UI
 			if (endpoint != null)
 			{
 				SetIsVoiceChat(_peers[endpoint].User, false);
-				_peers.Remove(endpoint);
-				_voice.RemovePeer(endpoint);
+				this.RemovePeer(endpoint);
 			}
+		}
+
+		private void RemovePeer(IPEndPoint endpoint)
+		{
+			_peers.Remove(endpoint);
+			_voice.RemovePeer(endpoint);
 		}
 
 		private IPEndPoint FindEndPoint(string nick)
 		{
 			var item = _nickList[nick];
+			return this.FindEndPoint(item);
+		}
+
+		private IPEndPoint FindEndPoint(NicknameItem item)
+		{
 			return _peers.Where((kvp) => kvp.Value.User == item).Select((kvp) => kvp.Key).FirstOrDefault();
 		}
 

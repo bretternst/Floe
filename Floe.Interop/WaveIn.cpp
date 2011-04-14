@@ -83,15 +83,19 @@ namespace Floe
 					}
 				}
 			}
+			catch(InteropException ^ex)
+			{
+				this->Error(this, gcnew InteropErrorEventArgs(ex));
+			}
 			finally
 			{
-				ThrowOnFailure(waveInReset(wavHandle));
+				waveInReset(wavHandle);
 				for(int i = 0; i < 2; i++)
 				{
-					ThrowOnFailure(waveInUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR)));
+					waveInUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR));
 					delete[] (BYTE*)hdr[i].lpData;
 				}
-				ThrowOnFailure(waveInClose(wavHandle));
+				waveInClose(wavHandle);
 			}
 		}
 

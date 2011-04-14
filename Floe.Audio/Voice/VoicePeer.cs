@@ -14,16 +14,16 @@ namespace Floe.Audio
 		public VoicePeer(VoiceCodec codec, int quality, VoicePacketPool pool)
 		{
 			_codec = new CodecInfo(codec, quality);
-			_buffer = new JitterBuffer();
+			_buffer = new JitterBuffer(_codec);
 			_pool = pool;
 			this.InitAudio();
 		}
 
 		public float Volume { get { return _waveOut.Volume; } set { _waveOut.Volume = value; } }
 
-		public void Enqueue(int seqNumber, int timeStamp, byte[] payload)
+		public void Enqueue(int seqNumber, int timeStamp, byte[] payload, int count)
 		{
-			_buffer.Enqueue(_pool.Create(seqNumber, timeStamp, payload));
+			_buffer.Enqueue(_pool.Create(seqNumber, timeStamp, payload, count));
 		}
 
 		private void InitAudio()

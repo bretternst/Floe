@@ -22,7 +22,7 @@ namespace Floe.Audio
 		private const int Gsm610PayloadType = 3;
 		private const int Gsm610SamplesPerBlock = 320;
 		private const int Gsm610BytesPerBlock = 65;
-		private const int MinBufferLength = 20; // milliseconds
+		private const int MinBufferLength = 25; // milliseconds
 
 		public int PayloadType { get; private set; }
 		public int EncodedBufferSize { get; private set; }
@@ -41,7 +41,7 @@ namespace Floe.Audio
 					this.SampleRate = sampleRate;
 
 					int blocksPerPacket = 1;
-					while ((blocksPerPacket * Gsm610SamplesPerBlock * 1000) / sampleRate < MinBufferLength)
+					while ((blocksPerPacket * Gsm610SamplesPerBlock * 1000) / sampleRate <= MinBufferLength)
 					{
 						blocksPerPacket++;
 					}
@@ -55,6 +55,16 @@ namespace Floe.Audio
 				default:
 					throw new ArgumentException("Unsupported codec.");
 			}
+		}
+
+		public AudioConverter GetEncoder()
+		{
+			return new AudioConverter(this.DecodedBufferSize, this.DecodedFormat, this.EncodedFormat);
+		}
+
+		public AudioConverter GetDecoder()
+		{
+			return new AudioConverter(this.EncodedBufferSize, this.EncodedFormat, this.DecodedFormat);
 		}
 	}
 }
