@@ -24,7 +24,7 @@ namespace test
 
 		static void Main(string[] args)
 		{
-			int sampleRate = 43840;
+			int sampleRate = 21760;
 			var client = new VoiceClient(new CodecInfo(VoiceCodec.Gsm610, sampleRate), null,
 				() =>
 				{
@@ -33,6 +33,8 @@ namespace test
 				});
 			client.AddPeer(VoiceCodec.Gsm610, sampleRate, new IPEndPoint(Dns.GetHostEntry("spoon.failurefiles.com").AddressList[0], 57222));
 			client.Open();
+			Console.ReadLine();
+			client.InputGain = 10;
 			Console.ReadLine();
 		}
 	}

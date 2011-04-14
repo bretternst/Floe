@@ -6,9 +6,10 @@ using Floe.Net;
 
 namespace Floe.Audio
 {
-	public class VoiceIn : Stream
+	class VoiceIn : Stream
 	{
 		private CodecInfo _codec;
+		private AudioConverter _encoder;
 		private RtpClient _client;
 		private TransmitPredicate _predicate;
 		private int _timeStamp;
@@ -21,6 +22,10 @@ namespace Floe.Audio
 			_predicate = predicate;			
 			this.InitAudio();
 		}
+
+		public float Level { get; private set; }
+
+		public float Gain { get; set; }
 
 		public void Start()
 		{
@@ -39,7 +44,8 @@ namespace Floe.Audio
 			{
 				_waveIn.Close();
 			}
-			_waveIn = new WaveIn(this, _codec.EncodedFormat, _codec.EncodedBufferSize);
+			_waveIn = new WaveIn(this, _codec.DecodedFormat, _codec.DecodedBufferSize);
+			_encoder = new AudioConverter(_codec.DecodedBufferSize, _codec.DecodedFormat, _codec.EncodedFormat);
 		}
 
 		public override bool CanRead { get { return true; } }
@@ -54,9 +60,32 @@ namespace Floe.Audio
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			if (count >= _client.PayloadSize && (_predicate == null || _predicate()))
+			float sum = 0f;
+			float gain = this.Gain != 0f ? (float)Math.Pow(10, this.Gain / 20f) : 1f;
+			double min = (double)short.MinValue;
+			double max = (double)short.MaxValue;
+			for (int i = 0; i < count; i += 2)
 			{
-				_client.Send(_timeStamp, buffer);
+				short sample = BitConverter.ToInt16(buffer, i);
+				if (gain != 1f)
+				{
+					double adj = Math.Max(min, Math.Min(max, (double)sample * gain));
+					sample = (short)adj;
+					buffer[i] = (byte)sample;
+					buffer[i + 1] = (byte)(sample >> 8);
+				}
+				sum += (float)Math.Pow(2, (double)sample / (double)short.MaxValue);
+			}
+			sum = (float)Math.Sqrt(sum);
+			this.Level = sum;
+
+			if (_client != null)
+			{
+				count = _encoder.Convert(buffer, count, buffer);
+				if (count >= _client.PayloadSize && (_predicate == null || _predicate()))
+				{
+					_client.Send(_timeStamp, buffer);
+				}
 			}
 			_timeStamp += _codec.SamplesPerPacket;
 		}

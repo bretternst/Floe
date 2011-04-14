@@ -36,17 +36,15 @@ namespace Floe.Audio
 
 			public override void Write(byte[] buffer, int offset, int count)
 			{
-				float max = 0f;
-				count /= 2;
+				float sum = 0f;
 				for (int i = 0; i < count; i += 2)
 				{
 					float sample = (float)((short)(buffer[i + 1] << 8) | (short)(buffer[i])) / (float)short.MaxValue;
-					if (sample > max)
-					{
-						max = sample;
-					}
+					sum += sample * sample;
 				}
-				_meter.OnLevelUpdated(max);
+				sum = (float)Math.Sqrt(sum);
+				_meter.OnLevelUpdated(sum);
+				return;
 			}
 		}
 

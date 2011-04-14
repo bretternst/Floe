@@ -108,7 +108,7 @@ namespace Floe.Net
 			}
 			if(_sendBuffer == null)
 			{
-				_sendBuffer = new byte[HeaderSize + payload.Length];
+				_sendBuffer = new byte[HeaderSize + _payloadSize];
 			}
 
 			_sendBuffer[0] = 0x80;

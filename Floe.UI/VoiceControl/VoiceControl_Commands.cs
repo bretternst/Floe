@@ -54,9 +54,8 @@ namespace Floe.UI
 
 		private void ExecuteStopVoice(object sender, ExecutedRoutedEventArgs e)
 		{
-			_meter.Dispose();
 			this.UnsubscribeEvents();
-			if (_peers.Count > 0)
+			if (_peers.Count > 0 && !_isDisposed)
 			{
 				_session.SendCtcp(_target, new CtcpCommand("VCHAT", "STOP"), false);
 			}
@@ -76,6 +75,8 @@ namespace Floe.UI
 		{
 			_voice = new VoiceClient(new CodecInfo(VoiceCodec.Gsm610, App.Settings.Current.Voice.Quality),
 				client, this.TransmitPredicate, this.ReceivePredicate);
+			_voice.RenderVolume = App.Settings.Current.Voice.PlaybackVolume;
+			_voice.InputGain = App.Settings.Current.Voice.InputGain;
 			if (client == null)
 			{
 				_publicEndPoint = new IPEndPoint(_session.ExternalAddress, _voice.LocalEndPoint.Port);
@@ -93,15 +94,6 @@ namespace Floe.UI
 				SetIsVoiceChat(_self, true);
 			}
 			_voice.Open();
-
-			_meter = new WaveInMeter(640);
-			_meter.LevelUpdated += (sender2, e2) =>
-			{
-				if (e2.Level >= App.Settings.Current.Voice.TalkLevel)
-				{
-					_lastTransmit = DateTime.Now.Ticks;
-				}
-			};
 		}
 	}
 }

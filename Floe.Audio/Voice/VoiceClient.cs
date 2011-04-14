@@ -60,6 +60,17 @@ namespace Floe.Audio
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the amount of gain (in decibels) to apply to the microphone input. This value may be negative to attenuate the volume.
+		/// A value of zero results in no processing.
+		/// </summary>
+		public float InputGain { get { return _voiceIn.Gain; } set { _voiceIn.Gain = value; } }
+
+		/// <summary>
+		/// Gets the current noise level from the microphone input. This could be used, for example, to activate transmission when the user talks.
+		/// </summary>
+		public float InputLevel { get { return _voiceIn.Level; } }
+
 		public event EventHandler<ErrorEventArgs> Error;
 
 		/// <summary>

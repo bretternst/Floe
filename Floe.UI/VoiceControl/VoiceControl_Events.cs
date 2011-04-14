@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 using Floe.Net;
 using Floe.Audio;
@@ -97,6 +98,19 @@ namespace Floe.UI
 			}
 		}
 
+		private void Voice_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			switch (e.PropertyName)
+			{
+				case "PlaybackVolume":
+					_voice.RenderVolume = App.Settings.Current.Voice.PlaybackVolume;
+					break;
+				case "InputGain":
+					_voice.InputGain = App.Settings.Current.Voice.InputGain;
+					break;
+			}
+		}
+
 		private bool TransmitPredicate()
 		{
 			bool isTransmitting = false;
@@ -105,9 +119,16 @@ namespace Floe.UI
 			{
 				isTransmitting = _isTalkKeyDown;
 			}
-			else if (DateTime.Now.Ticks - _lastTransmit < TrailTime)
+			else
 			{
-				isTransmitting = true;
+				if (_voice.InputLevel >= App.Settings.Current.Voice.TalkLevel)
+				{
+					_lastTransmit = DateTime.Now.Ticks;
+				}
+				if (DateTime.Now.Ticks - _lastTransmit < TrailTime)
+				{
+					isTransmitting = true;
+				}
 			}
 			if (isTransmitting != _isTransmitting)
 			{
@@ -147,6 +168,7 @@ namespace Floe.UI
 			_nickList.CollectionChanged += nickList_CollectionChanged;
 			RawInput.ButtonDown += RawInput_ButtonDown;
 			RawInput.ButtonUp += RawInput_ButtonUp;
+			App.Settings.Current.Voice.PropertyChanged += Voice_PropertyChanged;
 		}
 
 		private void UnsubscribeEvents()
@@ -156,6 +178,7 @@ namespace Floe.UI
 			_nickList.CollectionChanged -= nickList_CollectionChanged;
 			RawInput.ButtonDown -= RawInput_ButtonDown;
 			RawInput.ButtonUp -= RawInput_ButtonUp;
+			App.Settings.Current.Voice.PropertyChanged -= Voice_PropertyChanged;
 		}
 	}
 }

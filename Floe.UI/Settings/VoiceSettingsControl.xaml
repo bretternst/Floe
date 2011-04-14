@@ -51,5 +51,11 @@
 		<Label Canvas.Left="10" Canvas.Top="161" Content="Playback Level" Height="28" Name="label6"/>
 		<Slider Canvas.Left="8" Canvas.Top="227" Height="23" Maximum="1" Minimum="0" Name="slider2" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.TalkLevel}" Width="364" />
 		<Label Canvas.Left="10" Canvas.Top="205" Content="Transmit Activation Level" Height="28" Name="label7" />
+		<Slider Canvas.Left="177" Canvas.Top="182" Height="23" ValueChanged="sldLevel_ValueChanged" IsSnapToTickEnabled="True" LargeChange="1" Maximum="20" Minimum="-20" Name="sldMicGain" SmallChange="1" TickFrequency="1" TickPlacement="BottomRight" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Voice.InputGain, Mode=TwoWay}" Width="134" ToolTip="The amount of gain (in decibels) to apply to microphone input. This can be useful if people inform you that your microphone is too quiet." />
+		<Label Canvas.Left="177" Canvas.Top="160" Content="Microphone Gain" Height="28" Name="label10" />
+		<StackPanel Orientation="Horizontal" Canvas.Left="317" Canvas.Top="182">
+			<Label Content="{Binding ElementName=sldMicGain, Path=Value}" Name="label11" />
+			<TextBlock VerticalAlignment="Center">dB</TextBlock>
+		</StackPanel>
 	</Canvas>
 </UserControl>

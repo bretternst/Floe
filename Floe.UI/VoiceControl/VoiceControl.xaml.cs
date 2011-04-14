@@ -21,13 +21,13 @@ namespace Floe.UI
 		private IrcTarget _target;
 		private NicknameList _nickList;
 		private VoiceClient _voice;
-		private WaveInMeter _meter;
 		private IPEndPoint _publicEndPoint;
 		private Dictionary<IPEndPoint, VoicePeer> _peers;
 		private NicknameItem _self;
 		private bool _isTalkKeyDown;
 		private bool _isTransmitting;
 		private long _lastTransmit;
+		private bool _isDisposed;
 
 		public VoiceControl(IrcSession session, IrcTarget target, NicknameList nickList)
 		{
@@ -93,6 +93,7 @@ namespace Floe.UI
 
 		public void Dispose()
 		{
+			_isDisposed = true;
 			if (this.IsChatting)
 			{
 				StopVoiceCommand.Execute(null, this);

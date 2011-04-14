@@ -65,6 +65,13 @@ namespace Floe.Configuration
 			set { this["talkLevel"] = value; }
 		}
 
+		[ConfigurationProperty("inputGain", DefaultValue = 0f)]
+		public float InputGain
+		{
+			get { return (float)this["inputGain"]; }
+			set { this["inputGain"] = value; OnPropertyChanged("InputGain"); }
+		}
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string name)

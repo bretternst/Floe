@@ -61,7 +61,7 @@ namespace Floe.UI.Settings
 		private void btnLoopback_Checked(object sender, RoutedEventArgs e)
 		{
 			_loopback = new VoiceLoopback(VoiceCodec.Gsm610, App.Settings.Current.Voice.Quality);
-			SetVolume();
+			this.SetVolume();
 			_loopback.Start();
 		}
 
@@ -88,13 +88,14 @@ namespace Floe.UI.Settings
 		{
 			if (_loopback != null)
 			{
-				SetVolume();
+				this.SetVolume();
 			}
 		}
 
 		private void SetVolume()
 		{
 			_loopback.RenderVolume = (float)sldRenderLevel.Value;
+			_loopback.InputGain = (float)sldMicGain.Value;
 		}
 	}
 }
