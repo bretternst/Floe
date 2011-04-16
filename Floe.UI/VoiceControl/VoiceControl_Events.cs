@@ -94,7 +94,11 @@ namespace Floe.UI
 			if (e.Action == NotifyCollectionChangedAction.Remove &&
 				e.OldItems.Count > 0)
 			{
-				this.RemovePeer(this.FindEndPoint(((NicknameItem)e.OldItems[0])));
+				var endpoint = this.FindEndPoint(((NicknameItem)e.OldItems[0]));
+				if (endpoint != null)
+				{
+					this.RemovePeer(this.FindEndPoint(((NicknameItem)e.OldItems[0])));
+				}
 			}
 		}
 
