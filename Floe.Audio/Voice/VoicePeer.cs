@@ -20,6 +20,7 @@ namespace Floe.Audio
 		}
 
 		public float Volume { get { return _waveOut.Volume; } set { _waveOut.Volume = value; } }
+		public float Gain { get { return _buffer.Gain; } set { _buffer.Gain = value; } }
 
 		public void Enqueue(int seqNumber, int timeStamp, byte[] payload, int count)
 		{

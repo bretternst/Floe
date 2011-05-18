@@ -72,6 +72,13 @@ namespace Floe.Configuration
 			set { this["inputGain"] = value; OnPropertyChanged("InputGain"); }
 		}
 
+		[ConfigurationProperty("outputGain", DefaultValue = 0f)]
+		public float OutputGain
+		{
+			get { return (float)this["outputGain"]; }
+			set { this["outputGain"] = value; OnPropertyChanged("OutputGain"); }
+		}
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string name)

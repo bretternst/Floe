@@ -50,6 +50,7 @@
     <Compile Include="FifoStream.cs" />
     <Compile Include="Mp3FileStream.cs" />
     <Compile Include="Voice\CodecInfo.cs" />
+    <Compile Include="WavProcess.cs" />
     <Compile Include="WaveInMeter.cs" />
     <Compile Include="Voice\Delegates.cs" />
     <Compile Include="Voice\JitterBuffer.cs" />

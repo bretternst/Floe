@@ -11,7 +11,7 @@ namespace Floe.Audio
 	class JitterBuffer : Stream
 	{
 		private const int MaxBufferSize = 200;
-		private const int Delay = 1; // number of spans
+		private const int Delay = 2; // number of spans
 
 		private AudioConverter _decoder;
 		private ConcurrentQueue<VoicePacket> _incoming;
@@ -28,6 +28,8 @@ namespace Floe.Audio
 
 			this.Reset();
 		}
+
+		public float Gain { get; set; }
 
 		public void Enqueue(VoicePacket packet)
 		{
@@ -105,7 +107,7 @@ namespace Floe.Audio
 				}
 			}
 
-			if (_delay > 0)
+			if (_buffer.Count > 0 && _delay > 0)
 			{
 				_delay--;
 				return null;
@@ -156,16 +158,17 @@ namespace Floe.Audio
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
+			Array.Clear(buffer, 0, count);
+
 			var packet = this.Dequeue();
-			if (packet == null)
-			{
-				Array.Clear(buffer, 0, count);
-			}
-			else
+			if (packet != null)
 			{
 				count = _decoder.Convert(packet.Data, packet.Data.Length, buffer);
 				packet.Dispose();
+				float gain = this.Gain != 0f ? (float)Math.Pow(10, this.Gain / 20f) : 1f;
+				WavProcess.ApplyGain(gain, buffer, count);
 			}
+
 			return count;
 		}
 	}

@@ -107,10 +107,13 @@ namespace Floe.UI
 			switch (e.PropertyName)
 			{
 				case "PlaybackVolume":
-					_voice.RenderVolume = App.Settings.Current.Voice.PlaybackVolume;
+					_voice.OutputVolume = App.Settings.Current.Voice.PlaybackVolume;
 					break;
 				case "InputGain":
 					_voice.InputGain = App.Settings.Current.Voice.InputGain;
+					break;
+				case "OutputGain":
+					_voice.OutputGain = App.Settings.Current.Voice.OutputGain;
 					break;
 			}
 		}

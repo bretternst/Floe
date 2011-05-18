@@ -61,7 +61,7 @@ namespace Floe.UI
 					break;
 			}
 
-			if (mask != ChannelLevel.Normal)
+			if (mask != ChannelLevel.Normal && this.Contains(mode.Parameter))
 			{
 				var item = this[mode.Parameter];
 				if (item != null)

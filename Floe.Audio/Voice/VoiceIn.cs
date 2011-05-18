@@ -60,24 +60,8 @@ namespace Floe.Audio
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
-			float sum = 0f;
 			float gain = this.Gain != 0f ? (float)Math.Pow(10, this.Gain / 20f) : 1f;
-			double min = (double)short.MinValue;
-			double max = (double)short.MaxValue;
-			for (int i = 0; i < count; i += 2)
-			{
-				short sample = BitConverter.ToInt16(buffer, i);
-				if (gain != 1f)
-				{
-					double adj = Math.Max(min, Math.Min(max, (double)sample * gain));
-					sample = (short)adj;
-					buffer[i] = (byte)sample;
-					buffer[i + 1] = (byte)(sample >> 8);
-				}
-				sum += (float)Math.Pow(2, (double)sample / (double)short.MaxValue);
-			}
-			sum = (float)Math.Sqrt(sum);
-			this.Level = sum;
+			this.Level = WavProcess.ApplyGain(gain, buffer, count);
 
 			if (_client != null)
 			{

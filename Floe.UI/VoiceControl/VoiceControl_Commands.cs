@@ -75,7 +75,8 @@ namespace Floe.UI
 		{
 			_voice = new VoiceClient(new CodecInfo(VoiceCodec.Gsm610, App.Settings.Current.Voice.Quality),
 				client, this.TransmitPredicate, this.ReceivePredicate);
-			_voice.RenderVolume = App.Settings.Current.Voice.PlaybackVolume;
+			_voice.OutputVolume = App.Settings.Current.Voice.PlaybackVolume;
+			_voice.OutputGain = App.Settings.Current.Voice.OutputGain;
 			_voice.InputGain = App.Settings.Current.Voice.InputGain;
 			if (client == null)
 			{

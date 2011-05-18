@@ -19,7 +19,7 @@ namespace Floe.Audio
 
 		private VoiceIn _voiceIn;
 		private Dictionary<IPEndPoint, VoicePeer> _peers;
-		private float _renderVolume = 1f;
+		private float _outputVolume = 1f, _outputGain = 0f;
 		private VoicePacketPool _pool;
 		private ReceivePredicate _receivePredicate;
 
@@ -44,14 +44,14 @@ namespace Floe.Audio
 		/// <summary>
 		/// Gets or sets the volume at which voice chat renders. This is a value between 0 and 1.
 		/// </summary>
-		public float RenderVolume
+		public float OutputVolume
 		{
-			get { return _renderVolume; }
+			get { return _outputVolume; }
 			set
 			{
-				if (_renderVolume != value)
+				if (_outputVolume != value)
 				{
-					_renderVolume = value;
+					_outputVolume = value;
 					foreach (var peer in _peers.Values)
 					{
 						peer.Volume = value;
@@ -61,8 +61,26 @@ namespace Floe.Audio
 		}
 
 		/// <summary>
-		/// Gets or sets the amount of gain (in decibels) to apply to the microphone input. This value may be negative to attenuate the volume.
-		/// A value of zero results in no processing.
+		/// Gets or sets the amount of gain (in decibels) to apply to the output.
+		/// </summary>
+		public float OutputGain
+		{
+			get { return _outputGain; }
+			set
+			{
+				if (_outputGain != value)
+				{
+					_outputGain = value;
+					foreach (var peer in _peers.Values)
+					{
+						peer.Gain = value;
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the amount of gain (in decibels) to apply to the microphone input.
 		/// </summary>
 		public float InputGain { get { return _voiceIn.Gain; } set { _voiceIn.Gain = value; } }
 
@@ -101,7 +119,8 @@ namespace Floe.Audio
 		{
 			base.AddPeer(endpoint);
 			var peer = new VoicePeer(codec, quality, _pool);
-			peer.Volume = _renderVolume;
+			peer.Volume = _outputVolume;
+			peer.Gain = _outputGain;
 			_peers.Add(endpoint, peer);
 		}
 

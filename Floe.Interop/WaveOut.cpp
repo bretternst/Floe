@@ -95,13 +95,13 @@ namespace Floe
 			}
 			finally
 			{
-				ThrowOnFailure(waveOutReset(wavHandle));
+				waveOutReset(wavHandle);
 				for(int i = 0; i < 2; i++)
 				{
-					ThrowOnFailure(waveOutUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR)));
+					waveOutUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR));
 					delete[] (BYTE*)hdr[i].lpData;
 				}
-				ThrowOnFailure(waveOutClose(wavHandle));
+				waveOutClose(wavHandle);
 			}
 		}
 

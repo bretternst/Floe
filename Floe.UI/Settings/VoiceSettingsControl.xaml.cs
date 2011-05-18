@@ -96,6 +96,7 @@ namespace Floe.UI.Settings
 		{
 			_loopback.RenderVolume = (float)sldRenderLevel.Value;
 			_loopback.InputGain = (float)sldMicGain.Value;
+			_loopback.OutputGain = (float)sldOutGain.Value;
 		}
 	}
 }

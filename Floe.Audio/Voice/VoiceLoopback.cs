@@ -38,6 +38,11 @@ namespace Floe.Audio
 		public float InputGain { get; set; }
 
 		/// <summary>
+		/// Gets or sets the output gain.
+		/// </summary>
+		public float OutputGain { get; set; }
+
+		/// <summary>
 		/// Starts the loopback session.
 		/// </summary>
 		public void Start()
@@ -64,19 +69,7 @@ namespace Floe.Audio
 		public override void Write(byte[] buffer, int offset, int count)
 		{
 			float gain = this.InputGain != 0f ? (float)Math.Pow(10, this.InputGain / 20f) : 1f;
-			double min = (double)short.MinValue;
-			double max = (double)short.MaxValue; 
-			for (int i = 0; i < count; i += 2)
-			{
-				short sample = BitConverter.ToInt16(buffer, i);
-				if (gain != 1f)
-				{
-					double adj = Math.Max(min, Math.Min(max, (double)sample * gain));
-					sample = (short)adj;
-					buffer[i] = (byte)sample;
-					buffer[i + 1] = (byte)(sample >> 8);
-				}
-			}
+			WavProcess.ApplyGain(gain, buffer, count);
 
 			if (offset != 0)
 			{
