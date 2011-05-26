@@ -305,7 +305,7 @@
 													<Polygon x:Name="arrow" Grid.ColumnSpan="3" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Points="0,0 10,6, 20,0"
 														 Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" Visibility="Hidden"/>
 													<ContentPresenter Grid.Column="0" Grid.Row="1" Margin="5,0,10,0" x:Name="ContentSite" VerticalAlignment="Bottom" HorizontalAlignment="Center"
-																  ContentSource="Header" RecognizesAccessKey="True"/>
+																  ContentSource="Header" RecognizesAccessKey="False"/>
 													<Button x:Name="btnTabClose" Margin="0,0,4,0" Style="{StaticResource tabCloseButtonStyle}"
 														Command="local:ChatWindow.CloseTabCommand" Grid.Column="2" Grid.Row="1"
 														Height="Auto" VerticalAlignment="Bottom"

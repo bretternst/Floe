@@ -47,6 +47,7 @@ namespace Floe
 			int bufIdx = 0;
 			HWAVEOUT wavHandle;
 			WAVEHDR hdr[2];
+			bool isInitialized = false;
 
 			try
 			{
@@ -59,6 +60,7 @@ namespace Floe
 					hdr[i].dwFlags = 0;
 					ThrowOnFailure(waveOutPrepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR)));
 				}
+				isInitialized = true;
 				this->Volume = m_volume;
 
 				while(true)
@@ -95,13 +97,16 @@ namespace Floe
 			}
 			finally
 			{
-				waveOutReset(wavHandle);
-				for(int i = 0; i < 2; i++)
+				if(isInitialized)
 				{
-					waveOutUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR));
-					delete[] (BYTE*)hdr[i].lpData;
+					waveOutReset(wavHandle);
+					for(int i = 0; i < 2; i++)
+					{
+						waveOutUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR));
+						delete[] (BYTE*)hdr[i].lpData;
+					}
+					waveOutClose(wavHandle);
 				}
-				waveOutClose(wavHandle);
 			}
 		}
 

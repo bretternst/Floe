@@ -298,7 +298,7 @@ namespace Floe.UI
 
 				this.Write("Action", string.Format("{0} {1}", e.From.Nickname, text, attn));
 			}
-			else if (this.IsServer && e.Command.Command != "ACTION")
+			else if (this.IsServer && e.Command.Command != "ACTION" && e.From != null)
 			{
 				this.Write("Ctcp", e.From, string.Format("[CTCP {1}] {2}",
 					e.From.Nickname, e.Command.Command,

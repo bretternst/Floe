@@ -46,6 +46,7 @@ namespace Floe
 			int bufIdx = 0;
 			HWAVEIN wavHandle;
 			WAVEHDR hdr[2];
+			bool isInitialized = false;
 
 			try
 			{
@@ -58,6 +59,7 @@ namespace Floe
 					hdr[i].dwFlags = hdr[i].dwBytesRecorded = 0;
 					ThrowOnFailure(waveInPrepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR)));
 				}
+				isInitialized = true;
 				waveInStart(wavHandle);
 
 				while(true)
@@ -89,13 +91,16 @@ namespace Floe
 			}
 			finally
 			{
-				waveInReset(wavHandle);
-				for(int i = 0; i < 2; i++)
+				if(isInitialized)
 				{
-					waveInUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR));
-					delete[] (BYTE*)hdr[i].lpData;
+					waveInReset(wavHandle);
+					for(int i = 0; i < 2; i++)
+					{
+						waveInUnprepareHeader(wavHandle, &hdr[i], sizeof(WAVEHDR));
+						delete[] (BYTE*)hdr[i].lpData;
+					}
+					waveInClose(wavHandle);
 				}
-				waveInClose(wavHandle);
 			}
 		}
 
