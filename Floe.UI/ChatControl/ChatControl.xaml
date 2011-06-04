@@ -262,10 +262,11 @@
 					   NicknameColorSeed="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.NicknameColorSeed, Mode=OneWay}"
 					   NewMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=OneWay}"
 					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"
-					AttentionColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=OneWay}"
-						   HighlightColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Highlight, Mode=OneWay}"
+					   AttentionColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=OneWay}"
+					   HighlightColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Highlight, Mode=OneWay}"
 					   DividerBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
-						   AutoSizeColumn="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn, Mode=OneWay}"
+					   AutoSizeColumn="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn, Mode=OneWay}"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
 					   MouseDoubleClick="boxOutput_MouseDoubleClick">
 				<local:ChatBox.Background>
 					<MultiBinding Converter="{StaticResource opacityConverter}">
@@ -280,7 +281,8 @@
 					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
 					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
 					 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"
-					 ItemsSource="{Binding Source={StaticResource nickListSource}}">
+					 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                     ItemsSource="{Binding Source={StaticResource nickListSource}}">
 				<ListBox.Background>
 					<MultiBinding Converter="{StaticResource opacityConverter}">
 						<Binding Source="{StaticResource editBG}"/>
