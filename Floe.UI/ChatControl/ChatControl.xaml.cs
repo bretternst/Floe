@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Floe.Net;
 using System.Threading;
+using System.Text;
 
 namespace Floe.UI
 {
@@ -149,18 +150,23 @@ namespace Floe.UI
 		{
 			this.Session.AutoReconnect = false;
 			this.Perform = server.OnConnect;
-			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect, server.Password);
+			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect, server.Password, encoding:server.EncodingInfo.GetEncoding());
 		}
 
-		public void Connect(string server, int port, bool useSsl, bool autoReconnect, string password)
+		public void Connect(string server, int port, bool useSsl, bool autoReconnect, string password, Encoding encoding = null)
 		{
-			this.Session.Open(server, port, useSsl,
+            if (encoding == null)
+            {
+                encoding = Encoding.UTF8;
+            }
+
+			this.Session.Open(server, port, encoding, useSsl,
 				!string.IsNullOrEmpty(this.Session.Nickname) ?
 					this.Session.Nickname : App.Settings.Current.User.Nickname,
 				App.Settings.Current.User.Username,
 				App.Settings.Current.User.FullName,
 				autoReconnect,
-				password,
+                password,
 				App.Settings.Current.User.Invisible,
 				App.Settings.Current.Dcc.FindExternalAddress,
 				App.ProxyInfo);

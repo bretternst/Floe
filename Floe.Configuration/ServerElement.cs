@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Floe.Configuration
 {
@@ -71,6 +74,14 @@ namespace Floe.Configuration
 		{
 			this.BaseRemoveAt(index);
 		}
+
+        public List<EncodingInfo> Encodings
+        {
+            get
+            {
+                return new List<EncodingInfo>(Encoding.GetEncodings());
+            }
+        }
 	}
 
 	public sealed class ServerElement : ConfigurationElement
@@ -99,6 +110,19 @@ namespace Floe.Configuration
 			}
 			set { this["hostName"] = value; }
 		}
+
+        [ConfigurationProperty("encodinginfo")]
+        public EncodingInfo EncodingInfo
+        {
+            get
+            {
+                return (EncodingInfo)this["encodinginfo"];
+            }
+            set
+            {
+                this["encodinginfo"] = value;
+            }
+        }
 
 		[ConfigurationProperty("port", DefaultValue=6667)]
 		[IntegerValidator(MinValue = 0, MaxValue = 65535)]

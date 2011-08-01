@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Text;
 
 namespace Floe.Net
 {
@@ -55,6 +56,8 @@ namespace Floe.Net
 		/// Gets the server port.
 		/// </summary>
 		public int Port { get; private set; }
+
+        public Encoding Encoding { get; private set; }
 
 		/// <summary>
 		/// Gets a value indicating whether the session uses an encrypted (SSL) connection.
@@ -266,9 +269,9 @@ namespace Floe.Net
 		/// <param name="password">The optional password to supply while logging in.</param>
 		/// <param name="invisible">Determines whether the +i flag will be set by default.</param>
 		/// <param name="findExternalAddress">Determines whether to find the external IP address by querying the IRC server upon connect.</param>
-		public void Open(string server, int port, bool isSecure, string nickname,
-			string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false, bool findExternalAddress = true,
-			ProxyInfo proxy = null)
+		public void Open(string server, int port, Encoding encoding, bool isSecure, string nickname,
+            string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false, bool findExternalAddress = true,
+            ProxyInfo proxy = null)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -280,6 +283,7 @@ namespace Floe.Net
 			this.Nickname = nickname;
 			this.Server = server;
 			this.Port = port;
+            this.Encoding = encoding;
 			this.IsSecure = isSecure;
 			this.Username = userName;
 			this.FullName = fullname;
@@ -289,7 +293,7 @@ namespace Floe.Net
 			this.Proxy = proxy;
 
 			_captures = new List<IrcCodeHandler>();
-			_conn.Open(server, port, isSecure, this.Proxy);
+			_conn.Open(server, port, encoding, isSecure, this.Proxy);
 			this.State = IrcSessionState.Connecting;
 		}
 
@@ -810,7 +814,7 @@ namespace Floe.Net
 			if (this.State == IrcSessionState.Disconnected)
 			{
 				this.State = IrcSessionState.Connecting;
-				_conn.Open(this.Server, this.Port, this.IsSecure, this.Proxy);
+				_conn.Open(this.Server, this.Port, this.Encoding, this.IsSecure, this.Proxy);
 			}
 		}
 

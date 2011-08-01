@@ -14,7 +14,8 @@ namespace Floe.Net
 	{
         private const int HeartbeatInterval = 300000;
 		private string _server;
-		private int _port;
+        private int _port;
+        private Encoding _encoding;
 		private bool _isSecure;
 		private ProxyInfo _proxy;
 
@@ -37,7 +38,7 @@ namespace Floe.Net
 			_syncContext = SynchronizationContext.Current;
 		}
 
-		public void Open(string server, int port, bool isSecure, ProxyInfo proxy = null)
+        public void Open(string server, int port, Encoding encoding, bool isSecure, ProxyInfo proxy = null)
 		{
 			if (string.IsNullOrEmpty(server))
 				throw new ArgumentNullException("server");
@@ -51,6 +52,7 @@ namespace Floe.Net
 
 			_server = server;
 			_port = port;
+            _encoding = encoding;
 			_isSecure = isSecure;
 			_proxy = proxy;
 			_writeQueue = new ConcurrentQueue<IrcMessage>();
@@ -160,7 +162,7 @@ namespace Floe.Net
 
 			this.Dispatch(this.OnConnected);
 
-			byte[] readBuffer = new byte[512], writeBuffer = new byte[Encoding.UTF8.GetMaxByteCount(512)];
+            byte[] readBuffer = new byte[512], writeBuffer = new byte[_encoding.GetMaxByteCount(512)];
 			int count = 0;
 			bool gotCR = false;
 			var input = new List<byte>(512);
@@ -178,7 +180,7 @@ namespace Floe.Net
 				if (arw == null && _writeQueue.TryDequeue(out outgoing))
 				{
 					string output = outgoing.ToString();
-					count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
+                    count = _encoding.GetBytes(output, 0, output.Length, writeBuffer, 0);
 					count = Math.Min(510, count);
 					writeBuffer[count] = 0xd;
 					writeBuffer[count + 1] = 0xa;
@@ -206,7 +208,7 @@ namespace Floe.Net
 									case 0xa:
 										if (gotCR)
 										{
-											var incoming = IrcMessage.Parse(Encoding.UTF8.GetString(input.ToArray()));
+                                            var incoming = IrcMessage.Parse(_encoding.GetString(input.ToArray()));
 											this.Dispatch(this.OnMessageReceived, incoming);
 											input.Clear();
 										}

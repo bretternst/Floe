@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+
 using Floe.Configuration;
 
 namespace Floe.UI.Settings
@@ -62,11 +63,6 @@ namespace Floe.UI.Settings
 			}
 			txtName.Text = server.Name;
 			lstServers.Items.Refresh();
-		}
-
-		private void checkBox1_Checked(object sender, RoutedEventArgs e)
-		{
-
 		}
 	}
 }

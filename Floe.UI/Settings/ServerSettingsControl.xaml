@@ -36,8 +36,8 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<Label Canvas.Left="166" Canvas.Top="55" Content="Server" Height="18" Name="label2" />
-		<TextBox Canvas.Left="166" Canvas.Top="71" Height="23" Name="txtHostname" Width="138">
+		<Label Canvas.Left="165" Canvas.Top="57" Content="Server" Height="18" Name="label2" />
+		<TextBox Canvas.Left="165" Canvas.Top="73" Height="23" Name="txtHostname" Width="138">
 			<TextBox.Text>
 				<Binding ElementName="lstServers" Path="SelectedItem.Hostname" Mode="TwoWay" NotifyOnSourceUpdated="True">
 					<Binding.ValidationRules>
@@ -46,8 +46,8 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<Label Canvas.Left="310" Canvas.Top="74" Content=":" Height="18" Name="label3" Width="9"/>
-		<TextBox Canvas.Left="320" Canvas.Top="71" Height="23" Name="txtPort" Width="52">
+		<Label Canvas.Left="309" Canvas.Top="75" Content=":" Height="18" Name="label3" Width="9"/>
+		<TextBox Canvas.Left="319" Canvas.Top="73" Height="23" Name="txtPort" Width="52">
 			<TextBox.Text>
 				<Binding ElementName="lstServers" Path="SelectedItem.Port" Mode="TwoWay" NotifyOnSourceUpdated="True">
 					<Binding.ValidationRules>
@@ -56,21 +56,37 @@
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
-		<CheckBox Canvas.Left="320" Canvas.Top="55" Content="SSL" Height="16" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.IsSecure, Mode=TwoWay}" Name="chkSsl" Width="52" />
-		<CheckBox Canvas.Left="165" Canvas.Top="100" Content="Connect On Startup" Height="16" Name="chkConnectOnStartup" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.ConnectOnStartup, Mode=TwoWay}"/>
-		<CheckBox Canvas.Left="165" Canvas.Top="122" Content="Auto Reconnect" Height="16" Name="chkAutoReconnect" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.AutoReconnect, Mode=TwoWay}"/>
-		<Label ToolTip="{StaticResource ttOnConnect}" Canvas.Left="166" Canvas.Top="143" Content="On Connect:" Height="28" Name="label4" />
-		<TextBox Canvas.Left="301" Canvas.Top="115" Height="23" Name="textBox1" Width="71">
+		<CheckBox Canvas.Left="319" Canvas.Top="57" Content="SSL" Height="16" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.IsSecure, Mode=TwoWay}" Name="chkSsl" Width="52" />
+		<CheckBox Canvas.Left="166" Canvas.Top="147" Content="Connect On Startup" Height="16" Name="chkConnectOnStartup" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.ConnectOnStartup, Mode=TwoWay}"/>
+		<CheckBox Canvas.Left="166" Canvas.Top="169" Content="Auto Reconnect" Height="16" Name="chkAutoReconnect" IsChecked="{Binding ElementName=lstServers, Path=SelectedItem.AutoReconnect, Mode=TwoWay}"/>
+		<Label ToolTip="{StaticResource ttOnConnect}" Canvas.Left="166" Canvas.Top="192" Content="On Connect:" Height="28" Name="label4" />
+		<TextBox Canvas.Left="302" Canvas.Top="162" Height="23" Name="textBox1" Width="71">
 			<Binding ElementName="lstServers" Mode="TwoWay" NotifyOnSourceUpdated="True" Path="SelectedItem.Password">
 				<Binding.ValidationRules>
 					<ExceptionValidationRule />
 				</Binding.ValidationRules>
 			</Binding>
 		</TextBox>
-		<TextBox ToolTip="{StaticResource ttOnConnect}" Canvas.Left="165" Canvas.Top="159" Height="98" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
-		<Label Canvas.Left="301" Canvas.Top="100" Content="Password" Height="18" Name="label5" />
+		<TextBox ToolTip="{StaticResource ttOnConnect}" Canvas.Left="165" Canvas.Top="210" Height="47" Name="txtOnConnect" Width="207" Text="{Binding ElementName=lstServers, Path=SelectedItem.OnConnect}" AcceptsReturn="True" />
+		<Label Canvas.Left="302" Canvas.Top="147" Content="Password" Height="18" Name="label5" />
 		<TextBlock Canvas.Left="165" Canvas.Top="260" Height="40" Name="label6" Width="207" TextWrapping="Wrap">
 			Tip: Use "/delay N" to delay N seconds between commands.
-		</TextBlock>
-	</Canvas>
+        </TextBlock>
+        <Label Canvas.Left="166" Canvas.Top="102" Content="Encoding" Height="18" Name="txtEncoding" />
+        <ComboBox Canvas.Left="164" Canvas.Top="118" Height="23" Name="comboEncoding" Width="139"
+                   ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers.Encodings}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <Label Content="{Binding Path=DisplayName}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+            <ComboBox.SelectedItem>
+                <Binding ElementName="lstServers" Path="SelectedItem.EncodingInfo" Mode="TwoWay" NotifyOnSourceUpdated="True">
+                    <Binding.ValidationRules>
+                        <ExceptionValidationRule/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </ComboBox.SelectedItem>
+        </ComboBox>
+    </Canvas>
 </UserControl>
