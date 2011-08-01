@@ -150,7 +150,7 @@ namespace Floe.UI
 		{
 			this.Session.AutoReconnect = false;
 			this.Perform = server.OnConnect;
-			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect, server.Password, encoding:server.EncodingInfo.GetEncoding());
+			this.Connect(server.Hostname, server.Port, server.IsSecure, server.AutoReconnect, server.Password, encoding:server.Encoding);
 		}
 
 		public void Connect(string server, int port, bool useSsl, bool autoReconnect, string password, Encoding encoding = null)

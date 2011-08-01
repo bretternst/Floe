@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Floe.Configuration
 {
@@ -75,11 +76,12 @@ namespace Floe.Configuration
 			this.BaseRemoveAt(index);
 		}
 
-        public List<EncodingInfo> Encodings
+        public IEnumerable<Encoding> Encodings
         {
             get
             {
-                return new List<EncodingInfo>(Encoding.GetEncodings());
+                return from info in Encoding.GetEncodings()
+                       select info.GetEncoding();
             }
         }
 	}
@@ -111,16 +113,16 @@ namespace Floe.Configuration
 			set { this["hostName"] = value; }
 		}
 
-        [ConfigurationProperty("encodinginfo")]
-        public EncodingInfo EncodingInfo
+        [ConfigurationProperty("encoding")]
+        public Encoding Encoding
         {
             get
             {
-                return (EncodingInfo)this["encodinginfo"];
+                return (Encoding)this["encoding"];
             }
             set
             {
-                this["encodinginfo"] = value;
+                this["encoding"] = value;
             }
         }
 

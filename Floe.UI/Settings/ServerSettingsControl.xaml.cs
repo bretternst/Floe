@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-
+using System.Text;
 using Floe.Configuration;
 
 namespace Floe.UI.Settings
@@ -16,6 +16,7 @@ namespace Floe.UI.Settings
 				var server = new ServerElement();
 				server.Name = "New Server";
 				server.Port = 6667;
+                server.Encoding = Encoding.UTF8;
 				App.Settings.Current.Servers.Add(server);
 			}
 
@@ -37,7 +38,8 @@ namespace Floe.UI.Settings
 					newName += " {0}";
 				}
 			}
-			server.Port = 6667;
+            server.Port = 6667;
+            server.Encoding = Encoding.UTF8;
 
 			App.Settings.Current.Servers.Add(server);
 			lstServers.Items.Refresh();

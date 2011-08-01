@@ -77,11 +77,11 @@
                    ItemsSource="{Binding Source={x:Static local:App.Settings}, Path=Current.Servers.Encodings}">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
-                    <Label Content="{Binding Path=DisplayName}"/>
+                    <Label Content="{Binding Path=EncodingName}"/>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
             <ComboBox.SelectedItem>
-                <Binding ElementName="lstServers" Path="SelectedItem.EncodingInfo" Mode="TwoWay" NotifyOnSourceUpdated="True">
+                <Binding ElementName="lstServers" Path="SelectedItem.Encoding" Mode="TwoWay" NotifyOnSourceUpdated="True">
                     <Binding.ValidationRules>
                         <ExceptionValidationRule/>
                     </Binding.ValidationRules>
