@@ -30,7 +30,6 @@ namespace Floe.UI
 		private LinkedListNode<string> _historyNode;
 		private LogFileHandle _logFile;
 		private ChatLine _markerLine;
-		private VoiceControl _voiceControl;
 		private Timer _delayTimer;
 
 		public ChatControl(ChatPageType type, IrcSession session, IrcTarget target)
@@ -335,10 +334,6 @@ namespace Floe.UI
 				{
 					_logFile.Dispose();
 				}
-			}
-			if (_voiceControl != null)
-			{
-				_voiceControl.Dispose();
 			}
 		}
 

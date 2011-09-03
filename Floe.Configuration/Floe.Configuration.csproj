@@ -63,16 +63,6 @@
     <Compile Include="VoiceElement.cs" />
     <Compile Include="WindowsElement.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Floe.Audio\Floe.Audio.csproj">
-      <Project>{BDD20714-E82B-45C9-A310-BE57BA986F44}</Project>
-      <Name>Floe.Audio</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Floe.Interop\Floe.Interop.vcxproj">
-      <Project>{3CEFFCEB-C836-47CC-8B8A-EC5655E1B5B7}</Project>
-      <Name>Floe.Interop</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

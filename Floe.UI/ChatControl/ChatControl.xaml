@@ -13,7 +13,6 @@
 		<KeyBinding Command="local:ChatControl.ClearCommand" Gesture="Alt+C"/>
 		<KeyBinding Command="local:ChatControl.SearchCommand" Gesture="Ctrl+F"/>
 		<KeyBinding Command="local:ChatControl.ChannelPanelCommand" Gesture="Alt+J"/>
-		<KeyBinding Command="local:ChatControl.VoiceChatCommand" Gesture="Alt+V"/>
 	</UserControl.InputBindings>
 	<UserControl.CommandBindings>
 		<CommandBinding Command="local:ChatControl.WhoisCommand" Executed="ExecuteWhois" CanExecute="CanExecuteConnectedCommand"/>
@@ -39,8 +38,6 @@
 		<CommandBinding Command="local:ChatControl.ChannelPanelCommand" Executed="ExecuteChannelPanel"/>
 		<CommandBinding Command="local:ChatControl.ListCommand" Executed="ExecuteList"/>
 		<CommandBinding Command="local:ChatControl.JoinCommand" Executed="ExecuteJoin"/>
-		<CommandBinding Command="local:ChatControl.VoiceChatCommand" Executed="ExecuteVoiceChat" CanExecute="CanExecuteChannelCommand"/>
-		<CommandBinding Command="local:ChatControl.MuteCommand" Executed="ExecuteMute" CanExecute="CanExecuteVoiceCommand"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
 		<SolidColorBrush x:Key="defaultBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default}"/>
@@ -90,8 +87,6 @@
 			<MenuItem Command="local:ChatControl.UnbanCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<Separator/>
 			<MenuItem Command="local:ChatControl.SlapCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
-			<Separator/>
-			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=lstNicknames, Path=SelectedItem.(local:VoiceControl.IsMuted)}" Command="local:ChatControl.MuteCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmHyperlink">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpenLinkCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
@@ -111,7 +106,6 @@
 			<Separator/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlChannel, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ChannelPanelCommand" InputGestureText="Alt+J"/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
-			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlVoice, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.VoiceChatCommand" InputGestureText="Alt+V"/>
 		</ContextMenu>
 		<Style TargetType="MenuItem" x:Key="colorMenuItem">
 			<Setter Property="Template">
@@ -188,11 +182,6 @@
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Top" Background="{Binding ElementName=chatControl, Path=UIBackground, Mode=OneWay}">
 			<StackPanel Orientation="Vertical">
-				<StackPanel x:Name="pnlVoice" Orientation="Horizontal" Visibility="Collapsed" Margin="0,5,10,5" SnapsToDevicePixels="True">
-					<Button Command="local:ChatControl.VoiceChatCommand" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0">
-						<Path Style="{StaticResource uiCloseButtonPathStyle}"/>
-					</Button>
-				</StackPanel>
 				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlDccChat" Margin="0,5,10,5" SnapsToDevicePixels="True">
 					<Label Style="{StaticResource uiLabelStyle}" x:Name="lblDccChat" FontWeight="Bold"/>
 					<Button x:Name="btnAccept" Padding="3,1,3,1" Content="Accept" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnAccept_Click"/>
@@ -296,29 +285,7 @@
 				</ListBox.ItemContainerStyle>
 				<ListBox.ItemTemplate>
 					<DataTemplate>
-						<StackPanel Orientation="Horizontal">
-							<Grid Margin="0,0,5,0" Visibility="{Binding (local:VoiceControl.IsVoiceChat), Converter={StaticResource visibleConverter}}">
-								<Path VerticalAlignment="Center" Data="{StaticResource voiceIndicatorGeometry}" StrokeThickness="2">
-									<Path.Style>
-										<Style TargetType="Path">
-											<Style.Setters>
-												<Setter Property="Stroke" Value="{StaticResource defaultBrush}"/>
-											</Style.Setters>
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding (local:VoiceControl.IsTalking)}" Value="True">
-													<Setter Property="Stroke" Value="{StaticResource transmitBrush}"/>
-												</DataTrigger>
-												<DataTrigger Binding="{Binding (local:VoiceControl.IsMuted)}" Value="True">
-													<Setter Property="Opacity" Value="0.75"/>
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Path.Style>
-								</Path>
-								<Path VerticalAlignment="Center" Visibility="{Binding (local:VoiceControl.IsMuted), Converter={StaticResource visibleConverter}}" Data="{StaticResource muteIndicatorGeometry}" StrokeThickness="2" Stroke="{StaticResource defaultBrush}"/>					
-							</Grid>
-							<TextBlock Text="{Binding NickWithLevel}"/>
-						</StackPanel>
+						<TextBlock Text="{Binding NickWithLevel}"/>
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>

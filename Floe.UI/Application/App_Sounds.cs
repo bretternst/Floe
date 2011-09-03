@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Media;
 using System.Windows;
-
-using Floe.Audio;
-using Floe.Interop;
+using System.Windows.Media;
 
 namespace Floe.UI
 {
 	public partial class App : Application
 	{
-		private static FilePlayer _player;
+        private static IDisposable _player = null;
 
 		public static void DoEvent(string eventName)
 		{
@@ -20,12 +18,12 @@ namespace Floe.UI
 				{
 					if (_player != null)
 					{
-						_player.Dispose();
+//						_player.Dispose();
 					}
 					try
 					{
-						_player = new FilePlayer(path);
-						_player.Start();
+                        //_player = new FilePlayer(path);
+                        //_player.Start();
 					}
 					catch (Exception ex)
 					{

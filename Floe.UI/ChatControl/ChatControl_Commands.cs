@@ -36,20 +36,6 @@ namespace Floe.UI
 		public readonly static RoutedUICommand JoinCommand = new RoutedUICommand("Join", "Join", typeof(ChatWindow));
 		public readonly static RoutedUICommand ChannelPanelCommand = new RoutedUICommand("Channel Pane", "ChannelPane", typeof(ChatControl));
 		public readonly static RoutedUICommand ListCommand = new RoutedUICommand("List", "List", typeof(ChatControl));
-		public readonly static RoutedUICommand VoiceChatCommand = new RoutedUICommand("Voice Chat", "VoiceChat", typeof(ChatControl));
-		public readonly static RoutedUICommand MuteCommand = new RoutedUICommand("Mute", "Mute", typeof(ChatControl));
-
-		private void CanExecuteVoiceCommand(object sender, CanExecuteRoutedEventArgs e)
-		{
-			e.CanExecute = false;
-			var item = lstNicknames.SelectedItem as NicknameItem;
-
-			if (item != null && VoiceControl.GetIsVoiceChat(item) &&
-				!this.Session.IsSelf(item.Nickname))
-			{
-				e.CanExecute = true;
-			}
-		}
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
@@ -300,20 +286,6 @@ namespace Floe.UI
 			if (!string.IsNullOrEmpty(channel))
 			{
 				this.Session.Join(channel);
-			}
-		}
-
-		private void ExecuteVoiceChat(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.ToggleVoiceChatPanel();
-		}
-
-		private void ExecuteMute(object sender, ExecutedRoutedEventArgs e)
-		{
-			var nick = e.Parameter as string;
-			if (_voiceControl != null)
-			{
-				_voiceControl.ToggleMute(nick);
 			}
 		}
 
@@ -850,23 +822,6 @@ namespace Floe.UI
 				pnlSearch.Visibility = Visibility.Visible;
 				txtSearchTerm.Focus();
 				txtSearchTerm.SelectAll();
-			}
-		}
-
-		private void ToggleVoiceChatPanel()
-		{
-			if (_voiceControl == null)
-			{
-				_voiceControl = new VoiceControl(this.Session, this.Target, _nickList);
-				pnlVoice.Children.Add(_voiceControl);
-			}
-			if (pnlVoice.Visibility == Visibility.Visible)
-			{
-				pnlVoice.Visibility = Visibility.Collapsed;
-			}
-			else
-			{
-				pnlVoice.Visibility = Visibility.Visible;
 			}
 		}
 		

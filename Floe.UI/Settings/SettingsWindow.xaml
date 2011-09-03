@@ -92,7 +92,6 @@
 			<ListBoxItem Content="DCC"/>
 			<ListBoxItem Content="Sounds"/>
 			<ListBoxItem Content="Network"/>
-			<ListBoxItem Content="Voice"/>
 		</ListBox>
 		<Grid Name="grdSettings" DockPanel.Dock="Right" Background="#FFEEEEEE">
 		</Grid>

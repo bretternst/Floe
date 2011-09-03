@@ -2,11 +2,10 @@
 using System.ComponentModel;
 using System.Configuration;
 
-using Floe.Audio;
-using Floe.Interop;
-
 namespace Floe.Configuration
 {
+    // These settings are deprecated. This class still exists so that people who have
+    // these settings in their configuration can still launch the application.
 	public class VoiceElement : ConfigurationElement, INotifyPropertyChanged
 	{
 		[ConfigurationProperty("quality", DefaultValue=21760)]
@@ -23,10 +22,10 @@ namespace Floe.Configuration
 			set { this["pushToTalk"] = value; }
 		}
 
-		[ConfigurationProperty("talkKey", DefaultValue=InputButton.MouseButton4)]
-		public InputButton TalkKey
+		[ConfigurationProperty("talkKey", DefaultValue="")]
+		public string TalkKey
 		{
-			get { return (InputButton)this["talkKey"]; }
+			get { return (string)this["talkKey"]; }
 			set { this["talkKey"] = value; }
 		}
 

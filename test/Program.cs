@@ -4,9 +4,6 @@ using System.Net.Sockets;
 using System.IO;
 using System.Runtime.InteropServices;
 
-using Floe.Audio;
-using Floe.Interop;
-
 namespace test
 {
 	class Program
