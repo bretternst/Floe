@@ -7,7 +7,7 @@ namespace Floe.UI
 {
 	public partial class App : Application
 	{
-        private static IDisposable _player = null;
+        private static SoundPlayer _player;
 
 		public static void DoEvent(string eventName)
 		{
@@ -18,12 +18,12 @@ namespace Floe.UI
 				{
 					if (_player != null)
 					{
-//						_player.Dispose();
+						_player.Dispose();
 					}
 					try
-					{
-                        //_player = new FilePlayer(path);
-                        //_player.Start();
+                    {
+                        _player = new SoundPlayer(path);
+                        _player.Play();
 					}
 					catch (Exception ex)
 					{
