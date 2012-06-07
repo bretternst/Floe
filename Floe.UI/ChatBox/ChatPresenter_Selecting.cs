@@ -117,7 +117,12 @@ namespace Floe.UI
 					string selText = this.GetSelectedText();
 					if (selText.Length >= this.MinimumCopyLength)
 					{
-						Clipboard.SetText(selText);
+                        try {
+                            Clipboard.SetText(selText);
+                        } catch {
+                            // sometimes another app locks the clipboard and WPF doesn't handle that
+                            // in that case, better to ignore it than to crash
+                        }
 					}
 				}
 

@@ -755,7 +755,7 @@ namespace Floe.Net
 						}
 
 						var parts = e.Message.Parameters[1].Split('@');
-						if (parts.Length > 0)
+						if (parts.Length > 1)
 						{
 							IPAddress external;
 							if (!IPAddress.TryParse(parts[1], out external))

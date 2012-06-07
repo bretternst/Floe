@@ -135,13 +135,16 @@ namespace Floe.Net
 			}
 			else
 			{
-				_tcpClient = new TcpClient();
-				var ar = _tcpClient.BeginConnect(_server, _port, null, null);
-				if (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endWaitHandle }) == 1)
+                var connEvt = new ManualResetEventSlim();
+                ThreadPool.QueueUserWorkItem(o => {
+                    _tcpClient = new TcpClient(_server, _port);
+                    connEvt.Set();
+                });
+
+                if (WaitHandle.WaitAny(new[] { connEvt.WaitHandle, _endWaitHandle }) == 1)
 				{
 					return;
 				}
-				_tcpClient.EndConnect(ar);
 			}
 			stream = _tcpClient.GetStream();
 
