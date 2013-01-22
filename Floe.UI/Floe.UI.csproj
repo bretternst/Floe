@@ -65,9 +65,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Application\App_Ignore.cs" />
+    <Compile Include="Application\App_Interface.cs" />
     <Compile Include="Application\App_Logging.cs" />
     <Compile Include="Application\App_Patterns.cs" />
     <Compile Include="Application\App_Resources.cs" />
+    <Compile Include="Application\App_Sounds.cs" />
+    <Compile Include="Application\Enums.cs" />
     <Compile Include="ChannelWindow\ChannelWindow.xaml.cs">
       <DependentUpon>ChannelWindow.xaml</DependentUpon>
     </Compile>
@@ -89,9 +92,12 @@
       <DependentUpon>ChatControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChatControl\ChatControl_Commands.cs" />
+    <Compile Include="ChatControl\ChatControl_Dcc.cs" />
     <Compile Include="ChatControl\ChatControl_Events.cs" />
     <Compile Include="ChatControl\ChatControl_NickList.cs" />
     <Compile Include="ChatControl\ChatControl_Slap.cs" />
+    <Compile Include="ChatControl\NicknameItem.cs" />
+    <Compile Include="ChatControl\NicknameList.cs" />
     <Compile Include="ChatControl\NotifyState.cs" />
     <Compile Include="ChatWindow\ChatPage.cs" />
     <Compile Include="ChatWindow\ChatTabItem.cs" />
@@ -106,20 +112,31 @@
     <Compile Include="Dialogs\ConfirmDialog.xaml.cs">
       <DependentUpon>ConfirmDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileControl\Enums.cs" />
     <Compile Include="FileControl\FileControl.xaml.cs">
       <DependentUpon>FileControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileControl\FileControl_Properties.cs" />
     <Compile Include="HsvColor.cs" />
-    <Compile Include="Interop\ColorPickerHelper.cs" />
+    <Compile Include="Interop\ColorPicker.cs" />
     <Compile Include="Interop\FolderBrowser.cs" />
     <Compile Include="Interop\NotifyIcon.cs" />
     <Compile Include="Interop\WindowConstants.cs" />
     <Compile Include="Interop\WindowHelper.cs" />
+    <Compile Include="ListControl\ListControl.xaml.cs">
+      <DependentUpon>ListControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\BufferSettingsControl.xaml.cs">
       <DependentUpon>BufferSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\ColorsSettingsControl.xaml.cs">
       <DependentUpon>ColorsSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\NetworkSettingsControl.xaml.cs">
+      <DependentUpon>NetworkSettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\SoundSettingsControl.xaml.cs">
+      <DependentUpon>SoundSettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings\DccSettingsControl.xaml.cs">
       <DependentUpon>DccSettingsControl.xaml</DependentUpon>
@@ -163,11 +180,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ListControl\ListControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Settings\BufferSettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\ColorsSettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\NetworkSettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\SoundSettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

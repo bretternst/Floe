@@ -1,24 +1,15 @@
 ﻿using System;
-using System.IO;
-using System.Net;
-using System.Windows;
 using System.Collections.Generic;
-using System.Threading;
+using System.IO;
 using System.Linq;
-using Microsoft.Win32;
+using System.Net;
+using System.Threading;
+using System.Windows;
 using Floe.Net;
+using Microsoft.Win32;
 
 namespace Floe.UI
 {
-	public enum FileStatus
-	{
-		Asking,
-		Working,
-		Cancelled,
-		Received,
-		Sent
-	}
-
 	public partial class FileControl : ChatPage
 	{
 		private const int PollTime = 250;
@@ -32,73 +23,10 @@ namespace Floe.UI
 		private int _port;
 		private bool _isPortForwarding;
 
-		public static readonly DependencyProperty DescriptionProperty =
-			DependencyProperty.Register("Description", typeof(string), typeof(FileControl));
-		public string Description
-		{
-			get { return (string)this.GetValue(DescriptionProperty); }
-			set { this.SetValue(DescriptionProperty, value); }
-		}
-
-		public static readonly DependencyProperty FileSizeProperty =
-			DependencyProperty.Register("FileSize", typeof(long), typeof(FileControl));
-		public long FileSize
-		{
-			get { return (long)this.GetValue(FileSizeProperty); }
-			set { this.SetValue(FileSizeProperty, value); }
-		}
-
-		public static readonly DependencyProperty BytesTransferredProperty =
-			DependencyProperty.Register("BytesTransferred", typeof(long), typeof(FileControl));
-		public long BytesTransferred
-		{
-			get { return (long)this.GetValue(BytesTransferredProperty); }
-			set { this.SetValue(BytesTransferredProperty, value); }
-		}
-
-		public static readonly DependencyProperty SpeedProperty =
-			DependencyProperty.Register("Speed", typeof(long), typeof(FileControl));
-		public long Speed
-		{
-			get { return (long)this.GetValue(SpeedProperty); }
-			set { this.SetValue(SpeedProperty, value); }
-		}
-
-		public static readonly DependencyProperty EstimatedTimeProperty =
-			DependencyProperty.Register("EstimatedTime", typeof(int), typeof(FileControl));
-		public int EstimatedTime
-		{
-			get { return (int)this.GetValue(EstimatedTimeProperty); }
-			set { this.SetValue(EstimatedTimeProperty, value); }
-		}
-
-		public static readonly DependencyProperty StatusProperty =
-			DependencyProperty.Register("Status", typeof(FileStatus), typeof(FileControl));
-		public FileStatus Status
-		{
-			get { return (FileStatus)this.GetValue(StatusProperty); }
-			set { this.SetValue(StatusProperty, value); }
-		}
-
-		public static readonly DependencyProperty StatusTextProperty =
-			DependencyProperty.Register("StatusText", typeof(string), typeof(FileControl));
-		public string StatusText
-		{
-			get { return (string)this.GetValue(StatusTextProperty); }
-			set { this.SetValue(StatusTextProperty, value); }
-		}
-
-		public static readonly DependencyProperty IsDangerousProperty =
-			DependencyProperty.Register("IsDangerous", typeof(bool), typeof(FileControl));
-		public bool IsDangerous
-		{
-			get { return (bool)this.GetValue(IsDangerousProperty); }
-			set { this.SetValue(IsDangerousProperty, value); }
-		}
-
-		public FileControl(IrcSession session, IrcTarget target)
+		public FileControl(IrcSession session, IrcTarget target, DccMethod method)
 			: base(ChatPageType.DccFile, session, target, "DCC")
 		{
+			this.DccMethod = method;
 			InitializeComponent();
 			this.Id = "dcc-file";
 			this.Header = this.Title = string.Format("{0} [DCC]", target.Name);
@@ -113,7 +41,15 @@ namespace Floe.UI
 			this.FileSize = file.Length;
 			this.Status = FileStatus.Working;
 
-			_dcc = new DccXmitSender(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action));
+			switch (this.DccMethod)
+			{
+				case DccMethod.Send:
+					_dcc = new DccSendSender(_fileInfo);
+					break;
+				case DccMethod.Xmit:
+					_dcc = new DccXmitSender(_fileInfo);
+					break;
+			}
 			_dcc.Connected += dcc_Connected;
 			_dcc.Disconnected += dcc_Disconnected;
 			_dcc.Error += dcc_Error;
@@ -166,6 +102,7 @@ namespace Floe.UI
 			{
 				this.Accept(false);
 			}
+			App.DoEvent("dccRequest");
 		}
 
 		public override bool CanClose()
@@ -187,7 +124,7 @@ namespace Floe.UI
 
 			if (_dcc != null)
 			{
-				_dcc.Close();
+				_dcc.Dispose();
 			}
 		}
 
@@ -201,7 +138,15 @@ namespace Floe.UI
 		{
 			this.Status = FileStatus.Working;
 			this.StatusText = "Connecting";
-			_dcc = new DccXmitReceiver(_fileInfo, (action) => this.Dispatcher.BeginInvoke(action)) { ForceOverwrite = forceOverwrite, ForceResume = chkForceResume.IsChecked == true };
+			switch (this.DccMethod)
+			{
+				case DccMethod.Send:
+					_dcc = new DccSendReceiver(_fileInfo) { ForceOverwrite = forceOverwrite };
+					break;
+				case DccMethod.Xmit:
+					_dcc = new DccXmitReceiver(_fileInfo) { ForceOverwrite = forceOverwrite, ForceResume = chkForceResume.IsChecked == true };
+					break;
+			}
 			_dcc.Connect(_address, _port);
 			_dcc.Connected += dcc_Connected;
 			_dcc.Disconnected += dcc_Disconnected;
@@ -272,6 +217,7 @@ namespace Floe.UI
 			this.BytesTransferred = _dcc.BytesTransferred;
 			this.Speed = 0;
 			this.EstimatedTime = 0;
+			this.Progress = 1f;
 
 			if (this.BytesTransferred < this.FileSize)
 			{
@@ -279,12 +225,14 @@ namespace Floe.UI
 				{
 					this.Status = FileStatus.Cancelled;
 					this.StatusText = "Connection lost";
+					App.DoEvent("dccError");
 				}
 			}
 			else
 			{
-				this.Status = _dcc is DccXmitReceiver ? FileStatus.Received : FileStatus.Sent;
+				this.Status = (_dcc is DccXmitReceiver || _dcc is DccSendReceiver) ? FileStatus.Received : FileStatus.Sent;
 				this.StatusText = "Finished";
+				App.DoEvent("dccComplete");
 			}
 			this.DeletePortForwarding();
 		}
@@ -298,6 +246,7 @@ namespace Floe.UI
 				_pollTimer.Dispose();
 			}
 			this.DeletePortForwarding();
+			App.DoEvent("dccError");
 		}
 
 		private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -306,13 +255,21 @@ namespace Floe.UI
 			this.StatusText = "Cancelled";
 			if (_dcc != null)
 			{
-				_dcc.Close();
+				_dcc.Dispose();
 			}
 		}
 
 		private void btnOpen_Click(object sender, RoutedEventArgs e)
 		{
-			string path = ((DccXmitReceiver)_dcc).FileSavedAs;
+			string path = "";
+			if (_dcc is DccXmitReceiver)
+			{
+				path = ((DccXmitReceiver)_dcc).FileSavedAs;
+			}
+			else
+			{
+				path = ((DccSendReceiver)_dcc).FileSavedAs;
+			}
 			if (File.Exists(path))
 			{
 				App.BrowseTo(path);

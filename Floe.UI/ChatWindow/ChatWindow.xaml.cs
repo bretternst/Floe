@@ -3,8 +3,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
 
 using Floe.Net;
 
@@ -71,9 +69,9 @@ namespace Floe.UI
 			tabsChat.SelectedIndex = index;
 		}
 
-		public ChatPage FindPage(IrcSession session, IrcTarget target)
+		public ChatPage FindPage(ChatPageType type, IrcSession session, IrcTarget target)
 		{
-			return this.Items.Where((i) => i.Page.Session == session && i.Page.Target != null &&
+			return this.Items.Where((i) => i.Page.Type == type && i.Page.Session == session && i.Page.Target != null &&
 				i.Page.Target.Equals(target)).Select((i) => i.Page).FirstOrDefault();
 		}
 

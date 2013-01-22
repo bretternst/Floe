@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using Floe.Net;
 

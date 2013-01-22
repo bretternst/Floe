@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
-
+using System.Windows.Input;
 using Floe.Configuration;
 using Floe.Net;
 
@@ -13,7 +13,7 @@ namespace Floe.UI
 
 		private void Session_SelfJoined(object sender, IrcJoinEventArgs e)
 		{
-			var page = new ChatControl((IrcSession)sender, e.Channel);
+			var page = new ChatControl(ChatPageType.Chat, (IrcSession)sender, e.Channel);
 			var state = App.Settings.Current.Windows.States[page.Id];
 			if (state.IsDetached)
 			{
@@ -28,38 +28,47 @@ namespace Floe.UI
 
 		private void Session_SelfParted(object sender, IrcPartEventArgs e)
 		{
-			var context = this.FindPage((IrcSession)sender, e.Channel);
-			if (context != null)
+			var page = this.FindPage(ChatPageType.Chat, (IrcSession)sender, e.Channel);
+			if (page != null)
 			{
-				this.RemovePage(context);
+				this.RemovePage(page);
 			}
 		}
 
 		private void Session_SelfKicked(object sender, IrcKickEventArgs e)
 		{
-			var context = this.FindPage((IrcSession)sender, e.Channel);
-			if (context != null)
+			var page = this.FindPage(ChatPageType.Chat, (IrcSession)sender, e.Channel);
+			if (page != null)
 			{
-				this.RemovePage(context);
+				this.RemovePage(page);
 			}
 		}
 
 		private void Session_StateChanged(object sender, EventArgs e)
 		{
-			if (((IrcSession)sender).State == IrcSessionState.Connecting)
+			var session = (IrcSession)sender;
+			switch (session.State)
 			{
-				foreach (var p in (from i in this.Items
-								   where i.Page.Session == sender && i.Page.Target != null
-								   select i).ToArray())
-				{
-					this.RemovePage(p.Page);
-				}
+				case IrcSessionState.Connecting:
+					foreach (var p in (from i in this.Items
+									   where i.Page.Session == sender && i.Page.Target != null
+									   select i).ToArray())
+					{
+						this.RemovePage(p.Page);
+					}
+					break;
+				case IrcSessionState.Disconnected:
+					if(!_isShuttingDown)
+					{
+						App.DoEvent("disconnect");
+					}
+					break;
 			}
 		}
 
 		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Ctcp))
 			{
 				return;
 			}
@@ -100,11 +109,11 @@ namespace Floe.UI
 				&& (!CtcpCommand.IsCtcpCommand(e.Message.Parameters[1]) ||
 				CtcpCommand.Parse(e.Message.Parameters[1]).Command == "ACTION"))
 			{
-				if (App.IsIgnoreMatch(e.Message.From))
+				var target = new IrcTarget(e.Message.Parameters[0]);
+				if (App.IsIgnoreMatch(e.Message.From, target.IsChannel ? IgnoreActions.Channel : IgnoreActions.Private))
 				{
 					return;
 				}
-				var target = new IrcTarget(e.Message.Parameters[0]);
 				if (!target.IsChannel && e.Message.From is IrcPeer)
 				{
 					if (App.Create(sender as IrcSession, new IrcTarget((IrcPeer)e.Message.From), false)
@@ -118,8 +127,7 @@ namespace Floe.UI
 
 		private void ChatWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			var session = new IrcSession((a) => this.Dispatcher.BeginInvoke(a));
-			this.AddPage(new ChatControl(session, null), true);
+			this.AddPage(new ChatControl(ChatPageType.Server, new IrcSession(), null), true);
 
 			if (Application.Current.MainWindow == this)
 			{
@@ -135,7 +143,7 @@ namespace Floe.UI
 				{
 					if (i++ > 0)
 					{
-						this.AddPage(new ChatControl(new IrcSession((a) => this.Dispatcher.BeginInvoke(a)), null), false);
+						this.AddPage(new ChatControl(ChatPageType.Server, new IrcSession(), null), false);
 					}
 					var page = this.Items[this.Items.Count - 1] as ChatTabItem;
 					if (page != null)
@@ -164,6 +172,7 @@ namespace Floe.UI
 					return;
 				}
 			}
+			_isShuttingDown = true;
 
 			this.QuitAllSessions();
 
@@ -189,6 +198,32 @@ namespace Floe.UI
 			}
 		}
 
+		private void session_InfoReceived(object sender, IrcInfoEventArgs e)
+		{
+			var session = sender as IrcSession;
+			switch (e.Code)
+			{
+				case IrcCode.RPL_LISTSTART:
+					App.Create(session, new ListControl(session), true);
+					break;
+			}
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			if ((Keyboard.Modifiers & ModifierKeys.Alt) > 0 && e.SystemKey >= Key.D0 && e.SystemKey <= Key.D9)
+			{
+				int index = e.SystemKey == Key.D0 ? 9 : (int)e.SystemKey - (int)Key.D0 - 1;
+				if (index < this.Items.Count)
+				{
+					tabsChat.SelectedIndex = index;
+				}
+				e.Handled = true;
+			}
+
+			base.OnKeyDown(e);
+		}
+
 		private void SubscribeEvents(IrcSession session)
 		{
 			session.SelfJoined += new EventHandler<IrcJoinEventArgs>(Session_SelfJoined);
@@ -197,6 +232,7 @@ namespace Floe.UI
 			session.StateChanged += new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived += new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived += new EventHandler<IrcEventArgs>(session_RawMessageReceived);
+			session.InfoReceived += new EventHandler<IrcInfoEventArgs>(session_InfoReceived);
 		}
 
 		public void UnsubscribeEvents(IrcSession session)
@@ -207,6 +243,7 @@ namespace Floe.UI
 			session.StateChanged -= new EventHandler<EventArgs>(Session_StateChanged);
 			session.CtcpCommandReceived -= new EventHandler<CtcpEventArgs>(Session_CtcpCommandReceived);
 			session.RawMessageReceived -= new EventHandler<IrcEventArgs>(session_RawMessageReceived);
+			session.InfoReceived -= new EventHandler<IrcInfoEventArgs>(session_InfoReceived);
 		}
 	}
 }

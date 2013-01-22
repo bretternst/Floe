@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="Floe.UI.Settings.SoundSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:local="clr-namespace:Floe.UI"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="384">
+	<UserControl.Resources>
+		<ToolTip x:Key="ttOnConnect">Specifies a sequence of commands (one per line) to execute on successful connection. Can be used to authenticate or join channels.</ToolTip>
+		<Style TargetType="{x:Type Label}">
+			<Setter Property="Padding" Value="0"/>
+		</Style>
+	</UserControl.Resources>
+	<Canvas>
+		<CheckBox Canvas.Left="12" Canvas.Top="12" Content="Enable Sounds" Height="16" Name="chkIsLoggingEnabled"
+						  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.IsEnabled}"/>
+		<ListBox Canvas.Left="12" Canvas.Top="41" Height="194" Name="lstEvents" Width="138" Style="{DynamicResource styleSmallListBox}" IsEnabled="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+			<ListBox.Items>
+				<ListBoxItem Content="Active Alert" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.ActiveAlert, Mode=TwoWay}" ToolTip="Played whenever one of your attention patterns is matched in the active window and tab."/>
+				<ListBoxItem Content="Inactive Alert" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.InactiveAlert, Mode=TwoWay}" ToolTip="Played whenever one of your attention patterns is matched in an inactive tab or window."/>
+				<ListBoxItem Content="Beep" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.Beep, Mode=TwoWay}" ToolTip="Played whenever a miscellaneous event occurs, such as a new message in a tab that is scrolled up."/>
+				<ListBoxItem Content="Connect" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.Connect, Mode=TwoWay}" ToolTip="Played whenever you successfully connect to a server."/>
+				<ListBoxItem Content="Disconnect" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.Disconnect, Mode=TwoWay}" ToolTip="Played whenever you are disconnected from a server."/>
+				<ListBoxItem Content="Notice" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.Notice, Mode=TwoWay}" ToolTip="Played whenever you receive a notice."/>
+				<ListBoxItem Content="Private Message" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.PrivateMessage, Mode=TwoWay}" ToolTip="Played whenever you receive a PM and the query tab is not active."/>
+				<ListBoxItem Content="DCC Request" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.DccRequest, Mode=TwoWay}" ToolTip="Played whenever you receive a DCC file or chat request."/>
+				<ListBoxItem Content="DCC Complete" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.DccComplete, Mode=TwoWay}" ToolTip="Played whenever a DCC file transfer is complete."/>
+				<ListBoxItem Content="DCC Error" Tag="{Binding Source={x:Static local:App.Settings}, Path=Current.Sounds.DccError, Mode=TwoWay}" ToolTip="Played whenever a DCC file transfer fails."/>
+			</ListBox.Items>
+		</ListBox>
+		
+		<TextBox Canvas.Left="156" Canvas.Top="60" Height="23" Name="txtPath" Width="208"
+				 Text="{Binding ElementName=lstEvents, Path=SelectedItem.Tag, Mode=TwoWay}"/>
+		<TextBlock Canvas.Left="156" Canvas.Top="41" Height="13" Name="textBlock1" Text="Path to sound file:" />
+		<Button Canvas.Left="156" Canvas.Top="87" Content="Browse..." Height="23" Name="btnBrowse" Width="75" Click="btnBrowse_Click" />
+	</Canvas>
+</UserControl>

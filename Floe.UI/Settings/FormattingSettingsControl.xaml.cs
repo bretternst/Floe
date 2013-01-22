@@ -19,20 +19,21 @@ namespace Floe.UI.Settings
 			}
 		}
 
-		public ICollection<FontFamilyListItem> FontFamilyItems { get; private set; }
+		public ICollection<string> FontFamilyItems { get; private set; }
 		public ICollection<string> FontWeightItems { get; private set; }
 
 		public FormattingSettingsControl()
 		{
 			this.FontFamilyItems = (from font in Fonts.SystemFontFamilies
-								orderby font.Source
-								select new FontFamilyListItem(font)).ToList();
-			
+									orderby font.Source
+									select font.Source).ToList();
+
+			InitializeComponent();
+
+
 			this.FontWeightItems = new[] {
 				"Normal", "Bold", "Black"
 			};
-
-			InitializeComponent();
 		}
 
 		protected override void OnInitialized(EventArgs e)

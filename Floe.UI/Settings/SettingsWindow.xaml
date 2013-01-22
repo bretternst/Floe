@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:local="clr-namespace:Floe.UI"
-        Title="Settings" Height="322" Width="551" WindowStyle="SingleBorderWindow" ShowInTaskbar="False" ResizeMode="NoResize"
-		WindowStartupLocation="CenterOwner" GotKeyboardFocus="SettingsWindow_GotKeyboardFocus">
+        Title="Settings" Height="374" Width="551" WindowStyle="SingleBorderWindow" ShowInTaskbar="False" ResizeMode="NoResize"
+		WindowStartupLocation="CenterOwner">
 	<Window.Resources>
 		<Style x:Key="styleBigListBox" TargetType="ListBox">
 			<Setter Property="ItemContainerStyle">
@@ -78,9 +78,9 @@
 				</LinearGradientBrush>
 			</Grid.Background>
 			<Label Content="{Binding Source={x:Static local:App.Version}}" VerticalAlignment="Bottom"/>
+			<Button Content="OK" Height="23" Name="btnApply" Width="75" Click="btnApply_Click" Margin="367,11,87,11" />
 			<Button Content="Cancel" Height="23" Name="btnCancel" Width="75" Click="btnCancel_Click" FlowDirection="LeftToRight" Margin="0,11,6,11" HorizontalAlignment="Right" />
-			<Button Content="Apply" Height="23" Name="btnApply" Width="75" Click="btnApply_Click" Margin="367,11,87,11" />
-		</Grid>
+			</Grid>
 		</Border>
 		<ListBox Name="lstCategories" Style="{StaticResource styleBigListBox}" Width="150" Padding="0" FontSize="14" AlternationCount="0" OverridesDefaultStyle="False" SnapsToDevicePixels="True" IsTextSearchEnabled="False" BorderThickness="0,0,1,0" SelectionChanged="lstCategories_SelectionChanged">
 			<ListBoxItem Content="User Information" />
@@ -90,6 +90,8 @@
 			<ListBoxItem Content="Buffer"/>
 			<ListBoxItem Content="Windows"/>
 			<ListBoxItem Content="DCC"/>
+			<ListBoxItem Content="Sounds"/>
+			<ListBoxItem Content="Network"/>
 		</ListBox>
 		<Grid Name="grdSettings" DockPanel.Dock="Right" Background="#FFEEEEEE">
 		</Grid>

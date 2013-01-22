@@ -63,5 +63,26 @@ namespace Floe.Configuration
 			get { return (DccElement)this["dcc"]; }
 			set { this["dcc"] = value; }
 		}
+
+		[ConfigurationProperty("sounds")]
+		public SoundsElement Sounds
+		{
+			get { return (SoundsElement)this["sounds"]; }
+			set { this["sounds"] = value; }
+		}
+
+		[ConfigurationProperty("network")]
+		public NetworkElement Network
+		{
+			get { return (NetworkElement)this["network"]; }
+			set { this["network"] = value; }
+		}
+
+		[ConfigurationProperty("voice")]
+		public VoiceElement Voice
+		{
+			get { return (VoiceElement)this["voice"]; }
+			set { this["voice"] = value; }
+		}
 	}
 }

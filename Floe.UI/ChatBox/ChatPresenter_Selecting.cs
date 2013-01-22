@@ -13,6 +13,7 @@ namespace Floe.UI
 		private bool _isSelecting;
 		private int _selStart = -1, _selEnd = -1;
 		private bool _isDragging;
+		private Brush _selectBrush;
 
 		protected int SelectionStart
 		{
@@ -116,7 +117,12 @@ namespace Floe.UI
 					string selText = this.GetSelectedText();
 					if (selText.Length >= this.MinimumCopyLength)
 					{
-						Clipboard.SetText(selText);
+                        try {
+                            Clipboard.SetText(selText);
+                        } catch {
+                            // sometimes another app locks the clipboard and WPF doesn't handle that
+                            // in that case, better to ignore it than to crash
+                        }
 					}
 				}
 
@@ -271,13 +277,6 @@ namespace Floe.UI
 			}
 		}
 
-		private static Lazy<Brush> _selectBrush = new Lazy<Brush>(() =>
-			{
-				var c = SystemColors.HighlightColor;
-				c.A = 102;
-				return new SolidColorBrush(c);
-			});
-
 		private void DrawSelectionHighlight(DrawingContext dc, Block block)
 		{
 			if (this.SelectionEnd < block.CharStart || this.SelectionStart >= block.CharEnd ||
@@ -306,7 +305,7 @@ namespace Floe.UI
 
 				if (end >= start)
 				{
-					dc.DrawRectangle(_selectBrush.Value, null,
+					dc.DrawRectangle(_selectBrush, null,
 						new Rect(new Point(start, y), new Point(end, y + _lineHeight)));
 				}
 				y += _lineHeight;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 
 namespace Floe.UI
 {
@@ -17,6 +18,12 @@ namespace Floe.UI
 					if (_isAutoScrolling)
 					{
 						this.ScrollToEnd();
+					}
+					if (_selectBrush == null)
+					{
+						var c = this.HighlightColor;
+						c.A = 102;
+						_selectBrush = new SolidColorBrush(c);
 					}
 				};
 			this.Unloaded += (sender, e) =>
@@ -50,7 +57,8 @@ namespace Floe.UI
 				e.Property == ChatBoxBase.NewMarkerColorProperty ||
 				e.Property == ChatBoxBase.NicknameColorSeedProperty ||
 				e.Property == ChatBoxBase.DividerBrushProperty ||
-				e.Property == ChatBoxBase.BackgroundProperty)
+				e.Property == ChatBoxBase.BackgroundProperty ||
+				e.Property == ChatBoxBase.HighlightColorProperty)
 			{
 				this.InvalidateAll(true);
 			}

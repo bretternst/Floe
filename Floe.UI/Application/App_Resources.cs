@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Windows;
-using System.Reflection;
+using System.Drawing;
 using System.Linq;
-using System.Windows.Input;
-using System.Windows.Threading;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Drawing;
-using System.IO;
 using Floe.Configuration;
-using Floe.Net;
 
 namespace Floe.UI
 {
@@ -68,9 +64,9 @@ namespace Floe.UI
 			{
 				App.Settings = new PersistentSettings(App.Product);
 			}
-			catch (Exception ex)
+			catch (System.Configuration.ConfigurationException ex)
 			{
-				System.Windows.MessageBox.Show(string.Format("Unable to load user configuration. You may want to delete the configuration file and try again.",
+				System.Windows.MessageBox.Show(string.Format("Unable to load user configuration. You may want to delete the configuration file and try again. {0}",
 					ex.Message));
 				Environment.Exit(-1);
 			}

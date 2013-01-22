@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Net;
 
@@ -40,9 +37,7 @@ namespace Floe.Net
 		/// Construct a new DccXmitReceiver.
 		/// </summary>
 		/// <param name="fileInfo">A reference to the file to save. If the file exists, a resume will be attempted. If the resume fails, the file will be renamed.</param>
-		/// <param name="callback">An optional callback used to route events to another thread.</param>
-		public DccXmitReceiver(FileInfo fileInfo, Action<Action> callback = null)
-			: base(callback)
+		public DccXmitReceiver(FileInfo fileInfo)
 		{
 			_fileInfo = fileInfo;
 			this.FileSavedAs = fileInfo.FullName;
@@ -81,7 +76,7 @@ namespace Floe.Net
 						this.FileSavedAs = _fileInfo.FullName;
 						_fileStream = new FileStream(_fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.Read);
 					}
-					this.Write(resumeBytes, 0, 4);
+					this.QueueWrite(resumeBytes, 0, 4);
 					_isTransferring = true;
 				}
 			}
@@ -89,18 +84,6 @@ namespace Floe.Net
 			{
 				_fileStream.Write(buffer, 0, count);
 				this.BytesTransferred += count;
-			}
-		}
-
-		private void CloseFile()
-		{
-			if (_fileStream != null)
-			{
-				_fileStream.Dispose();
-				if (_timeStamp > 0 && File.Exists(_fileInfo.FullName))
-				{
-					File.SetLastWriteTimeUtc(_fileInfo.FullName, new DateTime(1970, 1, 1) + TimeSpan.FromSeconds(_timeStamp));
-				}
 			}
 		}
 
@@ -114,6 +97,18 @@ namespace Floe.Net
 		{
 			base.OnError(ex);
 			this.CloseFile();
+		}
+
+		private void CloseFile()
+		{
+			if (_fileStream != null)
+			{
+				_fileStream.Dispose();
+				if (_timeStamp > 0 && File.Exists(_fileInfo.FullName))
+				{
+					File.SetLastWriteTimeUtc(_fileInfo.FullName, new DateTime(1970, 1, 1) + TimeSpan.FromSeconds(_timeStamp));
+				}
+			}
 		}
 	}
 }

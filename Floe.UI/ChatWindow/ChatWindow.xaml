@@ -23,7 +23,6 @@
 		<CommandBinding Command="local:ChatWindow.MinimizeCommand" Executed="ExecuteMinimize"/>
 		<CommandBinding Command="local:ChatWindow.MaximizeCommand" Executed="ExecuteMaximize"/>
 		<CommandBinding Command="local:ChatWindow.CloseCommand" Executed="ExecuteClose"/>
-		<CommandBinding Command="local:ChatWindow.DccSendCommand" Executed="ExecuteDccSend"/>
 	</Window.CommandBindings>
 	<Window.Resources>
 		<ContextMenu Placement="MousePoint" x:Key="NotifyMenu">
@@ -130,7 +129,7 @@
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
-			
+
 			<Border Background="{Binding ElementName=window, Path=UIBackground}" Grid.Row="0" Grid.Column="0">
 				<TextBlock Margin="4,0,10,0" Text="{Binding Title}" Foreground="{StaticResource winFG}" VerticalAlignment="Center"/>
 			</Border>
@@ -268,6 +267,7 @@
 						<Setter Property="Header" Value="{Binding RelativeSource={RelativeSource Self}, Path=Page.Header}"/>
 						<Setter Property="Content" Value="{Binding Content}"/>
 						<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+						<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
 						<Setter Property="Template">
 							<Setter.Value>
 								<ControlTemplate TargetType="TabItem">
@@ -305,7 +305,7 @@
 													<Polygon x:Name="arrow" Grid.ColumnSpan="3" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Points="0,0 10,6, 20,0"
 														 Stroke="{StaticResource winFG}" Fill="{StaticResource winFG}" Visibility="Hidden"/>
 													<ContentPresenter Grid.Column="0" Grid.Row="1" Margin="5,0,10,0" x:Name="ContentSite" VerticalAlignment="Bottom" HorizontalAlignment="Center"
-																  ContentSource="Header" RecognizesAccessKey="True"/>
+																  ContentSource="Header" RecognizesAccessKey="False"/>
 													<Button x:Name="btnTabClose" Margin="0,0,4,0" Style="{StaticResource tabCloseButtonStyle}"
 														Command="local:ChatWindow.CloseTabCommand" Grid.Column="2" Grid.Row="1"
 														Height="Auto" VerticalAlignment="Bottom"

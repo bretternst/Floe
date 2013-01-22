@@ -36,12 +36,10 @@ namespace Floe.UI
 						break;
 					case IrcSessionState.Connected:
 						this.Header = this.Session.NetworkName;
+						App.DoEvent("connect");
 						if (this.Perform != null)
 						{
-							foreach (var cmd in this.Perform.Split(Environment.NewLine.ToCharArray()).Where((s) => s.Trim().Length > 0))
-							{
-								this.Execute(cmd, false);
-							}
+							DoPerform(0);
 						}
 						break;
 				}
@@ -59,7 +57,7 @@ namespace Floe.UI
 
 		private void Session_Noticed(object sender, IrcMessageEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Notice))
 			{
 				return;
 			}
@@ -74,12 +72,13 @@ namespace Floe.UI
 				{
 					this.Write("Notice", e.Text);
 				}
+				App.DoEvent("notice");
 			}
 		}
 
 		private void Session_PrivateMessaged(object sender, IrcMessageEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, e.To.IsChannel ? IgnoreActions.Channel : IgnoreActions.Private))
 			{
 				return;
 			}
@@ -100,6 +99,15 @@ namespace Floe.UI
 						if (this.VisualParent == null)
 						{
 							this.NotifyState = NotifyState.Alert;
+							App.DoEvent("inactiveAlert");
+						}
+						else if (_window != null && !_window.IsActive)
+						{
+							App.DoEvent("inactiveAlert");
+						}
+						else
+						{
+							App.DoEvent("activeAlert");
 						}
 					}
 
@@ -112,6 +120,10 @@ namespace Floe.UI
 							this.SetTitle();
 						}
 						Interop.WindowHelper.FlashWindow(_window);
+						if (this.VisualParent == null)
+						{
+							App.DoEvent("privateMessage");
+						}
 					}
 				}
 			}
@@ -121,9 +133,10 @@ namespace Floe.UI
 		{
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
-				this.Write("Kick", string.Format("{0} has been kicked by {1} ({2})",
-					e.KickeeNickname, e.Kicker.Nickname, e.Text));
-				this.RemoveNick(e.KickeeNickname);
+				this.Write("Kick",
+					e.Kicker == null ? string.Format("{0} has been kicked ({1}", e.KickeeNickname, e.Text) :
+					string.Format("{0} has been kicked by {1} ({2})", e.KickeeNickname, e.Kicker.Nickname, e.Text));
+				_nickList.Remove(e.KickeeNickname);
 			}
 		}
 
@@ -221,6 +234,11 @@ namespace Floe.UI
 						return;
 					}
 					break;
+				case IrcCode.RPL_LIST:
+				case IrcCode.RPL_LISTSTART:
+				case IrcCode.RPL_LISTEND:
+					e.Handled = true;
+					break;
 			}
 
 			if (!e.Handled && ((int)e.Code < 200 && this.IsServer || this.IsDefault))
@@ -258,7 +276,7 @@ namespace Floe.UI
 
 		private void Session_CtcpCommandReceived(object sender, CtcpEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Ctcp))
 			{
 				return;
 			}
@@ -280,7 +298,7 @@ namespace Floe.UI
 
 				this.Write("Action", string.Format("{0} {1}", e.From.Nickname, text, attn));
 			}
-			else if (this.IsServer && e.Command.Command != "ACTION")
+			else if (this.IsServer && e.Command.Command != "ACTION" && e.From != null)
 			{
 				this.Write("Ctcp", e.From, string.Format("[CTCP {1}] {2}",
 					e.From.Nickname, e.Command.Command,
@@ -290,7 +308,7 @@ namespace Floe.UI
 
 		private void Session_Joined(object sender, IrcJoinEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Who);
+			bool isIgnored = App.IsIgnoreMatch(e.Who, IgnoreActions.Join);
 
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
@@ -299,13 +317,13 @@ namespace Floe.UI
 					this.Write("Join", string.Format("{0} ({1}@{2}) has joined channel {3}",
 						e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
 				}
-				this.AddNick(ChannelLevel.Normal, e.Who.Nickname);
+				_nickList.Add(e.Who.Nickname);
 			}
 		}
 
 		private void Session_Parted(object sender, IrcPartEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Who);
+			bool isIgnored = App.IsIgnoreMatch(e.Who, IgnoreActions.Part);
 
 			if (!this.IsServer && this.Target.Equals(e.Channel))
 			{
@@ -314,25 +332,21 @@ namespace Floe.UI
 					this.Write("Part", string.Format("{0} ({1}@{2}) has left channel {3}",
 						e.Who.Nickname, e.Who.Username, e.Who.Hostname, this.Target.ToString()));
 				}
-				this.RemoveNick(e.Who.Nickname);
+				_nickList.Remove(e.Who.Nickname);
 			}
 		}
 
 		private void Session_NickChanged(object sender, IrcNickEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Message.From);
+			bool isIgnored = App.IsIgnoreMatch(e.Message.From, IgnoreActions.NickChange);
 
-			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			if (this.IsChannel && _nickList.Contains(e.OldNickname))
 			{
 				if (!isIgnored)
 				{
 					this.Write("Nick", string.Format("{0} is now known as {1}", e.OldNickname, e.NewNickname));
 				}
-			}
-
-			if (this.IsChannel && this.IsPresent(e.OldNickname))
-			{
-				this.ChangeNick(e.OldNickname, e.NewNickname);
+				_nickList.ChangeNick(e.OldNickname, e.NewNickname);
 			}
 		}
 
@@ -344,9 +358,9 @@ namespace Floe.UI
 			}
 			this.SetTitle();
 
-			if (this.IsChannel && this.IsPresent(e.OldNickname))
+			if (this.IsChannel)
 			{
-				this.ChangeNick(e.OldNickname, e.NewNickname);
+				_nickList.ChangeNick(e.OldNickname, e.NewNickname);
 			}
 		}
 
@@ -371,15 +385,15 @@ namespace Floe.UI
 
 		private void Session_UserQuit(object sender, IrcQuitEventArgs e)
 		{
-			bool isIgnored = App.IsIgnoreMatch(e.Who);
+			bool isIgnored = App.IsIgnoreMatch(e.Who, IgnoreActions.Quit);
 
-			if (this.IsChannel && this.IsPresent(e.Who.Nickname))
+			if (this.IsChannel && _nickList.Contains(e.Who.Nickname))
 			{
 				if (!isIgnored)
 				{
 					this.Write("Quit", string.Format("{0} has quit ({1})", e.Who.Nickname, e.Text));
 				}
-				this.RemoveNick(e.Who.Nickname);
+				_nickList.Remove(e.Who.Nickname);
 			}
 		}
 
@@ -406,14 +420,14 @@ namespace Floe.UI
 				this.SetTitle();
 				foreach (var mode in e.Modes)
 				{
-					this.ProcessMode(mode);
+					_nickList.ProcessMode(mode);
 				}
 			}
 		}
 
 		private void Session_Invited(object sender, IrcInviteEventArgs e)
 		{
-			if (App.IsIgnoreMatch(e.From))
+			if (App.IsIgnoreMatch(e.From, IgnoreActions.Invite))
 			{
 				return;
 			}
@@ -504,10 +518,14 @@ namespace Floe.UI
 
 		private void lstNicknames_MouseDoubleClick(object sender, RoutedEventArgs e)
 		{
-			var nickItem = e.Source as NicknameItem;
-			if (nickItem != null)
+			var listItem = e.Source as ListBoxItem;
+			if(listItem != null)
 			{
-				ChatWindow.ChatCommand.Execute(nickItem.Nickname, this);
+				var nickItem = listItem.Content as NicknameItem;
+				if(nickItem != null)
+				{
+					ChatWindow.ChatCommand.Execute(nickItem.Nickname, this);
+				}
 			}
 		}
 
@@ -520,6 +538,10 @@ namespace Floe.UI
 		protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
 		{
 			_hasDeactivated = false;
+			if (e.NewFocus == txtInput)
+			{
+				lstNicknames.SelectedItem = null;
+			}
 		}
 
 		private void boxOutput_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -549,6 +571,10 @@ namespace Floe.UI
 				}
 				else
 				{
+					if (this.Type == ChatPageType.DccChat)
+					{
+						return;
+					}
 					this.SelectedLink = this.GetNickWithoutLevel(this.SelectedLink);
 					boxOutput.ContextMenu = this.Resources["cmNickname"] as ContextMenu;
 				}
@@ -583,6 +609,9 @@ namespace Floe.UI
 
 		private void ChatControl_Loaded(object sender, RoutedEventArgs e)
 		{
+			Keyboard.Focus(txtInput);
+			this.SetTitle();
+
 			if (_window == null)
 			{
 				_window = Window.GetWindow(this);
@@ -627,9 +656,9 @@ namespace Floe.UI
 				return;
 			}
 
-			if (!Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt) &&
-				!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl) &&
-				!(FocusManager.GetFocusedElement(this) is NicknameItem))
+			if((Keyboard.Modifiers & ModifierKeys.Alt) == 0 &&
+				(Keyboard.Modifiers & ModifierKeys.Control) == 0 &&
+				!(FocusManager.GetFocusedElement(this) is ListBoxItem))
 			{
 				e.Handled = true;
 
@@ -742,12 +771,6 @@ namespace Floe.UI
 			this.Session.UserQuit += new EventHandler<IrcQuitEventArgs>(Session_UserQuit);
             this.Session.Invited += new EventHandler<IrcInviteEventArgs>(Session_Invited);
 			DataObject.AddPastingHandler(txtInput, new DataObjectPastingEventHandler(txtInput_Pasting));
-
-			this.Loaded += (sender, e) =>
-			{
-				Keyboard.Focus(txtInput);
-				this.SetTitle();
-			};
 
 			this.IsConnected = !(this.Session.State == IrcSessionState.Disconnected);
 		}

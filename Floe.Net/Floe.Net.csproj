@@ -47,21 +47,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CtcpCommand.cs" />
+    <Compile Include="Dcc\DccChat.cs" />
     <Compile Include="Dcc\DccOperation.cs" />
+    <Compile Include="Dcc\DccSendReceiver.cs" />
+    <Compile Include="Dcc\DccSendSender.cs" />
     <Compile Include="Dcc\DccXmitReceiver.cs" />
     <Compile Include="Dcc\DccXmitSender.cs" />
-    <Compile Include="IrcCode.cs" />
-    <Compile Include="IrcCodeHandler.cs" />
-    <Compile Include="IrcModes.cs" />
-    <Compile Include="IrcConnection.cs" />
-    <Compile Include="IrcEventArgs.cs" />
-    <Compile Include="IrcMessage.cs" />
-    <Compile Include="IrcPrefix.cs" />
-    <Compile Include="IrcSession.cs" />
-    <Compile Include="IrcTarget.cs" />
-    <Compile Include="Dcc\NatHelper.cs" />
+    <Compile Include="Irc\IrcCode.cs" />
+    <Compile Include="Irc\IrcCodeHandler.cs" />
+    <Compile Include="Irc\IrcConnection.cs" />
+    <Compile Include="Irc\IrcEventArgs.cs" />
+    <Compile Include="Irc\IrcMessage.cs" />
+    <Compile Include="Irc\IrcModes.cs" />
+    <Compile Include="Irc\IrcPrefix.cs" />
+    <Compile Include="Irc\IrcSession.cs" />
+    <Compile Include="Irc\IrcTarget.cs" />
+    <Compile Include="Network\NatHelper.cs" />
+    <Compile Include="Network\ProxyInfo.cs" />
+    <Compile Include="Network\SocksTcpClient.cs" />
+    <Compile Include="Network\StunUdpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rtp\RtpClient.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

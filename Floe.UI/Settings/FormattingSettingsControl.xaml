@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:local="clr-namespace:Floe.UI"
              mc:Ignorable="d"
-             d:DesignHeight="235" d:DesignWidth="384" x:Name="TextSettings">
+             d:DesignHeight="300" d:DesignWidth="384" x:Name="TextSettings">
 	<UserControl.Resources>
 		<ToolTip x:Key="ttUseTabularView">Separate the timestamps and nicknames into a column on the left, and align all text.</ToolTip>
 		<ToolTip x:Key="ttAutoSizeColumn">When a new line contains a nickname too large to fit in the left column, expand the column.</ToolTip>
@@ -14,14 +14,14 @@
 		<ToolTip x:Key="ttTimestampFormat">The format of the timestamp, when displayed. This is a .NET date format string.</ToolTip>
 	</UserControl.Resources>
 	<Canvas>
-		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="126" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
+		<GroupBox Canvas.Left="12" Canvas.Top="3" Header="Font" Height="123" Name="groupBox2" Width="360" BorderBrush="#FFC3C3C3">
 			<Canvas Canvas.Left="42" Canvas.Top="130" Width="348">
-				<Label Canvas.Left="6" Canvas.Top="6" Content="Font Family" Height="28" Name="label4" />
-				<ComboBox Canvas.Left="83" Canvas.Top="6" Height="28" Name="lstFontFamily" Width="219" SelectedValuePath="FontFamilyName"
+				<Label Canvas.Left="6" Canvas.Top="5" Content="Font Family" Height="28" Name="label4" />
+				<ComboBox Canvas.Left="83" Canvas.Top="7" Name="lstFontFamily" Width="219"
 						  ItemsSource="{Binding ElementName=TextSettings, Path=FontFamilyItems}"
-						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=TwoWay}" FontSize="16" />
-				<Label Canvas.Left="19" Canvas.Top="40" Content="Size (em)" Height="28" Name="label5" />
-				<TextBox Canvas.Left="83" Canvas.Top="40" Height="23" Name="txtFontSize" Width="56">
+						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontFamily, Mode=TwoWay}" />
+				<Label Canvas.Left="19" Canvas.Top="37" Content="Size (em)" Height="28" Name="label5" />
+				<TextBox Canvas.Left="83" Canvas.Top="37" Height="23" Name="txtFontSize" Width="56">
 					<TextBox.Text>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Formatting.FontSize" Mode="TwoWay">
 							<Binding.ValidationRules>
@@ -30,11 +30,18 @@
 						</Binding>
 					</TextBox.Text>
 				</TextBox>
-				<Label Canvas.Left="160" Canvas.Top="40" Content="Weight" Height="28" Name="label6" />
-				<ComboBox Canvas.Left="214" Canvas.Top="40" Height="23" Name="txtFontWeight" Width="88"
+				<Label Canvas.Left="160" Canvas.Top="37" Content="Weight" Height="28" Name="label6" />
+				<ComboBox Canvas.Left="214" Canvas.Top="37" Height="23" Name="txtFontWeight" Width="88"
 						  ItemsSource="{Binding ElementName=TextSettings, Path=FontWeightItems}"
-						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=TwoWay}"/>
-				<TextBlock Canvas.Left="6" Canvas.Top="69" Height="40" Name="txtPreview" TextAlignment="Center" VerticalAlignment="Center" Width="336"
+						  SelectedValuePath="Content"
+						  SelectedValue="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=TwoWay}">
+					<ComboBox.Items>
+						<ListBoxItem Content="Normal"/>
+						<ListBoxItem Content="Bold"/>
+						<ListBoxItem Content="Black"/>
+					</ComboBox.Items>
+				</ComboBox>
+				<TextBlock Canvas.Left="6" Canvas.Top="65" Height="40" Name="txtPreview" TextAlignment="Center" VerticalAlignment="Center" Width="336"
 						   FontFamily="{Binding ElementName=lstFontFamily, Path=SelectedValue}"
 						   FontSize="{Binding ElementName=txtFontSize, Path=Text}"
 						   FontWeight="{Binding ElementName=txtFontWeight, Path=SelectedValue}">
@@ -55,11 +62,11 @@
 			</TextBox.Text>
 		</TextBox>
 		<CheckBox ToolTip="{StaticResource ttUseTabularView}" Canvas.Left="18" Canvas.Top="154" Content="Use Tabular View" Height="16" Name="chkUseTabularView" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.UseTabularView, Mode=TwoWay}"/>
+		<CheckBox ToolTip="{StaticResource ttAutoSizeColumn}" Canvas.Left="37" Canvas.Top="176" IsEnabled="{Binding ElementName=chkUseTabularView, Path=IsChecked}" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn}" Content="Auto Size Column" Height="16" Name="checkBox2" />
 		<CheckBox ToolTip="{StaticResource ttAttentionOnOwnNick}" Canvas.Left="18" Canvas.Top="207" Content="Attention On Own Nickname" Height="16" Name="checkBox1"
 				  IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionOnOwnNickname}"/>
-		<TextBox ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="149" Height="89" Name="textBox1" Width="170" AcceptsReturn="True"
+		<TextBox ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="149" Height="139" Name="textBox1" Width="170" AcceptsReturn="True"
 				 Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AttentionPatterns}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
 		<Label ToolTip="{StaticResource ttAttentionRegex}" Canvas.Left="202" Canvas.Top="127" Content="Attention RegEx Patterns" Height="28" Name="label2" />
-		<CheckBox ToolTip="{StaticResource ttAutoSizeColumn}" Canvas.Left="37" Canvas.Top="176" IsEnabled="{Binding ElementName=chkUseTabularView, Path=IsChecked}" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn}" Content="Auto Size Column" Height="16" Name="checkBox2" />
 	</Canvas>
 </UserControl>

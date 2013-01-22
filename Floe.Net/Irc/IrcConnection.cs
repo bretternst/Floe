@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -15,13 +16,14 @@ namespace Floe.Net
 		private string _server;
 		private int _port;
 		private bool _isSecure;
+		private ProxyInfo _proxy;
 
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
 		private ConcurrentQueue<IrcMessage> _writeQueue;
 		private ManualResetEvent _writeWaitHandle;
 		private ManualResetEvent _endWaitHandle;
-		private Action<Action> _callback;
+		private SynchronizationContext _syncContext;
 
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
@@ -30,14 +32,12 @@ namespace Floe.Net
 		public event EventHandler<IrcEventArgs> MessageReceived;
 		public event EventHandler<IrcEventArgs> MessageSent;
 
-		public IPAddress ExternalAddress { get { return ((IPEndPoint)_tcpClient.Client.LocalEndPoint).Address; } }
-
-		public IrcConnection(Action<Action> callback)
+		public IrcConnection()
 		{
-			_callback = callback;
+			_syncContext = SynchronizationContext.Current;
 		}
 
-		public void Open(string server, int port, bool isSecure)
+		public void Open(string server, int port, bool isSecure, ProxyInfo proxy = null)
 		{
 			if (string.IsNullOrEmpty(server))
 				throw new ArgumentNullException("server");
@@ -52,6 +52,7 @@ namespace Floe.Net
 			_server = server;
 			_port = port;
 			_isSecure = isSecure;
+			_proxy = proxy;
 			_writeQueue = new ConcurrentQueue<IrcMessage>();
 			_writeWaitHandle = new ManualResetEvent(false);
 			_endWaitHandle = new ManualResetEvent(false);
@@ -108,7 +109,11 @@ namespace Floe.Net
 			{
 				this.Dispatch(this.OnError, ex);
 			}
-			if (_tcpClient.Connected)
+			catch (SocksException ex)
+			{
+				this.Dispatch(this.OnError, ex);
+			}
+			if (_tcpClient != null && _tcpClient.Connected)
 			{
 				_tcpClient.Close();
 			}
@@ -117,14 +122,30 @@ namespace Floe.Net
 		private void SocketLoop()
 		{
 			Stream stream = null;
-			_tcpClient = new TcpClient();
 
-			IAsyncResult ar = _tcpClient.BeginConnect(_server, _port, null, null);
-			if (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endWaitHandle }) == 1)
+			if (_proxy != null && !string.IsNullOrEmpty(_proxy.ProxyHostname))
 			{
-				return;
+				var proxy = new SocksTcpClient(_proxy);
+				var ar = proxy.BeginConnect(_server, _port, null, null);
+				if (WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endWaitHandle }) == 1)
+				{
+					return;
+				}
+				_tcpClient = proxy.EndConnect(ar);
 			}
-			_tcpClient.EndConnect(ar);
+			else
+			{
+                var connEvt = new ManualResetEventSlim();
+                ThreadPool.QueueUserWorkItem(o => {
+                    _tcpClient = new TcpClient(_server, _port);
+                    connEvt.Set();
+                });
+
+                if (WaitHandle.WaitAny(new[] { connEvt.WaitHandle, _endWaitHandle }) == 1)
+				{
+					return;
+				}
+			}
 			stream = _tcpClient.GetStream();
 
 			if (_isSecure)
@@ -143,68 +164,79 @@ namespace Floe.Net
 			this.Dispatch(this.OnConnected);
 
 			byte[] readBuffer = new byte[512], writeBuffer = new byte[Encoding.UTF8.GetMaxByteCount(512)];
-			int count = 0, handleIdx = 0;
-			var input = new StringBuilder();
-			IrcMessage message;
-			char last = '\u0000';
+			int count = 0;
+			bool gotCR = false;
+			var input = new List<byte>(512);
+			IrcMessage outgoing = null;
+			IAsyncResult arr = null, arw = null;
+			var handles = new WaitHandle[] { null, null, _endWaitHandle };
 
 			while (_tcpClient.Connected)
 			{
-				if (handleIdx == 0)
+				if (arr == null)
 				{
-					ar = stream.BeginRead(readBuffer, 0, 512, null, null);
+					arr = stream.BeginRead(readBuffer, 0, 512, null, null);
 				}
-				handleIdx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _writeWaitHandle, _endWaitHandle }, HeartbeatInterval);
-				if (!_tcpClient.Connected)
+				_writeWaitHandle.Reset();
+				if (arw == null && _writeQueue.TryDequeue(out outgoing))
 				{
-					break;
+					string output = outgoing.ToString();
+					count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
+					count = Math.Min(510, count);
+					writeBuffer[count] = 0xd;
+					writeBuffer[count + 1] = 0xa;
+					arw = stream.BeginWrite(writeBuffer, 0, count + 2, null, null);
 				}
+				handles[0] = arr.AsyncWaitHandle;
+				handles[1] = arw != null ? arw.AsyncWaitHandle : _writeWaitHandle;
+				int idx = WaitHandle.WaitAny(handles, HeartbeatInterval);
 
-				switch (handleIdx)
+				switch (idx)
 				{
 					case 0:
-						count = stream.EndRead(ar);
+						count = stream.EndRead(arr);
+						arr = null;
 						if (count == 0)
 						{
 							_tcpClient.Close();
 						}
 						else
 						{
-							foreach (char c in Encoding.UTF8.GetChars(readBuffer, 0, count))
+							for (int i = 0; i < count; i++)
 							{
-								if (c == 0xa && last == 0xd)
+								switch (readBuffer[i])
 								{
-									if (input.Length > 0)
-									{
-										message = IrcMessage.Parse(input.ToString());
-										this.Dispatch(this.OnMessageReceived, message);
-										input.Clear();
-									}
+									case 0xa:
+										if (gotCR)
+										{
+											var incoming = IrcMessage.Parse(Encoding.UTF8.GetString(input.ToArray()));
+											this.Dispatch(this.OnMessageReceived, incoming);
+											input.Clear();
+										}
+										break;
+									case 0xd:
+										break;
+									default:
+										input.Add(readBuffer[i]);
+										break;
 								}
-								else if (c != 0xd && c != 0xa)
-								{
-									input.Append(c);
-								}
-								last = c;
+								gotCR = readBuffer[i] == 0xd;
 							}
 						}
 						break;
 					case 1:
-						_writeWaitHandle.Reset();
-						while (_writeQueue.TryDequeue(out message))
+						if (arw != null)
 						{
-							string output = message.ToString();
-							count = Encoding.UTF8.GetBytes(output, 0, output.Length, writeBuffer, 0);
-							count = Math.Min(510, count);
-							writeBuffer[count] = 0xd;
-							writeBuffer[count + 1] = 0xa;
-
-							stream.Write(writeBuffer, 0, count + 2);
-
-							this.Dispatch(this.OnMessageSent, message);
+							stream.EndWrite(arw);
+							arw = null;
+							this.Dispatch(this.OnMessageSent, outgoing);
 						}
 						break;
 					case 2:
+						if (arw != null)
+						{
+							stream.EndWrite(arw);
+						}
 						return;
 					case WaitHandle.WaitTimeout:
 						this.Dispatch(this.OnHeartbeat);
@@ -217,9 +249,9 @@ namespace Floe.Net
 
 		private void Dispatch<T>(Action<T> action, T arg)
 		{
-			if (_callback != null)
+			if (_syncContext != null)
 			{
-				_callback(() => action(arg));
+				_syncContext.Post((o) => action((T)o), arg);
 			}
 			else
 			{
@@ -229,9 +261,9 @@ namespace Floe.Net
 
 		private void Dispatch(Action action)
 		{
-			if (_callback != null)
+			if (_syncContext != null)
 			{
-				_callback(action);
+				_syncContext.Post((o) => ((Action)o)(), action);
 			}
 			else
 			{

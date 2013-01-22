@@ -17,17 +17,20 @@
 		<SolidColorBrush x:Key="alertBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Alert}"/>
 		<SolidColorBrush x:Key="noiseBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NoiseActivity}"/>
 		<SolidColorBrush x:Key="chatBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.ChatActivity}"/>
+		<SolidColorBrush x:Key="editBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground}"/>
+		<SolidColorBrush x:Key="ctrlBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background}"/>
+		<SolidColorBrush x:Key="highlightBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Highlight}"/>
 		<LinearGradientBrush x:Key="winFGdownGrad" StartPoint="0,0" EndPoint="0,1" Opacity="0.2">
 			<GradientStop Offset="0" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
 			<GradientStop Offset="1" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowBackground}"/>
 		</LinearGradientBrush>
-		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
 
 		<Style x:Key="uiButtonStyle" TargetType="Button">
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
 			<Setter Property="BorderBrush" Value="Transparent"/>
 			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Focusable" Value="False"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="Button">
@@ -142,6 +145,14 @@
 			<Setter Property="FontSize" Value="11"/>
 		</Style>
 		
+		<Style x:Key="uiLabelStyle" TargetType="Label">
+			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+		</Style>
+
+		<Style x:Key="uiTextBlockStyle" TargetType="TextBlock">
+			<Setter Property="Foreground" Value="{StaticResource winFG}"/>
+		</Style>
+
 		<Style x:Key="uiTextBoxStyle" TargetType="TextBox">
 			<Setter Property="Foreground" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Edit, Mode=OneWay}"/>
 			<Setter Property="Background" Value="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground, Mode=OneWay}"/>
@@ -163,6 +174,20 @@
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
+		</Style>
+		<Geometry x:Key="closeButtonGeometry">M0,0 L8,8 M0,8 L8,0</Geometry>
+		<Geometry x:Key="voiceIndicatorGeometry">M 9,3 A 6,6 0 0 1 9,11 M 13,0 A 7,10 0 0 1 13,14 M 6,6 L 6,8</Geometry>
+		<Geometry x:Key="muteIndicatorGeometry">M 4,12 L 17,0</Geometry>
+		<Style x:Key="uiCloseButtonPathStyle" TargetType="Path">
+			<Setter Property="Margin" Value="2"/>
+			<Setter Property="Data" Value="{StaticResource closeButtonGeometry}"/>
+			<Setter Property="Stroke" Value="{StaticResource winFG}"/>
+			<Setter Property="StrokeThickness" Value="2"/>
+			<Setter Property="StrokeStartLineCap" Value="Round"/>
+			<Setter Property="StrokeEndLineCap" Value="Round"/>
+			<Setter Property="Stretch" Value="Uniform"/>
+			<Setter Property="VerticalAlignment" Value="Top"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
 		</Style>
 		<local:BrushSaturationConverter x:Key="modifySaturation"/>
 	</Application.Resources>

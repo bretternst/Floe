@@ -7,7 +7,7 @@
 			 xmlns:local="clr-namespace:Floe.UI"
 			 xmlns:config="clr-namespace:Floe.Configuration;assembly=Floe.Configuration"
              mc:Ignorable="d"
-             d:DesignHeight="235" d:DesignWidth="384">
+             d:DesignHeight="300" d:DesignWidth="384">
 	<UserControl.Resources>
 		<ToolTip x:Key="ttDanger" Content="Potentially hazardous file extensions."/>
 		<ToolTip x:Key="ttDownloadFolder" Content="The folder in which to save all files by default."/>
@@ -42,10 +42,8 @@
 		</TextBox>
 		<Label Canvas.Left="8" Canvas.Top="43" Name="lblDownloadFolder" Content="Download Folder:" Height="28" Width="107" ToolTip="{StaticResource ttDownloadFolder}" />
 		<Button Canvas.Left="251" Canvas.Top="67" Name="btnBrowse" Content="Browse..." Height="23" Width="75" Click="btnBrowse_Click" ToolTip="{StaticResource ttDownloadFolder}" />
-		<CheckBox Canvas.Left="12" Canvas.Top="207" Content="Automatically accept" Height="16" Name="checkBox1" ToolTip="Automatically accept file send requests, except for files with dangerous extensions." IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.AutoAccept}" />
-		<CheckBox Canvas.Left="12" Canvas.Top="185" Content="Discover external IP" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.FindExternalAddress}" Name="checkBox2" ToolTip="Automatically discover external IP address by querying the IRC server on connect. You will need to reconnect for the change to take effect." />
-		<TextBox ToolTip="{StaticResource ttDanger}" TextWrapping="Wrap" Canvas.Left="185" Canvas.Top="136" Height="87" MaxHeight="87" Name="txtDanger" Width="187" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.DangerExtensions}" />
-		<Label Canvas.Left="180" Canvas.Top="112" ToolTip="{StaticResource ttDanger}" Content="Dangerous Extentions:" Height="28" Name="label3"  Width="174" />
-		<CheckBox Canvas.Left="12" Canvas.Top="163" Content="Enable UPnP (forwarding)" Height="16" IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.EnableUpnp}" Name="checkBox3" ToolTip="Attempt to automatically forward ports if there is a UPnP-enabled gateway on the local network." />
+		<CheckBox Canvas.Left="12" Canvas.Top="96" Content="Automatically accept" Height="16" Name="checkBox1" ToolTip="Automatically accept file send requests, except for files with dangerous extensions." IsChecked="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.AutoAccept}" />
+		<TextBox Height="137" MaxHeight="137" ToolTip="{StaticResource ttDanger}" TextWrapping="Wrap" Canvas.Left="12" Canvas.Top="150" Name="txtDanger" Width="187" Text="{Binding Source={x:Static local:App.Settings}, Path=Current.Dcc.DangerExtensions}" />
+		<Label Canvas.Left="8" Canvas.Top="126" ToolTip="{StaticResource ttDanger}" Content="Dangerous Extentions:" Height="28" Name="label3"  Width="174" />
 	</Canvas>
 </UserControl>

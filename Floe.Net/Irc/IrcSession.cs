@@ -43,7 +43,8 @@ namespace Floe.Net
 		private List<IrcCodeHandler> _captures;
 		private bool _isWaitingForActivity;
 		private bool _findExternalAddress;
-		private Action<Action> _callback;
+		private SynchronizationContext _syncContext;
+		private Timer _reconnectTimer;
 
 		/// <summary>
 		/// Gets the server to which the session is connected or will connect.
@@ -92,11 +93,22 @@ namespace Floe.Net
 		public char[] UserModes { get; private set; }
 
 		/// <summary>
+		/// Gets the internal IP address of the computer running the session. This is the private IP address that is used behind
+		/// a NAT firewall.
+		/// </summary>
+		public IPAddress InternalAddress { get; private set; }
+
+		/// <summary>
 		/// Gets the external IP address of the computer running the session. The IRC server is queried to retrieve the address or hostname.
 		/// If a hostname is returned, the IP address is retrieved via DNS. If no external address can be found, the local IP address
 		/// is provided.
 		/// </summary>
 		public IPAddress ExternalAddress { get; private set; }
+
+		/// <summary>
+		/// Gets or sets proxy information, identifying the SOCKS5 proxy server to use when connecting to a server.
+		/// </summary>
+		public ProxyInfo Proxy { get; set; }
 
 		/// <summary>
 		/// Gets the current state of the session.
@@ -226,15 +238,13 @@ namespace Floe.Net
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		/// <param name="dispatcher">An optional callback function that may be used to route events to an appropriate
-		/// thread. The typical usage will be to call Dispatcher.BeginInvoke.</param>
-		public IrcSession(Action<Action> callback = null)
+		public IrcSession()
 		{
 			this.State = IrcSessionState.Disconnected;
 			this.UserModes = new char[0];
-			_callback = callback;
+			_syncContext = SynchronizationContext.Current;
 
-			_conn = new IrcConnection(callback);
+			_conn = new IrcConnection();
 			_conn.Connected += new EventHandler(_conn_Connected);
 			_conn.Disconnected += new EventHandler(_conn_Disconnected);
 			_conn.Heartbeat += new EventHandler(_conn_Heartbeat);
@@ -257,7 +267,8 @@ namespace Floe.Net
 		/// <param name="invisible">Determines whether the +i flag will be set by default.</param>
 		/// <param name="findExternalAddress">Determines whether to find the external IP address by querying the IRC server upon connect.</param>
 		public void Open(string server, int port, bool isSecure, string nickname,
-			string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false, bool findExternalAddress = true)
+			string userName, string fullname, bool autoReconnect, string password = null, bool invisible = false, bool findExternalAddress = true,
+			ProxyInfo proxy = null)
 		{
 			if (string.IsNullOrEmpty(nickname))
 			{
@@ -275,9 +286,10 @@ namespace Floe.Net
 			this.NetworkName = this.Server;
 			this.UserModes = new char[0];
 			this.AutoReconnect = autoReconnect;
+			this.Proxy = proxy;
 
 			_captures = new List<IrcCodeHandler>();
-			_conn.Open(server, port, isSecure);
+			_conn.Open(server, port, isSecure, this.Proxy);
 			this.State = IrcSessionState.Connecting;
 		}
 
@@ -684,6 +696,14 @@ namespace Floe.Net
 		}
 
 		/// <summary>
+		/// Retrieves a list of all channels.
+		/// </summary>
+		public void List()
+		{
+			this.Send("LIST");
+		}
+
+		/// <summary>
 		/// Add a handler to capture a specific IRC code. This can be called from components that issue a command and are expecting
 		/// some result code to be sent in the future.
 		/// </summary>
@@ -735,7 +755,7 @@ namespace Floe.Net
 						}
 
 						var parts = e.Message.Parameters[1].Split('@');
-						if (parts.Length > 0)
+						if (parts.Length > 1)
 						{
 							IPAddress external;
 							if (!IPAddress.TryParse(parts[1], out external))
@@ -773,9 +793,9 @@ namespace Floe.Net
 				}
 				_reconnectTimer = new Timer(new TimerCallback((obj) =>
 				{
-					if (_callback != null)
+					if (_syncContext != null)
 					{
-						_callback(this.OnReconnect);
+						_syncContext.Post((o) => ((Action)o)(), (Action)this.OnReconnect);
 					}
 					else
 					{
@@ -785,14 +805,12 @@ namespace Floe.Net
 			}
 		}
 
-		Timer _reconnectTimer;
-
 		private void OnReconnect()
 		{
 			if (this.State == IrcSessionState.Disconnected)
 			{
 				this.State = IrcSessionState.Connecting;
-				_conn.Open(this.Server, this.Port, this.IsSecure);
+				_conn.Open(this.Server, this.Port, this.IsSecure, this.Proxy);
 			}
 		}
 
@@ -1043,7 +1061,10 @@ namespace Floe.Net
 
 		private void _conn_Connected(object sender, EventArgs e)
 		{
-			this.ExternalAddress = _conn.ExternalAddress;
+			this.InternalAddress = this.ExternalAddress =
+				Dns.GetHostEntry(string.Empty).AddressList
+				.Where((ip) => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).FirstOrDefault();
+
 			if (!string.IsNullOrEmpty(_password))
 			{
 				_conn.QueueMessage(new IrcMessage("PASS", _password));

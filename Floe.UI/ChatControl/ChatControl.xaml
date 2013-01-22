@@ -5,12 +5,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:local="clr-namespace:Floe.UI"
+			xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="699" x:Name="chatControl" FocusManager.IsFocusScope="True" Background="Transparent"
 			 FontFamily="Segoe UI" FontSize="12">
 	<UserControl.InputBindings>
 		<KeyBinding Command="local:ChatControl.ClearCommand" Gesture="Alt+C"/>
 		<KeyBinding Command="local:ChatControl.SearchCommand" Gesture="Ctrl+F"/>
+		<KeyBinding Command="local:ChatControl.ChannelPanelCommand" Gesture="Alt+J"/>
 	</UserControl.InputBindings>
 	<UserControl.CommandBindings>
 		<CommandBinding Command="local:ChatControl.WhoisCommand" Executed="ExecuteWhois" CanExecute="CanExecuteConnectedCommand"/>
@@ -30,21 +32,30 @@
 		<CommandBinding Command="local:ChatControl.SearchPreviousCommand" Executed="ExecuteSearchPrevious"/>
 		<CommandBinding Command="local:ChatControl.SearchNextCommand" Executed="ExecuteSearchNext"/>
 		<CommandBinding Command="local:ChatControl.SlapCommand" Executed="ExecuteSlap"/>
+		<CommandBinding Command="local:ChatControl.DccChatCommand" Executed="ExecuteDccChat"/>
+		<CommandBinding Command="local:ChatControl.DccXmitCommand" Executed="ExecuteDccXmit"/>
+		<CommandBinding Command="local:ChatControl.DccSendCommand" Executed="ExecuteDccSend"/>
+		<CommandBinding Command="local:ChatControl.ChannelPanelCommand" Executed="ExecuteChannelPanel"/>
+		<CommandBinding Command="local:ChatControl.ListCommand" Executed="ExecuteList"/>
+		<CommandBinding Command="local:ChatControl.JoinCommand" Executed="ExecuteJoin"/>
 	</UserControl.CommandBindings>
 	<UserControl.Resources>
-		<local:BrushAlphaConverter x:Key="opacityConverter"/>
-		<SolidColorBrush x:Key="editBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.EditBackground}"/>
-		<SolidColorBrush x:Key="ctrlBG" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Background}"/>
+		<SolidColorBrush x:Key="defaultBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default}"/>
+		<SolidColorBrush x:Key="transmitBrush" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Transmit}"/>
 		<Style TargetType="ListBoxItem">
 			<Style.Resources>
-				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{Binding Source={x:Static SystemColors.HighlightBrush}, Path=Color}"/>
-				<SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground}"/>
+				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Highlight}"/>
+				<SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default}"/>
 			</Style.Resources>
 		</Style>
 		<ContextMenu x:Key="cmNickname">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
-			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			<MenuItem Header="DCC">
+				<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DccChatCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+				<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DccXmitCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+				<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DccSendCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
+			</MenuItem>
 			<Separator/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=chatControl, Path=SelectedLink}"/>
@@ -60,7 +71,11 @@
 		<ContextMenu x:Key="cmNickList">
 			<MenuItem Command="local:ChatControl.WhoisCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
 			<MenuItem Command="local:ChatWindow.ChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
-			<MenuItem Command="local:ChatWindow.DccSendCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			<MenuItem Header="DCC">
+				<MenuItem Command="local:ChatControl.DccChatCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+				<MenuItem Command="local:ChatControl.DccXmitCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+				<MenuItem Command="local:ChatControl.DccSendCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItem.Nickname}"/>
+			</MenuItem>
 			<Separator/>
 			<MenuItem Command="local:ChatControl.OpCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
 			<MenuItem Command="local:ChatControl.DeopCommand" CommandParameter="{Binding ElementName=lstNicknames, Path=SelectedItems}"/>
@@ -83,11 +98,13 @@
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.QuitCommand"/>
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
+			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlChannel, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ChannelPanelCommand" InputGestureText="Alt+J"/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
 		</ContextMenu>
 		<ContextMenu x:Key="cmChannel">
 			<MenuItem CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ClearCommand" InputGestureText="Alt+C"/>
 			<Separator/>
+			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlChannel, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.ChannelPanelCommand" InputGestureText="Alt+J"/>
 			<MenuItem IsCheckable="True" IsChecked="{Binding ElementName=pnlSearch, Path=IsVisible, Mode=OneWay}" CommandTarget="{Binding ElementName=chatControl}" Command="local:ChatControl.SearchCommand" InputGestureText="Ctrl+F"/>
 		</ContextMenu>
 		<Style TargetType="MenuItem" x:Key="colorMenuItem">
@@ -121,25 +138,74 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
+		<ContextMenu x:Key="cmInputBox">
+			<MenuItem Command="ApplicationCommands.Cut"/>
+			<MenuItem Command="ApplicationCommands.Copy"/>
+			<MenuItem Command="ApplicationCommands.Paste"/>
+			<Separator/>
+			<MenuItem Header="Color">
+				<MenuItem.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel IsItemsHost="True" Width="88" Background="White"/>
+					</ItemsPanelTemplate>
+				</MenuItem.ItemsPanel>
+				<MenuItem Style="{StaticResource colorMenuHeader}" Width="88" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;" Header="None"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;00" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color0}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;01" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color1}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;02" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color2}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;03" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color3}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;04" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color4}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;05" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color5}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;06" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color6}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;07" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color7}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;08" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color8}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;09" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color9}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;10" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color10}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;11" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color11}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;12" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color12}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;13" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color13}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;14" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color14}"/>
+				<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand"  CommandParameter="&#x2503;15" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color15}"/>
+			</MenuItem>
+			<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2502;" Header="Toggle Bold" InputGestureText="Ctrl+B"/>
+			<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x251F;" Header="Toggle Underline" InputGestureText="Ctrl+U"/>
+			<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2516;" Header="Toggle Reverse" InputGestureText="Ctrl+R"/>
+			<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x250F;" Header="Toggle All Off" InputGestureText="Ctrl+O"/>
+		</ContextMenu>
+		<CollectionViewSource x:Key="nickListSource" Source="{Binding ElementName=chatControl, Path=Nicknames}">
+			<CollectionViewSource.SortDescriptions>
+				<scm:SortDescription/>
+			</CollectionViewSource.SortDescriptions>
+		</CollectionViewSource>
+		<local:VisibilityConverter x:Key="visibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 	</UserControl.Resources>
 	<DockPanel HorizontalAlignment="Stretch" Name="dockPanel1" VerticalAlignment="Stretch">
 		<Border DockPanel.Dock="Top" Background="{Binding ElementName=chatControl, Path=UIBackground, Mode=OneWay}">
 			<StackPanel Orientation="Vertical">
+				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlDccChat" Margin="0,5,10,5" SnapsToDevicePixels="True">
+					<Label Style="{StaticResource uiLabelStyle}" x:Name="lblDccChat" FontWeight="Bold"/>
+					<Button x:Name="btnAccept" Padding="3,1,3,1" Content="Accept" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Click="btnAccept_Click"/>
+					<Button x:Name="btnDecline" Padding="3,1,3,1" Content="Decline" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Click="btnDecline_Click"/>
+				</WrapPanel>
+				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlChannel" Margin="0,5,10,5" SnapsToDevicePixels="True">
+					<Button x:Name="btnCloseChannel" Command="local:ChatControl.ChannelPanelCommand" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0">
+						<Path Style="{StaticResource uiCloseButtonPathStyle}"/>
+					</Button>
+					<TextBox x:Name="txtChannel" IsTabStop="False" Width="300" Style="{StaticResource uiTextBoxStyle}">
+						<TextBox.InputBindings>
+							<KeyBinding Key="Enter" Command="local:ChatControl.JoinCommand" CommandParameter="{Binding ElementName=txtChannel, Path=Text}"/>
+						</TextBox.InputBindings>
+					</TextBox>
+					<Button x:Name="btnJoin" IsEnabled="{Binding ElementName=txtChannel, Path=Text.Length}" Padding="3,1,3,1" Content="Join" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Command="local:ChatControl.JoinCommand" CommandParameter="{Binding ElementName=txtChannel, Path=Text}"/>
+					<Button x:Name="btnList" Padding="3,1,3,1" Content="List Channels" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Command="local:ChatControl.ListCommand"/>
+				</WrapPanel>
 				<WrapPanel Orientation="Horizontal" Visibility="Collapsed" x:Name="pnlSearch" Margin="0,5,10,5" SnapsToDevicePixels="True">
-					<Button x:Name="btnCloseSearch" Command="local:ChatControl.SearchCommand" VerticalAlignment="Center" Focusable="False" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0">
-						<Path Margin="2" SnapsToDevicePixels="True"
-						Data="{StaticResource closeButtonGeometry}"
-						Stroke="{StaticResource winFG}"
-						StrokeThickness="2"
-						StrokeStartLineCap="Round"
-						StrokeEndLineCap="Round"
-						Stretch="Uniform"
-						VerticalAlignment="Top"
-						HorizontalAlignment="Center"/>
+					<Button x:Name="btnCloseSearch" Command="local:ChatControl.SearchCommand" Height="18" Width="18" Style="{StaticResource uiButtonStyle}" Margin="0,2,6,0">
+						<Path Style="{StaticResource uiCloseButtonPathStyle}"/>
 					</Button>
 					<TextBox x:Name="txtSearchTerm" IsTabStop="False" Width="300" Style="{StaticResource uiTextBoxStyle}"/>
-					<Button x:Name="btnSearchPrevious" IsEnabled="{Binding ElementName=txtSearchTerm, Path=Text.Length}" Padding="3,1,3,1" Content="&lt;&lt; Previous" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Command="local:ChatControl.SearchPreviousCommand"/>
-					<Button x:Name="btnSearchNext" IsEnabled="{Binding ElementName=txtSearchTerm, Path=Text.Length}" Padding="3,1,3,1" Content="Next &gt;&gt;" VerticalAlignment="Bottom" Focusable="False" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Command="local:ChatControl.SearchNextCommand"/>
+					<Button x:Name="btnSearchPrevious" IsEnabled="{Binding ElementName=txtSearchTerm, Path=Text.Length}" Padding="3,1,3,1" Content="&lt;&lt; Previous" VerticalAlignment="Bottom" Style="{StaticResource uiButtonStyle}" Margin="10,0,3,0" Command="local:ChatControl.SearchPreviousCommand"/>
+					<Button x:Name="btnSearchNext" IsEnabled="{Binding ElementName=txtSearchTerm, Path=Text.Length}" Padding="3,1,3,1" Content="Next &gt;&gt;" VerticalAlignment="Bottom" Style="{StaticResource uiButtonStyle}" Margin="0,0,10,0" Command="local:ChatControl.SearchNextCommand"/>
 					<CheckBox x:Name="chkMatchCase" Style="{StaticResource uiCheckBoxStyle}" Content="Match Case" Focusable="False" Margin="10,0,10,2"/>
 					<CheckBox x:Name="chkUseRegEx" Style="{StaticResource uiCheckBoxStyle}" Content="Use Regular Expression" Focusable="False" Margin="10,0,10,2"/>
 				</WrapPanel>
@@ -153,49 +219,14 @@
 				 FontSize="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontSize, Mode=OneWay}"
 				 FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
 				 FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
-				 Padding="1,2,2,2" Margin="0" BorderThickness="0" Height="Auto" TextWrapping="Wrap" MaxLength="512">
+				 Padding="1,2,2,2" Margin="0" BorderThickness="0" Height="Auto" TextWrapping="Wrap" MaxLength="512"
+					 ContextMenu="{StaticResource cmInputBox}">
 				<TextBox.Background>
 					<MultiBinding Converter="{StaticResource opacityConverter}">
 						<Binding Source="{StaticResource editBG}"/>
 						<Binding Source="{x:Static local:App.Settings}" Path="Current.Windows.BackgroundOpacity"/>
 					</MultiBinding>
 				</TextBox.Background>
-				<TextBox.ContextMenu>
-					<ContextMenu>
-						<MenuItem Command="ApplicationCommands.Cut"/>
-						<MenuItem Command="ApplicationCommands.Copy"/>
-						<MenuItem Command="ApplicationCommands.Paste"/>
-						<Separator/>
-						<MenuItem Header="Color">
-							<MenuItem.ItemsPanel>
-								<ItemsPanelTemplate>
-									<WrapPanel IsItemsHost="True" Width="88" Background="White"/>
-								</ItemsPanelTemplate>
-							</MenuItem.ItemsPanel>
-							<MenuItem Style="{StaticResource colorMenuHeader}" Width="88" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;" Header="None"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;00" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color0}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;01" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color1}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;02" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color2}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;03" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color3}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;04" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color4}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;05" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color5}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;06" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color6}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;07" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color7}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;08" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color8}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;09" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color9}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;10" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color10}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;11" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color11}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;12" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color12}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;13" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color13}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand" CommandParameter="&#x2503;14" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color14}"/>
-							<MenuItem Style="{StaticResource colorMenuItem}" Command="local:ChatControl.InsertCommand"  CommandParameter="&#x2503;15" Header="" Background="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Color15}"/>
-						</MenuItem>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2502;" Header="Toggle Bold" InputGestureText="Ctrl+B"/>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x251F;" Header="Toggle Underline" InputGestureText="Ctrl+U"/>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x2516;" Header="Toggle Reverse" InputGestureText="Ctrl+R"/>
-						<MenuItem Command="local:ChatControl.InsertCommand" CommandParameter="&#x250F;" Header="Toggle All Off" InputGestureText="Ctrl+O"/>
-					</ContextMenu>
-				</TextBox.ContextMenu>
 			</TextBox>
 		</Border>
 		<Grid SnapsToDevicePixels="True">
@@ -221,6 +252,7 @@
 					   NewMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.NewMarker, Mode=OneWay}"
 					   OldMarkerColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.OldMarker, Mode=OneWay}"
 					AttentionColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Attention, Mode=OneWay}"
+						   HighlightColor="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Highlight, Mode=OneWay}"
 					   DividerBrush="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.WindowForeground, Mode=OneWay}"
 						   AutoSizeColumn="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.AutoSizeColumn, Mode=OneWay}"
 					   MouseDoubleClick="boxOutput_MouseDoubleClick">
@@ -237,7 +269,7 @@
 					   FontStyle="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontStyle, Mode=OneWay}"
 					   FontWeight="{Binding Source={x:Static local:App.Settings}, Path=Current.Formatting.FontWeight, Mode=OneWay}"
 					 Foreground="{Binding Source={x:Static local:App.Settings}, Path=Current.Colors.Default, Mode=OneWay}"
-					 ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Nicknames}">
+					 ItemsSource="{Binding Source={StaticResource nickListSource}}">
 				<ListBox.Background>
 					<MultiBinding Converter="{StaticResource opacityConverter}">
 						<Binding Source="{StaticResource editBG}"/>
@@ -251,6 +283,11 @@
 						<EventSetter Event="MouseDoubleClick" Handler="lstNicknames_MouseDoubleClick"/>
 					</Style>
 				</ListBox.ItemContainerStyle>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding NickWithLevel}"/>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
 			</ListBox>
 			<GridSplitter Grid.Column="1" Name="splitter" IsEnabled="false" VerticalAlignment="Stretch" HorizontalAlignment="Left" Width="3" ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent"/>
 		</Grid>

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using Floe.Net;
 
@@ -31,10 +30,68 @@ namespace Floe.UI
 		public readonly static RoutedUICommand SearchPreviousCommand = new RoutedUICommand("Previous", "SearchPrevious", typeof(ChatControl));
 		public readonly static RoutedUICommand SearchNextCommand = new RoutedUICommand("Next", "SearchNext", typeof(ChatControl));
 		public readonly static RoutedUICommand SlapCommand = new RoutedUICommand("Slap!", "Slap", typeof(ChatControl));
+		public readonly static RoutedUICommand DccChatCommand = new RoutedUICommand("Chat", "DccXmit", typeof(ChatControl));
+		public readonly static RoutedUICommand DccXmitCommand = new RoutedUICommand("Xmit...", "DccXmit", typeof(ChatControl));
+		public readonly static RoutedUICommand DccSendCommand = new RoutedUICommand("Send...", "DccSend", typeof(ChatControl));
+		public readonly static RoutedUICommand JoinCommand = new RoutedUICommand("Join", "Join", typeof(ChatWindow));
+		public readonly static RoutedUICommand ChannelPanelCommand = new RoutedUICommand("Channel Pane", "ChannelPane", typeof(ChatControl));
+		public readonly static RoutedUICommand ListCommand = new RoutedUICommand("List", "List", typeof(ChatControl));
 
 		private void CanExecuteConnectedCommand(object sender, CanExecuteRoutedEventArgs e)
 		{
 			e.CanExecute = this.IsConnected;
+		}
+
+		private void CanExecuteChannelCommand(object sender, CanExecuteRoutedEventArgs e)
+		{
+			e.CanExecute = this.IsConnected && this.IsChannel;
+		}
+
+		private void Insert(string s)
+		{
+			if (!string.IsNullOrEmpty(txtInput.SelectedText))
+			{
+				int pos = txtInput.CaretIndex;
+				txtInput.SelectedText = s;
+				txtInput.CaretIndex = pos;
+			}
+			else
+			{
+				int pos = txtInput.CaretIndex;
+				txtInput.Text = txtInput.Text.Insert(txtInput.CaretIndex, s);
+				txtInput.CaretIndex = pos + s.Length;
+			}
+		}
+
+		private void ExecuteInsert(object sender, ExecutedRoutedEventArgs e)
+		{
+			var s = e.Parameter as string;
+			if (!string.IsNullOrEmpty(s))
+			{
+				this.Insert(s);
+			}
+		}
+
+		private void CanExecuteIsOp(object sender, CanExecuteRoutedEventArgs e)
+		{
+			if (!this.IsChannel || !_nickList.Contains(this.Session.Nickname))
+			{
+				e.CanExecute = false;
+				return;
+			}
+			var nick = _nickList[this.Session.Nickname];
+			e.CanExecute = nick != null && (nick.Level & ChannelLevel.Op) > 0;
+		}
+
+		private void CanExecuteIsHalfOp(object sender, CanExecuteRoutedEventArgs e)
+		{
+			if (!this.IsChannel || !_nickList.Contains(this.Session.Nickname))
+			{
+				e.CanExecute = false;
+				return;
+			}
+			var nick = _nickList[this.Session.Nickname];
+			e.CanExecute = nick != null && (nick.Level & (ChannelLevel.Op | ChannelLevel.HalfOp)) > 0;
 		}
 
 		private void ExecuteWhois(object sender, ExecutedRoutedEventArgs e)
@@ -77,43 +134,6 @@ namespace Floe.UI
 		private void ExecuteClear(object sender, RoutedEventArgs e)
 		{
 			boxOutput.Clear();
-		}
-
-		private void Insert(string s)
-		{
-			if (!string.IsNullOrEmpty(txtInput.SelectedText))
-			{
-				int pos = txtInput.CaretIndex;
-				txtInput.SelectedText = s;
-				txtInput.CaretIndex = pos;
-			}
-			else
-			{
-				int pos = txtInput.CaretIndex;
-				txtInput.Text = txtInput.Text.Insert(txtInput.CaretIndex, s);
-				txtInput.CaretIndex = pos + s.Length;
-			}
-		}
-
-		private void ExecuteInsert(object sender, ExecutedRoutedEventArgs e)
-		{
-			var s = e.Parameter as string;
-			if (!string.IsNullOrEmpty(s))
-			{
-				this.Insert(s);
-			}
-		}
-
-		private void CanExecuteIsOp(object sender, CanExecuteRoutedEventArgs e)
-		{
-			var cn = this.GetNick(this.Session.Nickname);
-			e.CanExecute = cn != null && (cn.Level & ChannelLevel.Op) > 0;
-		}
-
-		private void CanExecuteIsHalfOp(object sender, CanExecuteRoutedEventArgs e)
-		{
-			var cn = this.GetNick(this.Session.Nickname);
-			e.CanExecute = cn != null && (cn.Level & (ChannelLevel.Op | ChannelLevel.HalfOp)) > 0;
 		}
 
 		private void ExecuteOp(object sender, ExecutedRoutedEventArgs e)
@@ -212,6 +232,63 @@ namespace Floe.UI
 			}
 		}
 
+		private void ExecuteDccChat(object sender, ExecutedRoutedEventArgs e)
+		{
+			App.ChatWindow.DccChat(this.Session, new IrcTarget((string)e.Parameter));
+		}
+
+		private void ExecuteDccXmit(object sender, ExecutedRoutedEventArgs e)
+		{
+			string fileName = App.OpenFileDialog(_window, App.Settings.Current.Dcc.DownloadFolder);
+			if (!string.IsNullOrEmpty(fileName))
+			{
+				App.ChatWindow.DccXmit(this.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
+			}
+		}
+
+		private void ExecuteDccSend(object sender, ExecutedRoutedEventArgs e)
+		{
+			string fileName = App.OpenFileDialog(_window, App.Settings.Current.Dcc.DownloadFolder);
+			if (!string.IsNullOrEmpty(fileName))
+			{
+				App.ChatWindow.DccSend(this.Session, new IrcTarget((string)e.Parameter), new System.IO.FileInfo(fileName));
+			}
+		}
+
+		private void ExecuteSearch(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ToggleSearch();
+		}
+
+		private void ExecuteChannelPanel(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.ToggleChannelPanel();
+		}
+
+		private void ExecuteSearchPrevious(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.DoSearch(SearchDirection.Previous);
+		}
+
+		private void ExecuteSearchNext(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.DoSearch(SearchDirection.Next);
+		}
+
+		private void ExecuteList(object sender, ExecutedRoutedEventArgs e)
+		{
+			this.Session.List();
+		}
+
+		private void ExecuteJoin(object sender, ExecutedRoutedEventArgs e)
+		{
+			string channel = e.Parameter as string;
+			if (!string.IsNullOrEmpty(channel))
+			{
+				this.Session.Join(channel);
+			}
+		}
+
 		private void Execute(string text, bool literal)
 		{
 			var chars = text.ToCharArray();
@@ -252,15 +329,24 @@ namespace Floe.UI
 			{
 				if (text.Trim().Length > 0 && this.IsConnected)
 				{
-					if (!this.IsServer)
+					if (this.Type == ChatPageType.Chat)
 					{
 						this.Session.PrivateMessage(this.Target, text);
 						this.Write("Own", 0, this.GetNickWithLevel(this.Session.Nickname), text, false);
+					}
+					else if (this.Type == ChatPageType.DccChat)
+					{
+						_dcc.QueueMessage(text);
+						this.Write("Own", 0, this.Session.Nickname, text, false);
 					}
 					else
 					{
 						this.Write("Error", "Can't talk in this window.");
 					}
+				}
+				else
+				{
+					App.DoEvent("beep");
 				}
 			}
 		}
@@ -449,9 +535,15 @@ namespace Floe.UI
 					if (this.IsConnected)
 					{
 						args = Split(command, arguments, 1, int.MaxValue);
-						this.Session.SendCtcp(this.Target,
-							new CtcpCommand("ACTION", args), false);
 						this.Write("Own", string.Format("{0} {1}", this.Session.Nickname, string.Join(" ", args)));
+						if (this.Type == ChatPageType.Chat)
+						{
+							this.Session.SendCtcp(this.Target, new CtcpCommand("ACTION", args), false);
+						}
+						else if (this.Type == ChatPageType.DccChat)
+						{
+							_dcc.QueueMessage(string.Format("\u0001ACTION {0}\u0001", string.Join(" ", args)));
+						}
 					}
 					break;
 				case "SETUP":
@@ -469,14 +561,18 @@ namespace Floe.UI
 					}
 					break;
 				case "LIST":
-					args = Split(command, arguments, 1, 2);
+					args = Split(command, arguments, 0, 2);
 					if (args.Length > 1)
 					{
 						this.Session.List(args[0], args[1]);
 					}
-					else
+					else if (args.Length > 0)
 					{
 						this.Session.List(args[0]);
+					}
+					else
+					{
+						this.Session.List();
 					}
 					break;
 				case "OP":
@@ -524,15 +620,16 @@ namespace Floe.UI
 					break;
 				case "IGNORE":
 					{
-						args = Split(command, arguments, 0, 1);
+						args = Split(command, arguments, 0, 2);
 						if (args.Length == 0)
 						{
-							if (App.IgnoreMasks.Any())
+							var ignores = App.GetIgnoreInfo();
+							if (ignores.Any())
 							{
 								this.Write("Own", "Ignore list:");
-								foreach (string m in App.IgnoreMasks)
+								foreach (string i in ignores)
 								{
-									this.Write("Own", "  " + m);
+									this.Write("Own", "  " + i);
 								}
 							}
 							else
@@ -543,25 +640,39 @@ namespace Floe.UI
 						}
 
 						string mask = args[0];
+						string sactions = args.Length > 1 ? args[1] : "All";
+						IgnoreActions actions;
+						if (!Enum.TryParse(sactions, true, out actions))
+						{
+							this.Write("Error", "Invalid ignore action(s).");
+							break;
+						}
 
 						if (!mask.Contains('!') && !mask.Contains('@'))
 						{
 							mask = mask + "!*@*";
 						}
-						App.AddIgnore(mask);
+						App.AddIgnore(mask, actions);
 						this.Write("Own", "Added to ignore list: " + mask);
 					}
 					break;
 				case "UNIGNORE":
 					{
-						args = Split(command, arguments, 1, 1);
+						args = Split(command, arguments, 1, 2);
 						string mask = args[0];
 
+						string sactions = args.Length > 1 ? args[1] : "All";
+						IgnoreActions actions;
+						if (!Enum.TryParse(sactions, true, out actions))
+						{
+							this.Write("Error", "Invalid ignore action(s).");
+							break;
+						}
 						if (!mask.Contains('!') && !mask.Contains('@'))
 						{
 							mask = mask + "!*@*";
 						}
-						if (App.RemoveIgnore(mask))
+						if (App.RemoveIgnore(mask, actions))
 						{
 							this.Write("Own", "Removed from ignore list: " + mask);
 						}
@@ -573,24 +684,55 @@ namespace Floe.UI
 					break;
 				case "DCC":
 					{
-						args = Split(command, arguments, 3, 3);
-						if (args[0].ToUpperInvariant() == "XMIT")
+						if (!this.IsConnected)
 						{
-							string path = null;
-							if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
-							{
-								path = args[2];
-							}
-							else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
-							{
-								this.Write("Error", "Could not find file " + args[2]);
-								return;
-							}
-							App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+							return;
 						}
-						else
+						args = Split(command, arguments, 2, 3);
+						string dccCmd = args[0].ToUpperInvariant();
+
+						switch (dccCmd)
 						{
-							this.Write("Error", "Unsupported DCC mode " + args[0]);
+							case "CHAT":
+								App.ChatWindow.DccChat(this.Session, new IrcTarget(args[1]));
+								break;
+							case "SEND":
+							case "XMIT":
+								string path = null;
+								if (args.Length < 3)
+								{
+									this.Write("Error", "File name is required.");
+									break;
+								}
+								try
+								{
+									if (System.IO.Path.IsPathRooted(args[2]) && System.IO.File.Exists(args[2]))
+									{
+										path = args[2];
+									}
+									else if (!System.IO.File.Exists(path = System.IO.Path.Combine(App.Settings.Current.Dcc.DownloadFolder, args[2])))
+									{
+										this.Write("Error", "Could not find file " + args[2]);
+										break;
+									}
+								}
+								catch (ArgumentException)
+								{
+									this.Write("Error", string.Format("Invalid pathname: {0}", args[2]));
+									break;
+								}
+								if (dccCmd == "XMIT")
+								{
+									App.ChatWindow.DccXmit(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+								}
+								else
+								{
+									App.ChatWindow.DccSend(this.Session, new IrcTarget(args[1]), new System.IO.FileInfo(path));
+								}
+								break;
+							default:
+								this.Write("Error", "Unsupported DCC mode " + args[0]);
+								break;
 						}
 					}
 					break;
@@ -668,21 +810,6 @@ namespace Floe.UI
 			return parts.ToArray();
 		}
 
-		private void ExecuteSearch(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.ToggleSearch();
-		}
-
-		private void ExecuteSearchPrevious(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.DoSearch(SearchDirection.Previous);
-		}
-
-		private void ExecuteSearchNext(object sender, ExecutedRoutedEventArgs e)
-		{
-			this.DoSearch(SearchDirection.Next);
-		}
-
 		private void ToggleSearch()
 		{
 			if (pnlSearch.Visibility == Visibility.Visible)
@@ -695,6 +822,28 @@ namespace Floe.UI
 				pnlSearch.Visibility = Visibility.Visible;
 				txtSearchTerm.Focus();
 				txtSearchTerm.SelectAll();
+			}
+		}
+		
+		private void ToggleChannelPanel()
+		{
+			if (pnlChannel.Visibility == Visibility.Visible)
+			{
+				pnlChannel.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				pnlChannel.Visibility = Visibility.Visible;
+				txtChannel.Focus();
+				if (txtChannel.Text.Length < 1 || txtChannel.Text == "#")
+				{
+					txtChannel.Text = "#";
+					txtChannel.CaretIndex = 1;
+				}
+				else
+				{
+					txtChannel.SelectAll();
+				}
 			}
 		}
 

@@ -11,6 +11,7 @@ namespace Floe.UI
 		private int _bufferLines, _scrollPos;
 		private bool _isAutoScrolling = true;
 
+		public bool IsAutoScrolling { get { return _isAutoScrolling; } }
 		public bool CanHorizontallyScroll { get { return false; } set { } }
 		public bool CanVerticallyScroll { get { return true; } set { } }
 		public double ExtentHeight { get { return _lineHeight * _bufferLines; } }

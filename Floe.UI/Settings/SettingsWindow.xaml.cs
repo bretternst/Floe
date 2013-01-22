@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Controls;
 
 namespace Floe.UI.Settings
@@ -19,11 +21,17 @@ namespace Floe.UI.Settings
 			grdSettings.Children.Add(new BufferSettingsControl());
 			grdSettings.Children.Add(new WindowSettingsControl());
 			grdSettings.Children.Add(new DccSettingsControl());
+			grdSettings.Children.Add(new SoundSettingsControl());
+			grdSettings.Children.Add(new NetworkSettingsControl());
 
 			if (lstCategories.SelectedIndex < 0)
 			{
 				lstCategories.SelectedIndex = 0;
 			}
+
+			this.AddHandler(TextBox.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(SelectivelyIgnoreMouseButton));
+			this.AddHandler(TextBox.GotKeyboardFocusEvent, new RoutedEventHandler(SelectAllText));
+			this.AddHandler(TextBox.MouseDoubleClickEvent, new RoutedEventHandler(SelectAllText));
 		}
 
 		private void btnApply_Click(object sender, RoutedEventArgs e)
@@ -46,12 +54,31 @@ namespace Floe.UI.Settings
 			}
 		}
 
-		private void SettingsWindow_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+		private void SelectivelyIgnoreMouseButton(object sender, MouseButtonEventArgs e)
 		{
-			var txtBox = e.NewFocus as TextBox;
-			if (txtBox != null && txtBox.Text.Length > 0 && txtBox.CaretIndex == 0)
+			DependencyObject parent = e.OriginalSource as UIElement;
+			while (parent != null && !(parent is TextBox))
 			{
-				txtBox.CaretIndex = txtBox.Text.Length;
+				parent = VisualTreeHelper.GetParent(parent);
+			}
+
+			if (parent != null)
+			{
+				var textBox = (TextBox)parent;
+				if (!textBox.IsKeyboardFocusWithin && !textBox.AcceptsReturn)
+				{
+					textBox.Focus();
+					e.Handled = true;
+				}
+			}
+		}
+
+		private void SelectAllText(object sender, RoutedEventArgs e)
+		{
+			var textBox = e.OriginalSource as TextBox;
+			if (textBox != null && !textBox.AcceptsReturn)
+			{
+				textBox.SelectAll();
 			}
 		}
 	}

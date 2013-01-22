@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -19,14 +17,16 @@ namespace Floe.Net
 	{
 		private const int ConnectTimeout = 60 * 1000;
 		private const int ListenTimeout = 5 * 60 * 1000;
-		private const int BufferSize = 2048;
+		private const int BufferSize = 4096;
 		private const int MinPort = 1024;
 
 		private TcpListener _listener;
 		private TcpClient _tcpClient;
 		private Thread _socketThread;
 		private ManualResetEvent _endHandle;
-		private Action<Action> _callback;
+		private ConcurrentQueue<Tuple<byte[], int, int>> _writeQueue;
+		private ManualResetEvent _writeHandle;
+		private SynchronizationContext _syncContext;
 		private long _bytesTransferred;
 		private NetworkStream _stream;
 
@@ -34,8 +34,19 @@ namespace Floe.Net
 		public EventHandler Disconnected;
 		public EventHandler<ErrorEventArgs> Error;
 
+		/// <summary>
+		/// Gets the remote address.
+		/// </summary>
 		public IPAddress Address { get; private set; }
+
+		/// <summary>
+		/// Gets the remote port.
+		/// </summary>
 		public int Port { get; private set; }
+
+		/// <summary>
+		/// Gets the number of bytes transferred. This is typically only relevant for a file transfer operation.
+		/// </summary>
 		public long BytesTransferred
 		{
 			get
@@ -48,10 +59,12 @@ namespace Floe.Net
 			}
 		}
 
-		public DccOperation(Action<Action> callback = null)
+		protected DccOperation()
 		{
-			_callback = callback;
+			_syncContext = SynchronizationContext.Current;
 			_endHandle = new ManualResetEvent(false);
+			_writeHandle = new ManualResetEvent(false);
+			_writeQueue = new ConcurrentQueue<Tuple<byte[], int, int>>();
 		}
 
 		/// <summary>
@@ -65,11 +78,11 @@ namespace Floe.Net
 		{
 			if (lowPort > ushort.MaxValue || lowPort < MinPort)
 			{
-				throw new ArgumentException("lowPort");
+				throw new ArgumentException("Invalid port.", "lowPort");
 			}
 			if (highPort > ushort.MaxValue || highPort < lowPort)
 			{
-				throw new ArgumentException("highPort");
+				throw new ArgumentException("Invalid port.", "highPort");
 			}
 
 			while(true)
@@ -148,7 +161,7 @@ namespace Floe.Net
 		{
 			if (port <= 0 || port > ushort.MaxValue)
 			{
-				throw new ArgumentException("port");
+				throw new ArgumentException("Invalid port.");
 			}
 			this.Address = address;
 			this.Port = port;
@@ -169,6 +182,10 @@ namespace Floe.Net
 							this.OnError(ex);
 							return;
 						}
+						catch (NullReferenceException)
+						{
+							return;
+						}
 
 						try
 						{
@@ -187,38 +204,31 @@ namespace Floe.Net
 			_socketThread.Start();
 		}
 
-		public bool Write(byte[] data, int offset, int size)
-		{
-			var ar = _stream.BeginWrite(data, offset, size, null, null);
-			int index = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle });
-			switch (index)
-			{
-				case 0:
-					_stream.EndWrite(ar);
-					return true;
-				default:
-					return false;
-			}
-		}
-
-		public void Close()
-		{
-			_endHandle.Set();
-		}
-
 		/// <summary>
 		/// Closes an active DCC session or cancels the listener.
 		/// </summary>
 		public void Dispose()
 		{
+			this.Close();
 			if (_tcpClient != null)
 			{
-				try
-				{
-					_tcpClient.Close();
-				}
-				catch { }
+				_tcpClient.Close();
 			}
+			if (_listener != null)
+			{
+				_listener.Stop();
+			}
+		}
+
+		protected void QueueWrite(byte[] data, int offset, int size)
+		{
+			_writeQueue.Enqueue(new Tuple<byte[], int, int>(data, offset, size));
+			_writeHandle.Set();
+		}
+
+		protected void Close()
+		{
+			_endHandle.Set();
 		}
 
 		protected virtual void OnConnected()
@@ -241,37 +251,17 @@ namespace Floe.Net
 		{
 		}
 
-		protected void Dispatch<T>(Action<T> handler, T arg)
+		protected virtual void OnSent(byte[] buffer, int offset, int count)
 		{
-			if (_callback != null)
-			{
-				_callback(() => handler(arg));
-			}
-			else
-			{
-				handler(arg);
-			}
-		}
-
-		protected void Dispatch(Action handler)
-		{
-			if (_callback != null)
-			{
-				_callback(handler);
-			}
-			else
-			{
-				handler();
-			}
 		}
 
 		protected void RaiseEvent<T>(EventHandler<T> evt, T arg) where T : EventArgs
 		{
 			if (evt != null)
 			{
-				if (_callback != null)
+				if (_syncContext != null)
 				{
-					_callback(() => evt(this, arg));
+					_syncContext.Post((o) => evt(this, (T)o), arg);
 				}
 				else
 				{
@@ -284,9 +274,9 @@ namespace Floe.Net
 		{
 			if (evt != null)
 			{
-				if (_callback != null)
+				if (_syncContext != null)
 				{
-					_callback(() => evt(this, EventArgs.Empty));
+					_syncContext.Post((o) => evt(this, EventArgs.Empty), null);
 				}
 				else
 				{
@@ -298,17 +288,35 @@ namespace Floe.Net
 		private void SocketLoop()
 		{
 			var readBuffer = new byte[BufferSize];
+			Tuple<byte[], int, int> outgoing = null;
+			IAsyncResult arr = null, arw = null;
+			var handles = new WaitHandle[] { null, null, _endHandle };
 
 			try
 			{
 				while (_tcpClient.Connected)
 				{
-					var ar = _stream.BeginRead(readBuffer, 0, BufferSize, null, null);
-					int idx = WaitHandle.WaitAny(new[] { ar.AsyncWaitHandle, _endHandle });
-					switch (idx)
+					if (arr == null)
+					{
+						arr = _stream.BeginRead(readBuffer, 0, BufferSize, null, null);
+					}
+					_writeHandle.Reset();
+					if (arw == null && _writeQueue.TryDequeue(out outgoing))
+					{
+						if (outgoing.Item1 == null)
+						{
+							break;
+						}
+						arw = _stream.BeginWrite(outgoing.Item1, outgoing.Item2, outgoing.Item3, null, null);
+					}
+					handles[0] = arr.AsyncWaitHandle;
+					handles[1] = arw != null ? arw.AsyncWaitHandle : _writeHandle;
+
+					switch (WaitHandle.WaitAny(handles))
 					{
 						case 0:
-							int count = _stream.EndRead(ar);
+							int count = _stream.EndRead(arr);
+							arr = null;
 							if (count <= 0)
 							{
 								return;
@@ -316,8 +324,19 @@ namespace Floe.Net
 							this.OnReceived(readBuffer, count);
 							break;
 						case 1:
+							if (arw != null)
+							{
+								_stream.EndWrite(arw);
+								arw = null;
+								this.OnSent(outgoing.Item1, outgoing.Item2, outgoing.Item3);
+							}
+							break;
+						case 2:
+							if (arw != null)
+							{
+								_stream.EndWrite(arw);
+							}
 							return;
-
 					}
 				}
 			}
