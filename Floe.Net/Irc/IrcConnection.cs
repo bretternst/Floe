@@ -136,15 +136,19 @@ namespace Floe.Net
 			else
 			{
                 var connEvt = new ManualResetEventSlim();
+				Exception exception = null;
                 ThreadPool.QueueUserWorkItem(o => {
-                    _tcpClient = new TcpClient(_server, _port);
+					try { _tcpClient = new TcpClient(_server, _port); }
+					catch (Exception ex) { exception = ex; }
                     connEvt.Set();
                 });
 
-                if (WaitHandle.WaitAny(new[] { connEvt.WaitHandle, _endWaitHandle }) == 1)
+				if (WaitHandle.WaitAny(new[] { connEvt.WaitHandle, _endWaitHandle }) == 1)
 				{
 					return;
 				}
+				else if (exception != null)
+					throw exception;
 			}
 			stream = _tcpClient.GetStream();
 
