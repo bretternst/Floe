@@ -1,5 +1,0 @@
-E:\Code\Floe\Floe.Net\bin\Debug\Floe.Net.dll
-E:\Code\Floe\Floe.Net\bin\Debug\Floe.Net.pdb
-E:\Code\Floe\Floe.Net\obj\Debug\Floe.Net.csprojResolveAssemblyReference.cache
-E:\Code\Floe\Floe.Net\obj\Debug\Floe.Net.dll
-E:\Code\Floe\Floe.Net\obj\Debug\Floe.Net.pdb

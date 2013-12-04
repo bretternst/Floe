@@ -1,4 +1,0 @@
-E:\Code\Floe\Floe.Net\bin\x64\Release\Floe.Net.dll
-E:\Code\Floe\Floe.Net\bin\x64\Release\Floe.Net.pdb
-E:\Code\Floe\Floe.Net\obj\x64\Release\Floe.Net.dll
-E:\Code\Floe\Floe.Net\obj\x64\Release\Floe.Net.pdb
