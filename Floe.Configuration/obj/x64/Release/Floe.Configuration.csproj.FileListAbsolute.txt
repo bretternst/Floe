@@ -1,0 +1,5 @@
+E:\Code\Floe\Floe.Configuration\bin\x64\Release\Floe.Configuration.dll
+E:\Code\Floe\Floe.Configuration\bin\x64\Release\Floe.Configuration.pdb
+E:\Code\Floe\Floe.Configuration\obj\x64\Release\Floe.Configuration.csprojResolveAssemblyReference.cache
+E:\Code\Floe\Floe.Configuration\obj\x64\Release\Floe.Configuration.dll
+E:\Code\Floe\Floe.Configuration\obj\x64\Release\Floe.Configuration.pdb

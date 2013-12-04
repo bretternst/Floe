@@ -167,7 +167,7 @@
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="TextBoxBase">
-						<Border CornerRadius="4" Background="{TemplateBinding Background}"
+						<Border CornerRadius="0" Background="{TemplateBinding Background}"
 								BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
 							<ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
 						</Border>

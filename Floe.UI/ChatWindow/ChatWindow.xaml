@@ -119,7 +119,7 @@
 		</Style>
 	</Window.Style>
 
-	<Border CornerRadius="8" BorderBrush="{Binding ElementName=window, Path=UIBackground}" BorderThickness="4,3,4,4">
+	<Border CornerRadius="0" BorderBrush="{Binding ElementName=window, Path=UIBackground}" BorderThickness="4,3,4,4">
 		<Grid x:Name="grdRoot">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="25"/>
