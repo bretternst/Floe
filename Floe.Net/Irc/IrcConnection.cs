@@ -113,7 +113,7 @@ namespace Floe.Net
 			{
 				this.Dispatch(this.OnError, ex);
 			}
-			if (_tcpClient != null && _tcpClient.Connected)
+			if (_tcpClient != null)
 			{
 				_tcpClient.Close();
 			}
