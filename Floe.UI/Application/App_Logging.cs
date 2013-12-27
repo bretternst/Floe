@@ -62,7 +62,7 @@ namespace Floe.UI
 				{
 					this.FillBuffer(filePath, linesToRead);
 				}
-				_logFile = File.Open(filePath, FileMode.Append, FileAccess.Write);
+				_logFile = File.Open(filePath, FileMode.Append, FileAccess.Write, FileShare.Read);
 			}
 			catch (Exception ex)
 			{
